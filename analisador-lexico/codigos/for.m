@@ -1,7 +1,7 @@
 int main(string args) {
-    matrix a = {2,2,{1,2},{1,2}};
-    matrix a = {2,2,{1,1},{1,1}};
-    matrix vetor[2] = {a, b};
+    matriz a = {2,2,{1,2},{1,2}};
+    matriz a = {2,2,{1,1},{1,1}};
+    matriz vetor[2] = {a, b};
     float sumSize() = 0f;
 
     for(int i = 0; i < 2; i++) {
@@ -22,6 +22,6 @@ int main(string args) {
     print(size(vetor[1]) >= 0));
 }
 
-float size(matrix x){
+float size(matriz x){
     return len(x);
 }

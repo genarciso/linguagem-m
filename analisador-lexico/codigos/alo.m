@@ -24,6 +24,6 @@ int main(string args) {
 
 // Funcao teste
 void teste() {
-	matrix abc = {2, 2, {0, 1}, {3, 4}};
+	matriz abc = {2, 2, {0, 1}, {3, 4}};
 	return;
 }

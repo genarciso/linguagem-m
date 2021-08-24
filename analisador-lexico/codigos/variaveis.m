@@ -22,8 +22,8 @@ int main(string args) {
 	char chr = 's';
 	char tst = '';
 
-	matrix matriz_a = {3, 2};
-	matrix matrizB;
+	matriz matriz_a = {3, 2};
+	matriz matrizB;
 
 	boolean a = true;
 	boolean b = false;
