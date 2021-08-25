@@ -11,11 +11,11 @@ extern char * yytext;
 %}
 
 %union {
-        int    iValue;  /* integer value */
-        float  fValue;  /* float value */
-        double dValue   /* double value */
-        char   cValue;  /* char value */
-        char * sValue;  /* string value */
+    int    iValue;  /* integer value */
+    float  fValue;  /* float value */
+    double dValue   /* double value */
+    char   cValue;  /* char value */
+    char * sValue;  /* string value */
 };
 
 %token <sValue> LITERAL_STRING IDENTIFIER INT_TYPE FLOAT_TYPE DOUBLE_TYPE STRING_TYPE BOOLEAN_TYPE MATRIZ_TYPE VOID_TYPE
@@ -42,20 +42,72 @@ extern char * yytext;
 
 %%
 PROGRAM : 
-        | EXPR EOL
-        | PROGRAM EXPR EOL
+        | PROGRAM STM_LIST EOL  {
+                                    printf("%s\n%s", $1, $2);
+                                    free($1);
+                                    free($2);
+                                }
         ; 
 
-EXPR : ARIT_EXPR {$$ = $1;}
-     | LOG_EXPR {$$ = $1;}
-     ;
+STM_LIST    : STM SEMICOLON             {$$ = $1;}
+            | STM_LIST SEMICOLON STM    {
+                                            int size = strlen($1) + strlen($3) + 3;
+                                            char * s = malloc(sizeof(char) * size);
+                                            sprintf(s, "%s;\n%s", $1, $3);
+                                            free($1);
+                                            free($3);
+                                            $$ = s;
+                                        }
+            ;
 
+STM : EXPRS_LIST                        {$$ = $1;}
+    | IDENTIFIER ASSINGMENT EXPRS_LIST  {
+                                            int size = strlen($1) + strlen($3) + 4;
+                                            char * s = malloc(sizeof(char) * size);
+                                            sprintf(s, "%s = %s", $1, $3);
+                                            free($3);
+                                            $$ = s;
+                                        }
+    | WHILE_STM L_PARENTHESIS LOG_EXPR R_PARENTHESIS L_KEY STM_LIST R_KEY   {}
+    | DO_STM L_KEY STM_LIST R_KEY WHILE_STM L_PARENTHESIS LOG_EXPR R_PARENTHESIS    {}
+    | IF_STM L_PARENTHESIS LOG_EXPR R_PARENTHESIS L_KEY STM_LIST R_KEY  {
+                                                            int size = 12 + strlen($3) + strlen($6);
+                                                            char * s = malloc(sizeof(char) * size);
+                                                            sprintf(s, "if (%s) {\n\t%s }", $3, $6);
+                                                            free($6);
+                                                            $$ = s;
+                                                        }
+    | IF_STM L_PARENTHESIS LOG_EXPR R_PARENTHESIS L_KEY STM_LIST R_KEY ELSE_STM L_KEY STM_LIST R_KEY  {
+                                                            int size = 21 + strlen($3) + strlen($6) + strlen($10);
+                                                            char * s = malloc(sizeof(char) * size);
+                                                            sprintf(s, "if (%s) {\n\t%s } else{\n\t%s}", $3, $6, $10);
+                                                            free($6);
+                                                            free($10)
+                                                            $$ = s;
+                                                        }
+    | IF_STM L_PARENTHESIS LOG_EXPR R_PARENTHESIS L_KEY STM_LIST R_KEY ELSE_IF_STM L_PARENTHESIS LOG_EXPR R_PARENTHESIS L_KEY STM_LIST R_KEY ELSE_STM L_KEY STM_LIST R_KEY  {
+                                    int size = 38 + strlen($3) + strlen($6) + strlen($10) + strlen($13) + strlen($17);
+                                    char * s = malloc(sizeof(char) * size);
+                                    sprintf(s, "if (%s) {\n\t%s }\n elseif(%s) {\n\t%s}\n else{\n\t%s}", $3, $6, $10, $13, $17);
+                                    free($6);
+                                    free($13);
+                                    free($17)
+                                    $$ = s;
+                                }
+    ;
 
-ARIT_EXPR : TERM {$$ = $1;}
-        | TERM PLUS_OP ARIT_EXPR {$$ = $1 + $3;}
-        | TERM SUB_OP ARIT_EXPR {$$ = $1 - $3;}
-        | TERM DIV_OP ARIT_EXPR {$$ = $1 / $3;}   
+EXPRS_LIST  : EXPR EXPR_LIST
+
+EXPR    : ARIT_EXPR     { $$ = $1; }
+        | LOG_EXPR      { $$ = $1; }
         ;
+
+
+ARIT_EXPR   : TERM {$$ = $1;}
+            | TERM PLUS_OP ARIT_EXPR {$$ = $1 + $3;}
+            | TERM SUB_OP ARIT_EXPR {$$ = $1 - $3;}
+            | TERM DIV_OP ARIT_EXPR {$$ = $1 / $3;}   
+            ;
 
 TERM    : LITERAL_INT {$$ = $1;}
         | LITERAL_FLOAT {$$ = $1;}
@@ -65,13 +117,13 @@ TERM    : LITERAL_INT {$$ = $1;}
         ;
 
 LOG_EXPR : TERM_LOG {$$ = $1;}
-         |  ARIT_EXPR AND_OP LOG_EXPR  {$$ = $1 && $3;}
-         |  ARIT_EXPR OR_OP LOG_EXPR  {$$ = $1 || $3;}
-         |  ARIT_EXPR S_OP LOG_EXPR  {$$ = $1 < $3;}
-         |  ARIT_EXPR SE_OP LOG_EXPR  {$$ = $1 <= $3;}
-         |  ARIT_EXPR G_OP LOG_EXPR  {$$ = $1 > $3;}
-         |  ARIT_EXPR GE_OP LOG_EXPR  {$$ = $1 >= $3;}
-         |  ARIT_EXPR EQ_OP LOG_EXPR  {$$ = $1 == $3;}
+         | ARIT_EXPR AND_OP LOG_EXPR  {$$ = $1 && $3;}
+         | ARIT_EXPR OR_OP LOG_EXPR  {$$ = $1 || $3;}
+         | ARIT_EXPR S_OP LOG_EXPR  {$$ = $1 < $3;}
+         | ARIT_EXPR SE_OP LOG_EXPR  {$$ = $1 <= $3;}
+         | ARIT_EXPR G_OP LOG_EXPR  {$$ = $1 > $3;}
+         | ARIT_EXPR GE_OP LOG_EXPR  {$$ = $1 >= $3;}
+         | ARIT_EXPR EQ_OP LOG_EXPR  {$$ = $1 == $3;}
          ;
 
 TERM_LOG : TRUE_VAL {$$ = $1;}
