@@ -5,21 +5,28 @@
 #include <string.h>
 #include <stdbool.h>
 #include "./hashTable.h"
+#include "./list.h"
 #include "./tuple.h"
 
-typedef struct LITERAL
+typedef struct RuleInfo
 {
     char* value;
     char* type;
-}LITERAL;
+}RuleInfo;
 
-LITERAL* utils_createLiteral(char* value, char* type) {
-    LITERAL *aux = (LITERAL*) malloc(sizeof(LITERAL));
+RuleInfo* utils_createRuleInfo(char* value, char* type) {
+    RuleInfo *aux = (RuleInfo*) malloc(sizeof(RuleInfo));
     aux->value = (char*) malloc(strlen(value) * sizeof(char));
     aux->type  = (char*) malloc(strlen(type) * sizeof(char));
     strcpy(aux->value, value);
     strcpy(aux->type, type);
     return aux;
+}
+
+void utils_freeRuleInfo(RuleInfo *ri) {
+    free(ri->value);
+    free(ri->type);
+    free(ri);
 }
 
 char* utils_strcat(char *str1, char *str2) {
@@ -50,9 +57,20 @@ char* utils_strRemoveSpace(char *str) {
         if(str[i] != ' ') break;
         spacesEnd++;
     }
-
-    ptr = malloc(strlen(str) - spacesBegin - spacesEnd * sizeof(char));
-    strncpy(ptr, str+spacesBegin, strlen(str) - spacesBegin - spacesEnd);
+    //printf("%s\n", str);
+    //printf("%d\n", spacesBegin);
+    //printf("%d\n", spacesEnd);
+    
+    ptr = malloc((strlen(str) - spacesBegin - spacesEnd) * sizeof(char));
+    int i = 0;
+    //printf("%lu\n", (strlen(str) - spacesEnd));
+    for(int j = spacesBegin;j < (strlen(str) - spacesEnd - 1 );j++) {
+        strcpy(ptr+i, &str[i]);
+        i++;
+    }
+    ptr[i+1] = NULL;
+    //printf("%d\n", i);
+    //printf("remove: %s - %lu\n", ptr, strlen(ptr));
     return ptr;
 }
 
@@ -68,6 +86,31 @@ Tuple* utils_findVar(HashTable *symbolTable, char* varName, int scopeLevel) {
     }
 
     return NULL;
+}
+
+int utils_countComan(char *str) {
+    int qtyComan = 0;
+
+    for(int i = 0; i < strlen(str); i++) {
+        if(str[i] == ',') qtyComan++;
+    }
+
+    return qtyComan;
+}
+
+void utils_removeVarScope(HashTable *symbolTable, List *keys) {
+    for(int i = keys->size - 1; i >= 0; i--) {
+        hashTable_remove(symbolTable, list_get(keys, i));
+        list_pop(keys);
+    }
+
+    //printf("Exit block\n");
+    //hashTable_display(symbolTable);
+}
+
+void utils_addVarSymbolTable(HashTable *symbolTable, char *type, char *varName, char *key) {
+    Tuple *tuple = tuple_create(varName, type); 
+    hashTable_insert(symbolTable, key, tuple);
 }
 
 #endif
