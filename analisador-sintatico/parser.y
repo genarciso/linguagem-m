@@ -30,7 +30,7 @@ HashTable *symbolTable;
 
 %start PROGRAM
 
-%type <sValue> DECLS_STM_LIST DECLS DECL IDS STM_LIST STM ASSINGMENT WHILE_STM FOR_STM IF_STM BLOCK INITIALIZATION INCREMENT LOOP_STM
+%type <sValue> DECLS_STM_LIST DECLS DECL IDS STM_LIST STM ASSINGMENT WHILE_STM FOR_STM IF_STM_CPL IF_STM BLOCK INITIALIZATION UNARY_OP INCREMENT LOOP_STM DECREMENT ELSE_IF_STM ELSE_STM ELSE_IF_STM_LIST
 %type <lValue> TERM ARIT_EXPR LOG_EXPR EXPR 
 
 %%
@@ -90,9 +90,9 @@ DECL : TYPE IDS SEMICOLON {
 
           free(idscpy);
 
-          int size = strlen($1) + strlen($3) + 2;
+          int size = strlen($1) + strlen($3) + 3;
           char * s = malloc(sizeof(char) * size);
-          sprintf(s, "%s %s", $1, $2);
+          sprintf(s, "%s %s;", $1, $2);
           free($2);
           $$ = s;
      }
@@ -127,7 +127,7 @@ STM_LIST : STM           {$$ = $1;}
          ;
 
 STM : 
-       IF_STM
+       IF_STM_CPL
      | ASSINGMENT SEMICOLON {
           int size = strlen($1) + 2;
           char * s = malloc(sizeof(char) * size);
@@ -135,7 +135,7 @@ STM :
           $$ = s;
           free($1);
      }
-     | INCREMENT SEMICOLON {
+     | UNARY_OP SEMICOLON {
           int size = strlen($1) + 2;
           char * s = malloc(sizeof(char) * size);
           sprintf(s, "%s;", $1);
@@ -193,10 +193,74 @@ INITIALIZATION :
           }
           ;
 
+IF_STM_CPL : 
+       IF_STM {$$ = $1;}
+     |
+       IF_STM ELSE_IF_STM_LIST {
+          int size = strlen($1) + strlen($2) + 2;
+          char * s = malloc(sizeof(char) * size);
+          sprintf(s, "%s %s", $1, $2);
+          free($1);
+          free($2);
+          $$ = s;
+     }
+     | IF_STM ELSE_IF_STM_LIST ELSE_STM {
+          int size = strlen($1) + strlen($2) + strlen($3) + 2;
+          char * s = malloc(sizeof(char) * size);
+          sprintf(s, "%s %s %s", $1, $2, $3);
+          free($1);
+          free($2);
+          free($3);
+          $$ = s;
+     }
+     | IF_STM ELSE_STM {
+          int size = strlen($1) + strlen($2) + 2;
+          char * s = malloc(sizeof(char) * size);
+          sprintf(s, "%s %s", $1, $2);
+          free($1);
+          free($2);
+          $$ = s;
+     }
+     ;
+
 IF_STM : IF L_PARENTHESIS LOG_EXPR R_PARENTHESIS BLOCK {
           int size = strlen($3->value) + strlen($5) + 6;
           char * s = malloc(sizeof(char) * size);
-          sprintf(s, "if(%s) %s\n", $3->value, $5);
+          sprintf(s, "if(%s) %s", $3->value, $5);
+          $$ = s;
+     }
+     ;
+
+ELSE_IF_STM_LIST : 
+                   ELSE_IF_STM {$$ = $1;}
+                 | ELSE_IF_STM ELSE_IF_STM_LIST {
+                    int size = strlen($1) + strlen($2) + 2;
+                    char * s = malloc(sizeof(char) * size);
+                    sprintf(s, "%s %s", $1, $2);
+                    free($1);
+                    free($2);
+                    $$ = s;
+                 }
+                 ;
+
+
+ELSE_IF_STM :
+            ELSE_IF L_PARENTHESIS LOG_EXPR R_PARENTHESIS BLOCK {
+               int size = strlen($3->value) + strlen($5) + 11;
+               char * s = malloc(sizeof(char) * size);
+               sprintf(s, "else if(%s) %s", $3->value, $5);
+               //free($3);
+               //free($5);
+               $$ = s;
+          }
+          ;
+
+ELSE_STM : ELSE BLOCK {
+          int size = strlen($2) + 6;
+          char * s = malloc(sizeof(char) * size);
+          sprintf(s, "else %s", $2);
+          //free($1);
+          //free($2);
           $$ = s;
      }
      ;
@@ -210,7 +274,7 @@ WHILE_STM : WHILE L_PARENTHESIS LOG_EXPR R_PARENTHESIS BLOCK {
      }
      ;
 
-FOR_STM: FOR L_PARENTHESIS INITIALIZATION SEMICOLON LOG_EXPR SEMICOLON INCREMENT R_PARENTHESIS BLOCK {
+FOR_STM: FOR L_PARENTHESIS INITIALIZATION SEMICOLON LOG_EXPR SEMICOLON UNARY_OP R_PARENTHESIS BLOCK {
                int size = strlen($3) + strlen($5->value) + strlen($7)  + strlen($9) + 13;
                char * s = malloc(sizeof(char) * size);
                sprintf(s, "for(%s;%s;%s) %s\n", $3, $5->value, $7, $9);
@@ -221,6 +285,22 @@ FOR_STM: FOR L_PARENTHESIS INITIALIZATION SEMICOLON LOG_EXPR SEMICOLON INCREMENT
                $$ = s;
           }
        ;
+
+BLOCK : L_KEY {scope++;} DECLS_STM_LIST R_KEY {
+          //hashTable_display(symbolTable);
+          utils_removeVarScope(symbolTable, varNamesScope[scope]);
+          int size = strlen($3) + 5;
+          char * s = malloc(sizeof(char) * size);
+          sprintf(s, "{\n%s\n}", $3);
+          //free($3);
+          $$ = s;
+          scope--;
+     }
+     ;
+
+UNARY_OP: INCREMENT {$$ = $1;}
+        | DECREMENT {$$ = $1;}
+        ;
 
 INCREMENT : ID INC_OP {
                Tuple *var = utils_findVar(symbolTable, $1, scope);
@@ -241,17 +321,24 @@ INCREMENT : ID INC_OP {
           }
           ;
 
-BLOCK : L_KEY {scope++;} DECLS_STM_LIST R_KEY {
-          //hashTable_display(symbolTable);
-          utils_removeVarScope(symbolTable, varNamesScope[scope]);
-          int size = strlen($3) + 5;
-          char * s = malloc(sizeof(char) * size);
-          sprintf(s, "{\n%s\n}", $3);
-          //free($3);
-          $$ = s;
-          scope--;
-     }
-     ;
+DECREMENT : ID DEC_OP {
+               Tuple *var = utils_findVar(symbolTable, $1, scope);
+               if(var == NULL) {
+                    printf("variavel %s nao foi declarada\n", $1);
+                    exit(EXIT_FAILURE);
+               }
+
+               if(!(strcmp(var->type, "int") == 0  || strcmp(var->type, "float") == 0 || strcmp(var->type, "double") == 0)) {
+                    printf("operacao -- incompativel com a variavel %s\n", $1);
+                    exit(EXIT_FAILURE);
+               }
+
+               int size = strlen($1) + 3;
+               char * s = malloc(sizeof(char) * size);
+               sprintf(s, "%s--", $1);
+               $$ = s;
+          }
+          ;
 
 EXPR : LOG_EXPR {$$ = $1;}
      | ARIT_EXPR {$$ = $1;}
