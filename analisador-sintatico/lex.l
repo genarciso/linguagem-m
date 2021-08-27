@@ -60,9 +60,9 @@ L  		[a-zA-Z_]
 "**"					{if(!comment) printf("FACT_OP\n");}
 "/"						{if(!comment) printf("DIV_OP\n");}
 "*"						{if(!comment) printf("STAR\n");}
-"++"					{if(!comment) printf("INC_OP\n");}
-"--"					{if(!comment) printf("DEC_OP\n");}
-"="						{if(!comment) return EQUAL;}
+"++"					{if(!comment) return INC_OP;}
+"--"					{if(!comment) return DEC_OP;}
+"="						{if(!comment) return EQUAL_SIGN;}
 "&"						{if(!comment) printf("ADDRESS\n");}
 "&&"					{if(!comment) return AND_OP;}
 "||"					{if(!comment) return OR_OP;}
