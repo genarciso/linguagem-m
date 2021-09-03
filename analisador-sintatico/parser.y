@@ -29,7 +29,8 @@ HashTable *symbolTable;
     char * cValue;  /* char value */
     char * sValue;  /* string value */
     int    bValue;  /* boolean value */
-    int line;
+    int    line;
+    struct StaticInfo * strValue;
 };
 
 %start program
@@ -49,8 +50,9 @@ HashTable *symbolTable;
 %token CONSTANT RETURN EOL ADDRESS SEMICOLON COMMA DOT DOUBLE_DOT
 %token MALLOC_OP FREE_OP CALLOC_OP
 
-%type <sValue> stm stm_list expres_list arit_expr log_expr expr term log_term op_log op_comp comp_expr term_num literal_string if_struct else_struct elseif_list elseif_struct switch_struct case_switch case_list_switch for_struct while_struct loop_stm cond_stm literal_term type par_list par_term fun_struct print_stm 
+%type <sValue> stm stm_list expres_list op_log op_comp if_struct else_struct elseif_list elseif_struct switch_struct case_switch case_list_switch for_struct while_struct loop_stm cond_stm type par_list par_term fun_struct print_stm 
 %type <sValue> id_list decl assingment initialization block
+%type <strValue> term term_num log_term literal_term literal_string expr comp_expr log_expr arit_expr
 
 %left AND_OP OR_OP
 %left GE_OP SE_OP EQ_OP NE_OP G_OP S_OP
@@ -136,16 +138,16 @@ assingment :
                     printf("variavel %s nao foi declarada\n", $1);
                     exit(EXIT_FAILURE);
                }
-               /*
-               if(strcmp(rhsVar->type, $3->type) != 0) {
-                    printf("o tipo da variavel %s (%s) ", $1, rhsVar->type); 
+               
+               if(strcmp(lhsVar->type, $3->type) != 0) {
+                    printf("o tipo da variavel %s (%s) ", $1, lhsVar->type); 
                     printf("e da expressao %s (%s) sao incompativeis\n", $3->value, $3->type); 
                     exit(EXIT_FAILURE);
                }
-              */
-               int size = strlen($1) + strlen($3) + 4;
+              
+               int size = strlen($1) + strlen($3->value) + 4;
                char * s = malloc(sizeof(char) * size);
-               sprintf(s, "%s = %s", $1, $3);
+               sprintf(s, "%s = %s", $1, $3->value);
 
                $$ = s;
           }
@@ -155,47 +157,47 @@ assingment :
 initialization : 
                type IDENTIFIER ASSINGMENT expr {
                char *type = utils_strRemoveSpace($1);
-               /*
+               
                if(strcmp(type, $4->type) != 0) {
                     printf("tipo da variavel %s incompativel com a expressao %s\n", $2, $4->value);
                     exit(EXIT_FAILURE);
                }
-               */
+               
                char *key = utils_strAppendInt($2, scope); 
                utils_addVarSymbolTable(symbolTable, type, $2, key);
                free(type);
                list_add(varNamesScope[scope], key);
 
-               int size = strlen($1) + strlen($2) + strlen($4) + 4;
+               int size = strlen($1) + strlen($2) + strlen($4->value) + 4;
                char * s = malloc(sizeof(char) * size);
-               sprintf(s, "%s %s = %s", $1, $2,$4);
+               sprintf(s, "%s %s = %s", $1, $2,$4->value);
                $$ = s;
 
           }
           ;
 
 print_stm   : PRINT L_PARENTHESIS literal_string R_PARENTHESIS {
-                                                                    int size = 8 + strlen($3);
+                                                                    int size = 8 + strlen($3->value);
                                                                     char * s = malloc(sizeof(char) * size);
-                                                                    sprintf(s, "print(%s)", $3);
+                                                                    sprintf(s, "print(%s)", $3->value);
                                                                     $$ = s; 
                                                                 }
             | PRINT L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS {
-                                                                                int size = 10 + strlen($3) + strlen($5);
+                                                                                int size = 10 + strlen($3->value) + strlen($5);
                                                                                 char * s = malloc(sizeof(char) * size);
-                                                                                sprintf(s, "print(%s, %s)", $3, $5);
+                                                                                sprintf(s, "print(%s, %s)", $3->value, $5);
                                                                                 $$ = s;  
                                                                             }
             | PRINTF L_PARENTHESIS literal_string R_PARENTHESIS {
-                                                                    int size = 9 + strlen($3);
+                                                                    int size = 9 + strlen($3->value);
                                                                     char * s = malloc(sizeof(char) * size);
-                                                                    sprintf(s, "printf(%s)", $3);
+                                                                    sprintf(s, "printf(%s)", $3->value);
                                                                     $$ = s; 
                                                                 }
             | PRINTF L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS {
-                                                                                int size = 11 + strlen($3) + strlen($5);
+                                                                                int size = 11 + strlen($3->value) + strlen($5);
                                                                                 char * s = malloc(sizeof(char) * size);
-                                                                                sprintf(s, "printf(%s, %s)", $3, $5);
+                                                                                sprintf(s, "printf(%s, %s)", $3->value, $5);
                                                                                 $$ = s;  
                                                                             }
             ;
@@ -213,7 +215,8 @@ expres_list : expr SEMICOLON             {}
             | expr SEMICOLON expres_list {}
             ;
 
-expr    : log_expr      { $$ = $1; }
+expr    : log_expr  { $$ = $1; }
+        | arit_expr { $$ = $1; }
         ;
 
 cond_stm: if_struct         {$$ = $1;}
@@ -221,10 +224,17 @@ cond_stm: if_struct         {$$ = $1;}
         ;
 
 if_struct   : IF_STM L_PARENTHESIS log_expr R_PARENTHESIS block else_struct{
-                                                            int size = 7 + strlen($3) + strlen($5) + strlen($6);
-                                                            char * s = malloc(sizeof(char) * size);
-                                                            sprintf(s, "if(%s) %s %s", $3, $5, $6);
-                                                            $$ = s;
+                                                            if(strcmp($6, "e") != 0) {
+                                                                int size = 7 + strlen($3->value) + strlen($5) + strlen($6);
+                                                                char * s = malloc(sizeof(char) * size);
+                                                                sprintf(s, "if(%s) %s %s", $3->value, $5, $6);
+                                                                $$ = s;
+                                                            }else {
+                                                                int size = 7 + strlen($3->value) + strlen($5);
+                                                                char * s = malloc(sizeof(char) * size);
+                                                                sprintf(s, "if(%s) %s", $3->value, $5);
+                                                                $$ = s;
+                                                            }
                                                         }
             ;
 else_struct :   {char * s = malloc(sizeof(char) * 2);
@@ -248,26 +258,33 @@ elseif_list     :  {char * s = malloc(sizeof(char) * 2);
                     sprintf(s, "e");
                     $$ = s;}
                 | elseif_struct elseif_list { 
-                                                int size = 2 + strlen($1) + strlen($2);
-                                                char * s = malloc(sizeof(char) * size);
-                                                sprintf(s, "%s %s", $1, $2);
-                                                $$ = s;
+                                                if(strcmp($2, "e") != 0) {
+                                                    int size = 2 + strlen($1) + strlen($2);
+                                                    char * s = malloc(sizeof(char) * size);
+                                                    sprintf(s, "%s %s", $1, $2);
+                                                    $$ = s;
+                                                }else {
+                                                    int size = 1 + strlen($1);
+                                                    char * s = malloc(sizeof(char) * size);
+                                                    sprintf(s, "%s", $1);
+                                                    $$ = s;
+                                                }
                                             }
                 ;
 
-elseif_struct   : ELSE_IF_STM L_PARENTHESIS log_expr R_PARENTHESIS L_KEY stm_list R_KEY {
-                                    int size = 14 + strlen($3) + strlen($6);
+elseif_struct   : ELSE_IF_STM L_PARENTHESIS log_expr R_PARENTHESIS block {
+                                    int size = 11 + strlen($3->value) + strlen($5);
                                     char * s = malloc(sizeof(char) * size);
-                                    sprintf(s, "\nelseif(%s){\n\t%s}", $3, $6);
-                                    free($6);
+                                    sprintf(s, "\nelseif(%s) %s", $3->value, $5);
+                                    free($5);
                                     $$ = s;
                                 }
                 ;
 
 switch_struct   : SWITCH_STM L_PARENTHESIS literal_term R_PARENTHESIS L_KEY case_list_switch DEFAULT DOUBLE_DOT stm_list BREAK SEMICOLON R_KEY      {
-                                        int size = 34 + strlen($3) + strlen($6) + strlen($9);
+                                        int size = 34 + strlen($3->value) + strlen($6) + strlen($9);
                                         char * s = malloc(sizeof(char) * size);
-                                        sprintf(s, "switch(%s) {\n\t%s\n\tdefault: %s\nbreak;\n}", $3, $6, $9);
+                                        sprintf(s, "switch(%s) {\n\t%s\n\tdefault: %s\nbreak;\n}", $3->value, $6, $9);
                                         free($6);
                                         free($9);
                                         $$ = s;
@@ -284,9 +301,9 @@ case_list_switch: {}
                 ;
 
 case_switch: CASE literal_term DOUBLE_DOT stm_list BREAK SEMICOLON {
-                                                                        int size = 17 + strlen($2) + strlen($4);
+                                                                        int size = 17 + strlen($2->value) + strlen($4);
                                                                         char * s = malloc(sizeof(char) * size);
-                                                                        sprintf(s, "case %s:\n\t%s\nbreak;\n", $2, $4);
+                                                                        sprintf(s, "case %s:\n\t%s\nbreak;\n", $2->value, $4);
                                                                         free($4);
                                                                         $$ = s;
                                                                     }       
@@ -311,7 +328,7 @@ block : L_KEY {scope++;} stm_list R_KEY {
           int size = strlen($3) + 5;
           char * s = malloc(sizeof(char) * size);
           sprintf(s, "{\n%s\n}", $3);
-          //free($3);
+          free($3);
           $$ = s;
           scope--;
      }
@@ -348,109 +365,130 @@ par_term: type IDENTIFIER   {
 
 arit_expr   : term {$$ = $1;}
             | L_PARENTHESIS arit_expr R_PARENTHESIS     { 
-                                                            int size = 3 + strlen($2);
+                                                            if(!utils_isANumberType($2->type)) {
+                                                                printf("Erro: operacao + so pode ser usada para tipos numericos \n");
+                                                                exit(EXIT_FAILURE);
+                                                            }
+
+                                                            int size = 3 + strlen($2->value);
                                                             char * s = malloc(sizeof(char) * size);
-                                                            sprintf(s, "(%s)", $2);
-                                                            $$ = s;
+                                                            sprintf(s, "(%s)", $2->value);
+                                                            $$ = utils_createStaticInfo(s, "boolean");
+                                                            free(s);
                                                         }
             | arit_expr PLUS_OP term                    { 
-                                                            int size = 4 + strlen($1) + strlen($3);
+                                                            if(!utils_isANumberType($1->type) || !utils_isANumberType($3->type)) {
+                                                                printf("Erro: operacao + so pode ser usada para tipos numericos \n");
+                                                                exit(EXIT_FAILURE);
+                                                            }
+
+                                                            int size = 4 + strlen($1->value) + strlen($3->value);
                                                             char * s = malloc(sizeof(char) * size);
-                                                            sprintf(s, "%s + %s", $1, $3);
-                                                            $$ = s;
+                                                            sprintf(s, "%s + %s", $1->value, $3->value);
+                                                            $$ = utils_createStaticInfo(s, utils_convertType($1->type, $3->type));
+                                                            free(s);
                                                         }
-            | arit_expr SUB_OP term                     { 
-                                                            int size = 4 + strlen($1) + strlen($3);
+            | arit_expr SUB_OP term                     {
+                                                            if(!utils_isANumberType($1->type) || !utils_isANumberType($3->type)) {
+                                                                printf("Erro: operacao - so pode ser usada para tipos numericos \n");
+                                                                exit(EXIT_FAILURE);
+                                                            }
+
+                                                            int size = 4 + strlen($1->value) + strlen($3->value);
                                                             char * s = malloc(sizeof(char) * size);
-                                                            sprintf(s, "%s - %s", $1, $3);
-                                                            $$ = s;
+                                                            sprintf(s, "%s - %s", $1->value, $3->value);
+                                                            $$ = utils_createStaticInfo(s, utils_convertType($1->type, $3->type));
+                                                            free(s);
                                                         }
             | arit_expr DIV_OP term                     { 
-                                                            int size = 4 + strlen($1) + strlen($3);
+                                                            if(!utils_isANumberType($1->type) || !utils_isANumberType($3->type)) {
+                                                                printf("Erro: operacao / so pode ser usada para tipos numericos \n");
+                                                                exit(EXIT_FAILURE);
+                                                            }
+
+                                                            int size = 4 + strlen($1->value) + strlen($3->value);
                                                             char * s = malloc(sizeof(char) * size);
-                                                            sprintf(s, "%s / %s", $1, $3);
-                                                            $$ = s;
+                                                            sprintf(s, "%s / %s", $1->value, $3->value);
+                                                            $$ = utils_createStaticInfo(s, utils_convertType($1->type, $3->type));
+                                                            free(s);
                                                         }
             | arit_expr STAR term                       { 
-                                                            int size = 4 + strlen($1) + strlen($3);
+                                                            if(!utils_isANumberType($1->type) || !utils_isANumberType($3->type)) {
+                                                                printf("Erro: operacao * so pode ser usada para tipos numericos \n");
+                                                                exit(EXIT_FAILURE);
+                                                            }
+
+                                                            int size = 4 + strlen($1->value) + strlen($3->value);
                                                             char * s = malloc(sizeof(char) * size);
-                                                            sprintf(s, "%s * %s", $1, $3);
-                                                            $$ = s;
+                                                            sprintf(s, "%s * %s", $1->value, $3->value);
+                                                            $$ = utils_createStaticInfo(s, utils_convertType($1->type, $3->type));
+                                                            free(s);
                                                         }
             | arit_expr MOD_OP term                     { 
-                                                            int size = 4 + strlen($1) + strlen($3);
+                                                            if(!utils_isANumberType($1->type) || !utils_isANumberType($3->type)) {
+                                                                printf("Erro: operacao %s so pode ser usada para tipos numericos \n", "%");
+                                                                exit(EXIT_FAILURE);
+                                                            }
+
+                                                            int size = 4 + strlen($1->value) + strlen($3->value);
                                                             char * s = malloc(sizeof(char) * size);
-                                                            sprintf(s, "%s %s %s", $1, "%", $3);
-                                                            $$ = s;
+                                                            sprintf(s, "%s %s %s", $1->value, "%", $3->value);
+                                                            $$ = utils_createStaticInfo(s, utils_convertType($1->type, $3->type));
+                                                            free(s);
                                                         }
             | arit_expr INC_OP                          { 
-                                                            int size = 3 + strlen($1);
+                                                            int size = 3 + strlen($1->value);
                                                             char * s = malloc(sizeof(char) * size);
-                                                            sprintf(s, "%s++", $1);
-                                                            $$ = s;
+                                                            sprintf(s, "%s++", $1->value);
+                                                            $$ = utils_createStaticInfo(s, "boolean");
+                                                            free(s);
                                                         }
             | arit_expr DEC_OP                          { 
-                                                            int size = 3 + strlen($1);
+                                                            int size = 3 + strlen($1->value);
                                                             char * s = malloc(sizeof(char) * size);
-                                                            sprintf(s, "%s--", $1);
-                                                            $$ = s;
+                                                            sprintf(s, "%s--", $1->value);
+                                                            $$ = utils_createStaticInfo(s, "boolean");
+                                                            free(s);
                                                         }
-            ;
-
-
-comp_expr   : term                                  {$$ = $1;}
-            | comp_expr op_comp arit_expr           { 
-                                                        int size = 3 + strlen($1) + strlen($2) + strlen($3);
-                                                        char * s = malloc(sizeof(char) * size);
-                                                        sprintf(s, "%s %s %s", $1, $2, $3);
-                                                        $$ = s;
-                                                    }
-            | literal_string EQ_OP literal_string   {$1 == $3;}
-            | literal_string NE_OP literal_string   {$1 != $3;}
             ;
 
 log_expr: comp_expr                            {$$ = $1;}
-        | L_PARENTHESIS log_expr R_PARENTHESIS { 
-                                                    int size = 3 + strlen($2);
+        | L_PARENTHESIS log_expr R_PARENTHESIS {    
+                                                    if(strcmp($2->type, "boolean")) {
+                                                        printf("Erro: expresao nao boolean < %s > \n", $2->value);
+                                                        exit(EXIT_FAILURE);
+                                                    }
+
+                                                    int size = 3 + strlen($2->value);
                                                     char * s = malloc(sizeof(char) * size);
-                                                    sprintf(s, "(%s)", $2);
-                                                    $$ = s;
+                                                    sprintf(s, "(%s)", $2->value);
+                                                    $$ = utils_createStaticInfo(s, "boolean");
                                                 }
         | log_expr op_log comp_expr            { 
-                                                    int size = 3 + strlen($1) + strlen($2) + strlen($3);
+                                                    int size = 3 + strlen($1->value) + strlen($2) + strlen($3->value);
                                                     char * s = malloc(sizeof(char) * size);
-                                                    sprintf(s, "%s %s %s", $1, $2, $3);
-                                                    $$ = s;
+                                                    sprintf(s, "%s %s %s", $1->value, $2, $3->value);
+                                                    $$ = utils_createStaticInfo(s, "boolean");
                                                 }
 
         ;
 
-term_num        : LITERAL_INT           { 
-                                            char * s = malloc(sizeof(int));
-                                            sprintf(s, "%d", $1);
-                                            $$ = s;
-                                        }
-                | LITERAL_FLOAT         { 
-                                            char * s = malloc(sizeof(float));
-                                            sprintf(s, "%f", $1);
-                                            $$ = s;
-                                        }
-                | LITERAL_DOUBLE        { 
-                                            char * s = malloc(sizeof(double));
-                                            sprintf(s, "%f", $1);
-                                            $$ = s;
-                                        }
+comp_expr : arit_expr                                  {$$ = $1;}
+          | comp_expr op_comp arit_expr         { 
+                                                     if(!utils_isANumberType($1->type) || !utils_isANumberType($3->type)) {
+                                                        printf("Erro: operacao %s so pode ser usada para tipos numericos \n", $2);
+                                                        exit(EXIT_FAILURE);
+                                                    }
 
-literal_string  : LITERAL_CHAR          {$$ = strdup($1);}
-                | LITERAL_STRING        {$$ = strdup($1);}
-                ;
-
-term    : term_num      {$$ = $1;}
-        | IDENTIFIER    {$$ = $1;}
-        | log_term      {$$ = $1;}
-
-literal_term    : term                  {$$ = $1;}
-                | literal_string        {$$ = $1;}
+                                                    int size = 3 + strlen($1->value) + strlen($2) + strlen($3->value);
+                                                    char * s = malloc(sizeof(char) * size);
+                                                    sprintf(s, "%s %s %s", $1->value, $2, $3->value);
+                                                    $$ = utils_createStaticInfo(s, "boolean");
+                                                    free(s);
+                                                }
+          | literal_string EQ_OP literal_string   {$1 == $3;}
+          | literal_string NE_OP literal_string   {$1 != $3;}
+          ;
 
 op_log  : AND_OP    {$$ = strdup("&&");}
         | OR_OP     {$$ = strdup("||");}
@@ -465,18 +503,60 @@ op_comp : SE_OP     {$$ = strdup("<=") ;}
         | NE_OP     {$$ = strdup("!=") ;}
         ;
 
+term    : term_num      {$$ = $1;}
+        | log_term      {$$ = $1;}
+        | IDENTIFIER    {
+                            Tuple *lhsVar = utils_findVar(symbolTable, $1, scope);
+                            if(lhsVar == NULL) {
+                                    printf("variavel %s nao foi declarada\n", $1);
+                                    exit(EXIT_FAILURE);
+                            }
+                            StaticInfo *aux = utils_createStaticInfo($1, lhsVar->type); 
+                            tuple_freeTuple(lhsVar);
+                            $$ = aux;
+                        }
+        ;
+
+term_num : LITERAL_INT           { 
+                                    char * s = malloc(sizeof(int));
+                                    sprintf(s, "%d", $1);
+                                    $$ = utils_createStaticInfo(s, "int");
+                                    free(s); 
+                                }
+         | LITERAL_FLOAT         { 
+                                    char * s = malloc(sizeof(float));
+                                    sprintf(s, "%f", $1);
+                                    $$ = utils_createStaticInfo(s, "float");
+                                    free(s); 
+                                }
+         | LITERAL_DOUBLE        { 
+                                    char * s = malloc(sizeof(double));
+                                    sprintf(s, "%f", $1);
+                                    $$ = utils_createStaticInfo(s, "double");
+                                    free(s); 
+                                }
 
 log_term : TRUE_VAL     { 
                             char * s = malloc(sizeof(int));
                             sprintf(s, "%d", $1);
-                            $$ = s;
+                            $$ = utils_createStaticInfo(s, "boolean");
+                            free(s);
                         }
-         | FALSE_VAL    { 
+         | FALSE_VAL    {   
                             char * s = malloc(sizeof(int));
                             sprintf(s, "%d", $1);
-                            $$ = s;
+                            $$ = utils_createStaticInfo(s, "boolean");
+                            free(s); 
                         }
          ;
+
+literal_term    : term                  {$$ = $1;}
+                | literal_string        {$$ = $1;}
+
+literal_string  : LITERAL_CHAR          { $$ = utils_createStaticInfo($1, "char"); }
+                | LITERAL_STRING        { $$ = utils_createStaticInfo($1, "string"); }
+                ;
+
 %%
 
 void yyerror (char *msg) {

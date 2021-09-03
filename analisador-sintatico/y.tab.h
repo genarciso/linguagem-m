@@ -193,9 +193,10 @@ union YYSTYPE
     char * cValue;  /* char value */
     char * sValue;  /* string value */
     int    bValue;  /* boolean value */
-    int line;
+    int    line;
+    struct StaticInfo * strValue;
 
-#line 199 "y.tab.h"
+#line 200 "y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

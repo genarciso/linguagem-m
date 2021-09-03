@@ -1,7 +1,5 @@
-int x;
+int y, x;
 
-if(true) {
+if(y < x) {
 	int x = 1;	
-}else{
-	x = 0;
 };
