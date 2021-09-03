@@ -3,13 +3,22 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
+#include "../estrutura-de-dados/hashTable.h"
+#include "../estrutura-de-dados/list.h"
+#include "../estrutura-de-dados/tuple.h"
+#include "../estrutura-de-dados/utils.h"
 
 void yyerror(char *msg);
 int yylex(void);
 extern int yylineno;
 extern char * yytext;
 
-typedef enum { false = 0, true = !false } bool;
+int scope = 0;
+List **varNamesScope;
+HashTable *symbolTable;
+
+//typedef enum { false = 0, true = !false } bool;
 
 %}
 
@@ -20,6 +29,7 @@ typedef enum { false = 0, true = !false } bool;
     char * cValue;  /* char value */
     char * sValue;  /* string value */
     int    bValue;  /* boolean value */
+    int line;
 };
 
 %start program
@@ -39,8 +49,8 @@ typedef enum { false = 0, true = !false } bool;
 %token CONSTANT RETURN EOL ADDRESS SEMICOLON COMMA DOT DOUBLE_DOT
 %token MALLOC_OP FREE_OP CALLOC_OP
 
-%type <sValue> stm stm_list expres_list arit_expr log_expr expr term log_term op_log op_comp comp_expr term_num literal_string if_struct else_struct elseif_list elseif_struct switch_struct case_switch case_list_switch for_struct while_struct loop_stm cond_stm literal_term type par_list par_term fun_struct print_stm var_list decl_list
-
+%type <sValue> stm stm_list expres_list arit_expr log_expr expr term log_term op_log op_comp comp_expr term_num literal_string if_struct else_struct elseif_list elseif_struct switch_struct case_switch case_list_switch for_struct while_struct loop_stm cond_stm literal_term type par_list par_term fun_struct print_stm 
+%type <sValue> id_list decl assingment initialization block
 
 %left AND_OP OR_OP
 %left GE_OP SE_OP EQ_OP NE_OP G_OP S_OP
@@ -49,13 +59,21 @@ typedef enum { false = 0, true = !false } bool;
 %right FACT_OP MOD_OP
 
 %%
-
+/*
 program : stm_list EOL  {
                             printf("%s", $1);
                             printf("\nClosing application... Bye...\n");
                             free($1);
                         }
         ; 
+*/
+
+program : stm_list  {
+                            printf("%s", $1);
+                            printf("\nClosing application... Bye...\n");
+                            free($1);
+                        }
+        ;
 
 stm_list    : stm SEMICOLON                {
                                             int size = strlen($1) + 2;
@@ -74,15 +92,87 @@ stm_list    : stm SEMICOLON                {
                                         }
             ;
 
-stm : decl_list     {$$ = $1;} // TO DO: FAZER A ESTRUTURA DE DECLARAÇÔES
-    | cond_stm      {$$ = $1;}
-    | loop_stm      {$$ = $1;}
-    | fun_struct    {$$ = $1;}
-    | print_stm     {$$ = $1;}
-    | expres_list   {$$ = $1;}
+stm : decl           {$$ = $1;} // TO DO: FAZER A ESTRUTURA DE DECLARAÇÔES
+    | cond_stm       {$$ = $1;}
+    | loop_stm       {$$ = $1;}
+    | fun_struct     {$$ = $1;}
+    | print_stm      {$$ = $1;}
+    | expres_list    {$$ = $1;}
+    | assingment     {$$ = $1;}
+    | initialization {$$ = $1;}
     ;
 
-decl_list   : {}
+decl : type id_list {
+            char *key, *varName, *type;
+            char *idscpy = malloc(strlen($2) * sizeof(char));
+
+            strcpy(idscpy, $2);
+            varName = strtok(idscpy, ",");
+            while (varName != NULL) {
+                type = utils_strRemoveSpace($1);
+                key = utils_strAppendInt(varName, scope); 
+                Tuple *result = hashTable_find(symbolTable, key);
+                if(result != NULL) {printf("variavel %s ja declarada\n", varName); exit(EXIT_FAILURE);}
+                utils_addVarSymbolTable(symbolTable, type, varName, key);
+                free(type);
+                list_add(varNamesScope[scope], key);
+                varName = strtok(NULL, ",");
+            }
+
+            free(idscpy);
+
+            int size = strlen($1) + strlen($2) + 2;
+            char * s = malloc(sizeof(char) * size);
+            sprintf(s, "%s %s", $1, $2);
+            free($2);
+            $$ = s;
+        }
+       ;
+
+assingment : 
+               IDENTIFIER ASSINGMENT expr {    
+               Tuple *lhsVar = utils_findVar(symbolTable, $1, scope);
+               if(lhsVar == NULL) {
+                    printf("variavel %s nao foi declarada\n", $1);
+                    exit(EXIT_FAILURE);
+               }
+               /*
+               if(strcmp(rhsVar->type, $3->type) != 0) {
+                    printf("o tipo da variavel %s (%s) ", $1, rhsVar->type); 
+                    printf("e da expressao %s (%s) sao incompativeis\n", $3->value, $3->type); 
+                    exit(EXIT_FAILURE);
+               }
+              */
+               int size = strlen($1) + strlen($3) + 4;
+               char * s = malloc(sizeof(char) * size);
+               sprintf(s, "%s = %s", $1, $3);
+
+               $$ = s;
+          }
+          ;
+
+
+initialization : 
+               type IDENTIFIER ASSINGMENT expr {
+               char *type = utils_strRemoveSpace($1);
+               /*
+               if(strcmp(type, $4->type) != 0) {
+                    printf("tipo da variavel %s incompativel com a expressao %s\n", $2, $4->value);
+                    exit(EXIT_FAILURE);
+               }
+               */
+               char *key = utils_strAppendInt($2, scope); 
+               utils_addVarSymbolTable(symbolTable, type, $2, key);
+               free(type);
+               list_add(varNamesScope[scope], key);
+
+               int size = strlen($1) + strlen($2) + strlen($4) + 4;
+               char * s = malloc(sizeof(char) * size);
+               sprintf(s, "%s %s = %s", $1, $2,$4);
+               $$ = s;
+
+          }
+          ;
 
 print_stm   : PRINT L_PARENTHESIS literal_string R_PARENTHESIS {
                                                                     int size = 8 + strlen($3);
@@ -90,7 +180,7 @@ print_stm   : PRINT L_PARENTHESIS literal_string R_PARENTHESIS {
                                                                     sprintf(s, "print(%s)", $3);
                                                                     $$ = s; 
                                                                 }
-            | PRINT L_PARENTHESIS literal_string COMMA var_list R_PARENTHESIS {
+            | PRINT L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS {
                                                                                 int size = 10 + strlen($3) + strlen($5);
                                                                                 char * s = malloc(sizeof(char) * size);
                                                                                 sprintf(s, "print(%s, %s)", $3, $5);
@@ -102,7 +192,7 @@ print_stm   : PRINT L_PARENTHESIS literal_string R_PARENTHESIS {
                                                                     sprintf(s, "printf(%s)", $3);
                                                                     $$ = s; 
                                                                 }
-            | PRINTF L_PARENTHESIS literal_string COMMA var_list R_PARENTHESIS {
+            | PRINTF L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS {
                                                                                 int size = 11 + strlen($3) + strlen($5);
                                                                                 char * s = malloc(sizeof(char) * size);
                                                                                 sprintf(s, "printf(%s, %s)", $3, $5);
@@ -110,8 +200,8 @@ print_stm   : PRINT L_PARENTHESIS literal_string R_PARENTHESIS {
                                                                             }
             ;
 
-var_list: IDENTIFIER                {$$ = $1;}
-        | IDENTIFIER COMMA var_list { 
+id_list : IDENTIFIER                {$$ = $1;}
+        | IDENTIFIER COMMA id_list { 
                                         int size = 2 + strlen($1) + strlen($3);
                                         char * s = malloc(sizeof(char) * size);
                                         sprintf(s, "%s,%s", $1, $3);
@@ -130,22 +220,33 @@ cond_stm: if_struct         {$$ = $1;}
         | switch_struct     {$$ = $1;}
         ;
 
-if_struct   : IF_STM L_PARENTHESIS log_expr R_PARENTHESIS L_KEY stm_list R_KEY else_struct {
-                                                            int size = 10 + strlen($3) + strlen($6);
+if_struct   : IF_STM L_PARENTHESIS log_expr R_PARENTHESIS block else_struct{
+                                                            int size = 7 + strlen($3) + strlen($5) + strlen($6);
                                                             char * s = malloc(sizeof(char) * size);
-                                                            sprintf(s, "if(%s){\n\t%s} %s", $3, $6, $8);
+                                                            sprintf(s, "if(%s) %s %s", $3, $5, $6);
                                                             $$ = s;
                                                         }
             ;
-else_struct :   {}
-            | elseif_list ELSE_STM L_KEY stm_list R_KEY {
-                                                int size = 10 + strlen($1) + strlen($4);
-                                                char * s = malloc(sizeof(char) * size);
-                                                sprintf(s, "%s\nelse{\n\t%s}", $1, $4);
-                                                $$ = s;
+else_struct :   {char * s = malloc(sizeof(char) * 2);
+                 sprintf(s, "e");
+                 $$ = s;}
+            | elseif_list ELSE_STM block {
+                                                if(strcmp($1, "e") != 0) {
+                                                    int size = 7 + strlen($1) + strlen($3);
+                                                    char * s = malloc(sizeof(char) * size);
+                                                    sprintf(s, "%s\nelse %s", $1, $3);
+                                                    $$ = s;
+                                                }else {
+                                                    int size = 7 + strlen($3);
+                                                    char * s = malloc(sizeof(char) * size);
+                                                    sprintf(s, "\nelse %s", $3);
+                                                    $$ = s;
+                                                }
                                             }
             ;
-elseif_list     : {}
+elseif_list     :  {char * s = malloc(sizeof(char) * 2);
+                    sprintf(s, "e");
+                    $$ = s;}
                 | elseif_struct elseif_list { 
                                                 int size = 2 + strlen($1) + strlen($2);
                                                 char * s = malloc(sizeof(char) * size);
@@ -204,6 +305,17 @@ for_struct  : FOR_STM L_PARENTHESIS SEMICOLON log_expr SEMICOLON R_PARENTHESIS L
             ;
 
 fun_struct  : type IDENTIFIER L_PARENTHESIS par_list R_PARENTHESIS L_KEY stm_list R_KEY
+
+block : L_KEY {scope++;} stm_list R_KEY {
+          utils_removeVarScope(symbolTable, varNamesScope[scope]);
+          int size = strlen($3) + 5;
+          char * s = malloc(sizeof(char) * size);
+          sprintf(s, "{\n%s\n}", $3);
+          //free($3);
+          $$ = s;
+          scope--;
+     }
+     ;
 
 type: VOID_TYPE     {$$ = $1;}
     | INT_TYPE      {$$ = $1;}
@@ -368,9 +480,17 @@ log_term : TRUE_VAL     {
 %%
 
 void yyerror (char *msg) {
-        fprintf (stderr, "Erro na linha %d: %s em '%s'\n", yylineno, msg, yytext);
+        fprintf (stderr, "Erro na linha %d: %s em '%s'\n", yylval.line, msg, yytext);
 }
 
 int main() {
+    symbolTable = hashTable_create(20);
+    varNamesScope = malloc(10 * sizeof(List**));
+
+    for(int i = 0; i < 10; i++) {
+        varNamesScope[i] = list_create(10);
+    }
+
+
     return yyparse();
 }

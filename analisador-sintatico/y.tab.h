@@ -185,7 +185,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 16 "parser.y"
+#line 25 "parser.y"
 
     int    iValue;  /* integer value */
     float  fValue;  /* float value */
@@ -193,8 +193,9 @@ union YYSTYPE
     char * cValue;  /* char value */
     char * sValue;  /* string value */
     int    bValue;  /* boolean value */
+    int line;
 
-#line 198 "y.tab.h"
+#line 199 "y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

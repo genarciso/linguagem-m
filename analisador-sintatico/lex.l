@@ -13,6 +13,12 @@
   void lexical_error(char* yytext) {
       fprintf(stderr, "Erro lexico na linha %d: %s\n", linha, yytext);
   }
+
+/*  
+\n                      {linha++;
+                         return EOL;
+                        }
+*/
 %}
 
 D       [0-9]
@@ -22,9 +28,9 @@ L       [a-zA-Z_]
 
 "/*"                    {comment = 1;}
 "*/"                    {comment = 0;}
-"//"(.)*\n              {}  
+"//"(.)*\n              {}
 \n                      {linha++;
-                         return EOL;
+                          yylval.line = linha;
                         }
 [" " | \t]              {}
 \(                      { if(!comment) return L_PARENTHESIS; }
@@ -49,42 +55,42 @@ L       [a-zA-Z_]
 "free"                  { if(!comment) return FREE_OP; }
 "print"                 { if(!comment) return PRINT;}
 "printf"                { if(!comment) return PRINTF;}
-"int\ "                 { if(!comment) { 
+"int"                 { if(!comment) { 
                             yylval.sValue = strdup(yytext);
                             return INT_TYPE; 
                           }
                         }
-"float\ "               { if(!comment) {
+"float"               { if(!comment) {
                             yylval.sValue = strdup(yytext);
                             return FLOAT_TYPE; 
                           }
                         }
-"double\ "              { if(!comment) {
+"double"              { if(!comment) {
                             yylval.sValue = strdup(yytext);
                             return DOUBLE_TYPE; 
                           }
                         }
-"char\ "                { if(!comment) {
+"char"                { if(!comment) {
                             yylval.sValue = strdup(yytext);
                             return CHAR_TYPE; 
                           }
                         }
-"string\ "              { if(!comment) {
+"string"              { if(!comment) {
                             yylval.sValue = strdup(yytext);
                             return STRING_TYPE; 
                           }
                         }
-"boolean\ "             { if(!comment) {
+"boolean"             { if(!comment) {
                             yylval.sValue = strdup(yytext);
                             return BOOLEAN_TYPE; 
                           }
                         }
-"matriz\ "              { if(!comment) { 
+"matriz"              { if(!comment) { 
                             yylval.sValue = strdup(yytext);
                             return MATRIZ_TYPE; 
                           }
                         }
-"void\ "                { if(!comment) {
+"void"                { if(!comment) {
                             yylval.sValue = strdup(yytext);
                             return VOID_TYPE; 
                           }
