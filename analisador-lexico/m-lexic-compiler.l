@@ -52,6 +52,8 @@ L  		[a-zA-Z_]
 "return"[" "|";"]		{if(!comment) printf("RETURN\n");}
 "true"					{if(!comment) printf("TRUE_VAL\n");}
 "false"					{if(!comment) printf("FALSE_VAL\n");}
+"print"                 { if(!comment) printf("PRINT\n");}
+"printf"                { if(!comment) printf("PRINTF\n");}
 {L}({L}|{D})* 			{if(!comment) printf("IDENTIFIER\n");}
 "+"						{if(!comment) printf("PLUS_OP\n");}
 "-"						{if(!comment) printf("SUB_OP\n");}

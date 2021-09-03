@@ -1,6 +1,4 @@
-#include <stdio.h>
-
-int main(string args) {
+int main (string args) {
 	int a, b, c = 10;
 	int f;
 	int &ATESTADO = f + c;
