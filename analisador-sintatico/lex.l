@@ -1,18 +1,18 @@
 
 %{
 	#include <stdio.h>
-    #include <stdlib.h>
-    #include <string.h>
-    #include <ctype.h>
-    #include "y.tab.h"
+  #include <stdlib.h>
+  #include <string.h>
+  #include <ctype.h>
+  #include "y.tab.h"
     
 
-    int linha = 1;
-    int comment = 0;
+  int linha = 1;
+  int comment = 0;
 
-    void lexical_error(char* yytext) {
-        fprintf(stderr, "Erro lexico na linha %d: %s\n", linha, yytext);
-    }
+  void lexical_error(char* yytext) {
+      fprintf(stderr, "Erro lexico na linha %d: %s\n", linha, yytext);
+  }
 %}
 
 D       [0-9]
@@ -27,7 +27,6 @@ L       [a-zA-Z_]
                          return EOL;
                         }
 [" " | \t]              {}
-("#include")((\ )+|"")("<")((\ )+|"")(.)*(".h")((\ )+|"")(">") { if(!comment) return IMPORTATION PROCESS; }
 \(                      { if(!comment) return L_PARENTHESIS; }
 \)                      { if(!comment) return R_PARENTHESIS; }
 \{                      { if(!comment) return L_KEY; }
@@ -40,9 +39,19 @@ L       [a-zA-Z_]
 "for"                   { if(!comment) return FOR_STM; }
 "do"                    { if(!comment) return DO_STM; }
 "while"                 { if(!comment) return WHILE_STM; }
+"switch"                { if(!comment) return SWITCH_STM; }
+"break"                 { if(!comment) return BREAK; }
+"continue"              { if(!comment) return CONTINUE; }
+"case"                  { if(!comment) return CASE; }
+"default"               { if(!comment) return DEFAULT; }
+"malloc"                { if(!comment) return MALLOC_OP; }
+"calloc"                { if(!comment) return CALLOC_OP; }
+"free"                  { if(!comment) return FREE_OP; }
+"print"                 { if(!comment) return PRINT;}
+"printf"                { if(!comment) return PRINTF;}
 "int\ "                 { if(!comment) { 
                             yylval.sValue = strdup(yytext);
-                            return INT_TYPE; }
+                            return INT_TYPE; 
                           }
                         }
 "float\ "               { if(!comment) {
@@ -53,6 +62,11 @@ L       [a-zA-Z_]
 "double\ "              { if(!comment) {
                             yylval.sValue = strdup(yytext);
                             return DOUBLE_TYPE; 
+                          }
+                        }
+"char\ "                { if(!comment) {
+                            yylval.sValue = strdup(yytext);
+                            return CHAR_TYPE; 
                           }
                         }
 "string\ "              { if(!comment) {
@@ -77,8 +91,16 @@ L       [a-zA-Z_]
                         }
 "const\ "               { if(!comment) return CONSTANT; }
 "return"[" "|";"]       { if(!comment) return RETURN; }
-"true"                  { if(!comment) return TRUE_VAL; }
-"false"                 { if(!comment) return FALSE_VAL; }
+"true"                  { if(!comment) {
+                            yylval.bValue = 1;
+                            return TRUE_VAL;
+                          }
+                        }
+"false"                 { if(!comment) {
+                            yylval.bValue = 0;
+                            return FALSE_VAL; 
+                          }
+                        }
 {L}({L}|{D})*           { if(!comment) {
                             yylval.sValue = strdup(yytext);
                             return IDENTIFIER;
@@ -104,11 +126,9 @@ L       [a-zA-Z_]
 ">"                     { if(!comment) return G_OP; }
 ">="                    { if(!comment) return GE_OP; }
 ";"                     { if(!comment) return SEMICOLON; }
+":"                     { if(!comment) return DOUBLE_DOT; }
 ","                     { if(!comment) return COMMA; }
 "."                     { if(!comment) return DOT; }    
-"malloc\ "              { if(!comment) return MALLOC_OP; }
-"calloc\ "              { if(!comment) return CALLOC_OP; }
-"free"                  { if(!comment) return FREE_OP; }
 [0-9]+                  { if(!comment) { 
                             yylval.iValue = atoi(yytext);
                             return LITERAL_INT;
