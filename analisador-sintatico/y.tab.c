@@ -2297,7 +2297,7 @@ yyreduce:
   case 71:
 #line 477 "parser.y"
                                                 { 
-                                                     if(!utils_isANumberType((yyvsp[-2].strValue)->type) || !utils_isANumberType((yyvsp[0].strValue)->type)) {
+                                                    if(!utils_isANumberType((yyvsp[-2].strValue)->type) || !utils_isANumberType((yyvsp[0].strValue)->type)) {
                                                         printf("Erro: operacao %s so pode ser usada para tipos numericos \n", (yyvsp[-1].sValue));
                                                         exit(EXIT_FAILURE);
                                                     }
@@ -2397,8 +2397,8 @@ yyreduce:
                                     printf("variavel %s nao foi declarada\n", (yyvsp[0].sValue));
                                     exit(EXIT_FAILURE);
                             }
+ 
                             StaticInfo *aux = utils_createStaticInfo((yyvsp[0].sValue), lhsVar->type); 
-                            tuple_freeTuple(lhsVar);
                             (yyval.strValue) = aux;
                         }
 #line 2405 "y.tab.c"

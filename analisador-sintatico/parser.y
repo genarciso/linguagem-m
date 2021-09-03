@@ -475,7 +475,7 @@ log_expr: comp_expr                            {$$ = $1;}
 
 comp_expr : arit_expr                                  {$$ = $1;}
           | comp_expr op_comp arit_expr         { 
-                                                     if(!utils_isANumberType($1->type) || !utils_isANumberType($3->type)) {
+                                                    if(!utils_isANumberType($1->type) || !utils_isANumberType($3->type)) {
                                                         printf("Erro: operacao %s so pode ser usada para tipos numericos \n", $2);
                                                         exit(EXIT_FAILURE);
                                                     }
@@ -511,8 +511,8 @@ term    : term_num      {$$ = $1;}
                                     printf("variavel %s nao foi declarada\n", $1);
                                     exit(EXIT_FAILURE);
                             }
+ 
                             StaticInfo *aux = utils_createStaticInfo($1, lhsVar->type); 
-                            tuple_freeTuple(lhsVar);
                             $$ = aux;
                         }
         ;
