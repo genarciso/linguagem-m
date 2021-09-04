@@ -1,31 +1,23 @@
-for(int i = 0; i < 10; i++) {
+for(int i = 0; i < 10; i = i+1) {
 	int g;
-	i = 100;
-	for(int i = 0; i < 10; i++) {
-		int g;
-		i = 100;
-		for(int i = 0; i < 10; i++) {
-			int g;
-			i = 100;
-		}
-	}
+	printf("%d\n", i);
 }
 
-
-for(int i = 0; i < 10; i++) {
-	int g;
-	i = 100;
-}
-
-while(true) {
+int j = 0;
+while(j < 2) {
 	int x;
-	for(int i = 0; i < 10; i++) {
+	printf("2\n");
+	for(int i = 5; i < 10; i++) {
 		int g;
-		i = 100;
+		printf("%d\n", i);
 	}
+	j++;;
 
 }
 
+int i = 0;
 do{
 	int x;
-}while(true);
+	printf("4\n");
+	i++;;
+}while(i < 3);

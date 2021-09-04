@@ -54,7 +54,7 @@ HashTable *symbolTable;
 
 %type <sValue> stm stm_list expres_list op_log op_comp if_struct else_struct elseif_list elseif_struct switch_struct case_switch case_list_switch for_struct while_struct loop_stm cond_stm type par_list par_term fun_struct print_stm 
 %type <sValue> id_list decl assingment initialization block
-%type <strValue> term term_num log_term literal_term literal_string expr comp_expr log_expr arit_expr arit_expr_base
+%type <strValue> term term_num log_term literal_term literal_string expr comp_expr log_expr arit_expr arit_expr_base for_struct_stm
 
 %left AND_OP OR_OP
 %left GE_OP SE_OP EQ_OP NE_OP G_OP S_OP
@@ -74,7 +74,17 @@ program : stm_list EOL  {
 
 program : stm_list  {
                             printf("%s", $1);
-                            printf("\nClosing application... Bye...\n");
+                            printf("\ncomplete..\n");
+                            
+                            FILE *p;
+                            if (!(p = fopen("final.c","w"))) 
+                            {                         
+                                printf("Erro! Impossivel abrir o arquivo!\n");
+                                exit(1);
+                            }
+                            fprintf(p,"#include <stdlib.h>\n#include <stdio.h>\n\nint main() {\n%s\n}", $1);
+	                        fclose(p);
+
                             free($1);
                         }
         ;
@@ -322,9 +332,9 @@ loop_stm: while_struct      {$$ = $1;}
 
 
 while_struct: WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS block   {
-                    int size = 70 + strlen($3->value) + strlen($5);
+                    int size = 72 + strlen($3->value) + strlen($5);
                     char * s = malloc(sizeof(char) * size);
-                    sprintf(s, "{\nloopStart%d: if(!(%s)) goto loopEnd%d;\n%s\ngoto loopStart%d;\nloopEnd%d:\n}", loopCount, $3->value, loopCount, $5, loopCount, loopCount);
+                    sprintf(s, "\n{\nloopStart%d: if(!(%s)) goto loopEnd%d;\n%s\ngoto loopStart%d;\nloopEnd%d:;\n}\n", loopCount, $3->value, loopCount, $5, loopCount, loopCount);
                     loopCount++;
                     free($3);
                     free($5);
@@ -332,19 +342,19 @@ while_struct: WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS block   {
 
             }
             | DO_STM block WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS SEMICOLON {
-                int size = 60 + strlen($2) + strlen($5->value);
+                int size = 62 + strlen($2) + strlen($5->value);
                 char * s = malloc(sizeof(char) * size);
-                sprintf(s, "{\nloopStart%d:\n %s \nif(%s) goto loopStart%d;\n}", loopCount, $2, $5->value, loopCount);
+                sprintf(s, "\n{\nloopStart%d:\n%s\nif(%s) goto loopStart%d;\n}\n", loopCount, $2, $5->value, loopCount);
                 free($2);
                 free($5);
                 $$ = s;
             }
             ;
 
-for_struct  : FOR_STM L_PARENTHESIS {scope++;} initialization SEMICOLON log_expr SEMICOLON arit_expr R_PARENTHESIS {scope--;} block {
-                int size = 72 + strlen($4) + strlen($6->value) + strlen($8->value) + strlen($11);
+for_struct  : FOR_STM L_PARENTHESIS {scope++;} initialization SEMICOLON log_expr SEMICOLON for_struct_stm R_PARENTHESIS {scope--;} block {
+                int size = 76 + strlen($4) + strlen($6->value) + strlen($8->value) + strlen($11);
                 char * s = malloc(sizeof(char) * size);
-                sprintf(s, "{\n%s\nloopStart%d: if(!(%s)) goto loopEnd%d;\n%s\n%s\ngoto loopStart%d;\nloopEnd%d:\n}", $4, loopCount, $6->value, loopCount, $11, $8->value, loopCount, loopCount);
+                sprintf(s, "\n{\n%s;\nloopStart%d: if(!(%s)) goto loopEnd%d;\n%s\n%s;\ngoto loopStart%d;\nloopEnd%d:;\n}\n", $4, loopCount, $6->value, loopCount, $11, $8->value, loopCount, loopCount);
                 loopCount++;
                 free($4);
                 free($6);
@@ -353,6 +363,9 @@ for_struct  : FOR_STM L_PARENTHESIS {scope++;} initialization SEMICOLON log_expr
                 $$ = s;
             } 
             ;
+
+for_struct_stm : arit_expr {$$ = $1;}
+               | assingment {$$ = utils_createStaticInfo($1, "null"); }
 
 fun_struct  : type IDENTIFIER L_PARENTHESIS par_list R_PARENTHESIS L_KEY stm_list R_KEY
 
