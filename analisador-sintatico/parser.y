@@ -15,6 +15,8 @@ extern int yylineno;
 extern char * yytext;
 
 int scope = 0;
+unsigned int loopCount = 0;
+unsigned int ifCount = 0;
 List **varNamesScope;
 HashTable *symbolTable;
 
@@ -77,31 +79,31 @@ program : stm_list  {
                         }
         ;
 
-stm_list    : stm SEMICOLON                {
+stm_list    : stm                {
                                             int size = strlen($1) + 2;
                                             char * s = malloc(sizeof(char) * size);
                                             sprintf(s, "%s;", $1);
                                             free($1);
                                             $$ = s;
                                         }
-            | stm SEMICOLON stm_list    {
-                                            int size = strlen($1) + strlen($3) + 3;
+            | stm stm_list    {
+                                            int size = strlen($1) + strlen($2) + 3;
                                             char * s = malloc(sizeof(char) * size);
-                                            sprintf(s, "%s;\n%s", $1, $3);
+                                            sprintf(s, "%s;\n%s", $1, $2);
                                             free($1);
-                                            free($3);
+                                            
                                             $$ = s;
                                         }
             ;
 
-stm : decl           {$$ = $1;}
-    | cond_stm       {$$ = $1;}
-    | loop_stm       {$$ = $1;}
-    | fun_struct     {$$ = $1;}
-    | print_stm      {$$ = $1;}
-    | expres_list    {$$ = $1;}
-    | assingment     {$$ = $1;}
-    | initialization {$$ = $1;}
+stm : decl           SEMICOLON {$$ = $1;}
+    | cond_stm                 {$$ = $1;}
+    | loop_stm                 {$$ = $1;}
+    | fun_struct               {$$ = $1;}
+    | print_stm      SEMICOLON {$$ = $1;}
+    | expres_list    SEMICOLON {$$ = $1;}
+    | assingment     SEMICOLON {$$ = $1;}
+    | initialization SEMICOLON {$$ = $1;}
     ;
 
 decl : type id_list {
@@ -320,18 +322,19 @@ loop_stm: while_struct      {$$ = $1;}
 
 
 while_struct: WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS block   {
-                    int size = 9 + strlen($3->value) + strlen($5);
+                    int size = 70 + strlen($3->value) + strlen($5);
                     char * s = malloc(sizeof(char) * size);
-                    sprintf(s, "while(%s) %s", $3->value, $5);
+                    sprintf(s, "{\nloopStart%d: if(!(%s)) goto loopEnd%d;\n%s\ngoto loopStart%d;\nloopEnd%d:\n}", loopCount, $3->value, loopCount, $5, loopCount, loopCount);
+                    loopCount++;
                     free($3);
                     free($5);
                     $$ = s;
 
             }
-            | DO_STM block WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS    {
-                int size = 12 + strlen($2) + strlen($5->value);
+            | DO_STM block WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS SEMICOLON {
+                int size = 60 + strlen($2) + strlen($5->value);
                 char * s = malloc(sizeof(char) * size);
-                sprintf(s, "do %s while(%s)", $2, $5->value);
+                sprintf(s, "{\nloopStart%d:\n %s \nif(%s) goto loopStart%d;\n}", loopCount, $2, $5->value, loopCount);
                 free($2);
                 free($5);
                 $$ = s;
@@ -339,9 +342,10 @@ while_struct: WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS block   {
             ;
 
 for_struct  : FOR_STM L_PARENTHESIS {scope++;} initialization SEMICOLON log_expr SEMICOLON arit_expr R_PARENTHESIS {scope--;} block {
-                int size = 9 + strlen($4) + strlen($6->value) + strlen($8->value) + strlen($11);
+                int size = 72 + strlen($4) + strlen($6->value) + strlen($8->value) + strlen($11);
                 char * s = malloc(sizeof(char) * size);
-                sprintf(s, "for(%s;%s;%s) %s", $4, $6->value, $8->value, $11);
+                sprintf(s, "{\n%s\nloopStart%d: if(!(%s)) goto loopEnd%d;\n%s\n%s\ngoto loopStart%d;\nloopEnd%d:\n}", $4, loopCount, $6->value, loopCount, $11, $8->value, loopCount, loopCount);
+                loopCount++;
                 free($4);
                 free($6);
                 free($8);
@@ -354,7 +358,7 @@ fun_struct  : type IDENTIFIER L_PARENTHESIS par_list R_PARENTHESIS L_KEY stm_lis
 
 block : L_KEY {scope++;} stm_list R_KEY {
           utils_removeVarScope(symbolTable, varNamesScope[scope]);
-          int size = strlen($3) + 5;
+          int size = strlen($3) + 8;
           char * s = malloc(sizeof(char) * size);
           sprintf(s, "{\n%s\n}", $3);
           free($3);

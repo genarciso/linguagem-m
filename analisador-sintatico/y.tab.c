@@ -84,13 +84,15 @@ extern int yylineno;
 extern char * yytext;
 
 int scope = 0;
+unsigned int loopCount = 0;
+unsigned int ifCount = 0;
 List **varNamesScope;
 HashTable *symbolTable;
 
 //typedef enum { false = 0, true = !false } bool;
 
 
-#line 94 "y.tab.c"
+#line 96 "y.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -274,7 +276,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 25 "parser.y"
+#line 27 "parser.y"
 
     int    iValue;  /* integer value */
     float  fValue;  /* float value */
@@ -285,7 +287,7 @@ union YYSTYPE
     int    line;
     struct StaticInfo * strValue;
 
-#line 289 "y.tab.c"
+#line 291 "y.tab.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -604,7 +606,7 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  62
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   236
+#define YYLAST   241
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  67
@@ -613,7 +615,7 @@ union yyalloc
 /* YYNRULES -- Number of rules.  */
 #define YYNRULES  97
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  185
+#define YYNSTATES  190
 
 #define YYUNDEFTOK  2
 #define YYMAXUTOK   321
@@ -667,16 +669,16 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    73,    73,    80,    87,    97,    98,    99,   100,   101,
-     102,   103,   104,   107,   135,   158,   179,   185,   191,   197,
-     205,   206,   214,   215,   223,   224,   227,   228,   231,   245,
-     248,   262,   265,   280,   289,   299,   300,   308,   317,   318,
-     322,   331,   341,   341,   341,   353,   355,   355,   366,   367,
-     368,   369,   370,   371,   372,   373,   376,   377,   378,   386,
-     395,   396,   409,   421,   433,   445,   457,   464,   473,   474,
-     488,   495,   506,   515,   516,   528,   529,   532,   533,   534,
-     537,   538,   539,   540,   541,   542,   545,   546,   547,   562,
-     568,   574,   581,   587,   595,   596,   598,   599
+       0,    75,    75,    82,    89,    99,   100,   101,   102,   103,
+     104,   105,   106,   109,   137,   160,   181,   187,   193,   199,
+     207,   208,   216,   217,   225,   226,   229,   230,   233,   247,
+     250,   264,   267,   282,   291,   301,   302,   310,   319,   320,
+     324,   334,   344,   344,   344,   357,   359,   359,   370,   371,
+     372,   373,   374,   375,   376,   377,   380,   381,   382,   390,
+     399,   400,   413,   425,   437,   449,   461,   468,   477,   478,
+     492,   499,   510,   519,   520,   532,   533,   536,   537,   538,
+     541,   542,   543,   544,   545,   546,   549,   550,   551,   566,
+     572,   578,   585,   591,   599,   600,   602,   603
 };
 #endif
 
@@ -722,7 +724,7 @@ static const yytype_int16 yytoknum[] =
 };
 # endif
 
-#define YYPACT_NINF (-109)
+#define YYPACT_NINF (-113)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -736,25 +738,25 @@ static const yytype_int16 yytoknum[] =
      STATE-NUM.  */
 static const yytype_int16 yypact[] =
 {
-      68,  -109,   -11,  -109,  -109,  -109,  -109,  -109,  -109,  -109,
-    -109,  -109,  -109,  -109,  -109,  -109,  -109,   119,    -8,    -4,
-     -18,    11,    13,    21,    22,    61,  -109,     3,  -109,  -109,
-    -109,  -109,  -109,     4,  -109,  -109,  -109,  -109,  -109,  -109,
-    -109,    62,    -3,  -109,    19,    96,  -109,  -109,  -109,     9,
-     119,  -109,   147,   177,   119,  -109,  -109,    20,   119,   183,
-      33,    33,  -109,    68,   119,   -15,  -109,   144,   144,   144,
-     144,   144,  -109,  -109,  -109,  -109,  -109,   135,  -109,  -109,
-    -109,  -109,  -109,  -109,   144,    33,    33,  -109,  -109,  -109,
-      72,   182,   197,    68,    32,   187,  -109,    49,  -109,   -27,
-     -26,  -109,  -109,   119,   197,    84,   144,  -109,  -109,  -109,
-    -109,  -109,    96,    72,  -109,  -109,   -18,    30,    97,    66,
-     119,   -18,    63,  -109,    84,  -109,    84,  -109,   103,    70,
-      51,    52,  -109,   147,    -1,   119,   105,  -109,   192,  -109,
-      78,   102,   106,  -109,   107,   197,   104,  -109,   110,   112,
-      -9,  -109,   183,   100,    78,  -109,  -109,    68,  -109,   119,
-     -18,  -109,   144,   101,   108,  -109,   123,   198,  -109,   156,
-      68,    68,  -109,   -18,  -109,   114,   129,  -109,   -18,   124,
-     133,  -109,  -109,   169,  -109
+      72,  -113,   -13,  -113,  -113,  -113,  -113,  -113,  -113,  -113,
+    -113,  -113,  -113,  -113,  -113,  -113,  -113,   123,    -1,     2,
+      10,     3,    14,    17,    30,    29,  -113,    72,     8,    31,
+      32,    39,    44,    45,  -113,  -113,  -113,  -113,  -113,  -113,
+    -113,    55,    -5,  -113,     9,   100,  -113,  -113,  -113,     1,
+     123,  -113,    75,    22,   123,  -113,  -113,    21,   123,   177,
+      16,    16,  -113,  -113,  -113,  -113,  -113,  -113,  -113,   123,
+     -14,  -113,   149,   149,   149,   149,   149,  -113,  -113,  -113,
+    -113,  -113,   140,  -113,  -113,  -113,  -113,  -113,  -113,   149,
+      16,    16,  -113,  -113,  -113,   186,    76,   191,    72,    33,
+     185,  -113,    36,  -113,   -28,    -8,  -113,   123,   191,   102,
+     149,  -113,  -113,  -113,  -113,  -113,   100,   186,  -113,  -113,
+      10,    56,   113,    94,   123,    10,   103,  -113,   102,  -113,
+     102,  -113,   141,   110,    98,   101,  -113,    75,    18,   123,
+     136,  -113,   190,  -113,   114,   131,   132,  -113,   137,   191,
+     145,  -113,   139,   143,   -10,   124,   177,   130,   114,  -113,
+    -113,    72,  -113,   123,    10,  -113,   149,  -113,   147,   148,
+    -113,   163,   195,  -113,   152,    72,    72,  -113,    10,  -113,
+     171,   176,  -113,    10,   127,   172,  -113,  -113,   194,  -113
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -764,42 +766,42 @@ static const yytype_int8 yydefact[] =
 {
        0,    97,    88,    49,    50,    51,    53,    54,    55,    48,
       96,    52,    89,    90,    91,    92,    93,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     2,     0,     5,    11,
-      12,     9,    10,     0,     6,    26,    27,     7,    38,    39,
+       0,     0,     0,     0,     0,     0,     2,     3,     0,     0,
+       0,     0,     0,     0,     6,    26,    27,     7,    38,    39,
        8,     0,    73,    60,    24,    70,    68,    86,    87,     0,
        0,    88,    73,     0,     0,    42,    46,     0,     0,     0,
-       0,     0,     1,     3,    22,    20,    13,     0,     0,     0,
-       0,     0,    66,    67,    77,    78,    79,     0,    82,    80,
-      84,    85,    83,    81,     0,     0,     0,    14,    69,    71,
-      73,     0,     0,     0,     0,     0,    94,     0,    95,     0,
-       0,     4,    23,     0,    56,     0,     0,    61,    62,    63,
-      64,    65,    72,    74,    75,    76,     0,     0,     0,     0,
-       0,     0,     0,    16,     0,    18,     0,    15,     0,     0,
-      57,    20,    21,     0,    29,     0,     0,    47,     0,    40,
-      35,     0,     0,    59,     0,    56,     0,    28,     0,    31,
-       0,    41,     0,     0,    35,    17,    19,     0,    58,     0,
-       0,    32,     0,     0,     0,    36,     0,     0,    30,     0,
-       0,     0,    45,     0,    43,     0,     0,    33,     0,     0,
-       0,    44,    37,     0,    34
+       0,     0,     1,     4,     5,    11,    12,     9,    10,    22,
+      20,    13,     0,     0,     0,     0,     0,    66,    67,    77,
+      78,    79,     0,    82,    80,    84,    85,    83,    81,     0,
+       0,     0,    14,    69,    71,    73,     0,     0,     0,     0,
+       0,    94,     0,    95,     0,     0,    23,     0,    56,     0,
+       0,    61,    62,    63,    64,    65,    72,    74,    75,    76,
+       0,     0,     0,     0,     0,     0,     0,    16,     0,    18,
+       0,    15,     0,     0,    57,    20,    21,     0,    29,     0,
+       0,    47,     0,    40,    35,     0,     0,    59,     0,    56,
+       0,    28,     0,    31,     0,     0,     0,     0,    35,    17,
+      19,     0,    58,     0,     0,    32,     0,    41,     0,     0,
+      36,     0,     0,    30,     0,     0,     0,    45,     0,    43,
+       0,     0,    33,     0,     0,     0,    44,    37,     0,    34
 };
 
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int16 yypgoto[] =
 {
-    -109,  -109,   -61,  -109,  -109,  -109,   122,  -109,   -77,   132,
-     -41,  -109,  -109,  -109,    75,  -109,  -109,    65,  -109,  -109,
-    -109,  -109,  -109,  -109,  -109,  -108,  -109,   -89,    86,  -109,
-     -17,   121,   -16,   152,  -109,  -109,   -52,  -109,  -109,    83,
-     -55
+    -113,  -113,   -25,  -113,  -113,  -113,   138,  -113,   -82,   167,
+     -43,  -113,  -113,  -113,    84,  -113,  -113,    80,  -113,  -113,
+    -113,  -113,  -113,  -113,  -113,  -112,  -113,   -88,    90,  -113,
+     -17,   142,   -16,   158,  -113,  -113,   -53,  -113,  -113,    85,
+     -56
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int16 yydefgoto[] =
 {
-      -1,    25,    26,    27,    28,    29,    30,    31,    66,    32,
-      33,    34,    35,   147,   148,   149,    36,   153,   154,    37,
-      38,    39,    92,   178,    40,    57,    93,    41,   129,   130,
-      42,    43,    44,    45,    77,    84,    46,    47,    48,    97,
+      -1,    25,    26,    27,    28,    29,    30,    31,    71,    32,
+      33,    34,    35,   151,   152,   153,    36,   157,   158,    37,
+      38,    39,    97,   183,    40,    57,    98,    41,   133,   134,
+      42,    43,    44,    45,    82,    89,    46,    47,    48,   102,
       49
 };
 
@@ -808,58 +810,60 @@ static const yytype_int16 yydefgoto[] =
      number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int16 yytable[] =
 {
-      52,    53,   101,   118,    98,    99,   100,    96,   134,    87,
-     103,   123,   125,   139,    50,   128,    67,    68,    69,    70,
-      71,    56,   104,    72,    73,    74,    75,    76,   132,    54,
-     114,   115,   119,    55,   124,   126,     1,    90,    91,    85,
-      86,    90,    95,   -31,   146,    10,   105,   141,    58,   142,
-      59,   162,   168,    74,    75,    76,   128,   -25,    60,    61,
-      90,    62,   127,    63,    64,   177,    65,   113,    94,   120,
-     181,     1,     2,     3,     4,     5,     6,     7,     8,     9,
-      10,    11,    12,    13,    14,    15,    16,   122,   131,   133,
-     135,    67,    68,    69,    70,    71,   166,    98,    72,    73,
-      96,   136,   140,    90,   138,    17,   137,   143,   144,   175,
-     176,    18,   145,   105,    19,    20,    21,    22,    90,   150,
-      23,    24,     1,    51,    78,    79,    80,    81,    82,    83,
-     103,    10,   152,    12,    13,    14,    15,    16,     1,    51,
-     155,   159,    90,   167,   156,   169,   157,    10,    51,    12,
-      13,    14,    15,    16,   160,   164,    17,   146,    12,    13,
-      14,    15,    16,   172,   170,   179,    67,    68,    69,    70,
-      71,   171,   106,    72,    73,    67,    68,    69,    70,    71,
-     180,   106,    72,    73,   182,    88,     1,    51,   107,   108,
-     109,   110,   111,   183,   174,    10,   102,    12,    13,    14,
-      15,    16,     3,     4,     5,     6,     7,     8,     9,   184,
-      11,    74,    75,    76,   117,    89,    74,    75,    76,   165,
-     116,    74,    75,    76,   161,   121,    74,    75,    76,   112,
-     151,   158,    74,    75,    76,   163,   173
+      52,    53,    63,   103,   104,   105,   101,    92,   138,   122,
+     127,   107,    50,   143,    72,    73,    74,    75,    76,     1,
+     132,    77,    78,   108,    79,    80,    81,   136,    10,    62,
+     129,    90,    91,   128,   118,   119,    54,    95,    96,    55,
+      58,    95,   100,    79,    80,    81,   145,   109,   146,    56,
+     166,    59,   173,   130,    60,   -25,    79,    80,    81,    70,
+      94,   132,   -31,   150,   131,    95,   182,    61,    64,    99,
+     124,   186,   117,   123,   126,     1,     2,     3,     4,     5,
+       6,     7,     8,     9,    10,    11,    12,    13,    14,    15,
+      16,    65,    66,   137,    72,    73,    74,    75,    76,    67,
+     103,    77,    78,   101,    68,    69,   135,    95,   142,    17,
+      79,    80,    81,    93,   120,    18,   139,   140,    19,    20,
+      21,    22,    95,   154,    23,    24,     1,    51,    83,    84,
+      85,    86,    87,    88,   141,    10,   171,    12,    13,    14,
+      15,    16,   144,     1,    51,   147,    95,   172,   148,   174,
+     180,   181,    10,    51,    12,    13,    14,    15,    16,   149,
+      17,   107,   109,    12,    13,    14,    15,    16,   156,   159,
+     160,    72,    73,    74,    75,    76,   161,   110,    77,    78,
+       1,    51,   163,   164,   167,   169,   110,   187,   150,    10,
+     179,    12,    13,    14,    15,    16,     3,     4,     5,     6,
+       7,     8,     9,   177,    11,    72,    73,    74,    75,    76,
+     175,   176,    77,    78,   111,   112,   113,   114,   115,    79,
+      80,    81,   184,   125,    79,    80,    81,   185,   155,    79,
+      80,    81,   188,   178,   189,   121,   106,   165,   170,   162,
+     116,   168
 };
 
 static const yytype_uint8 yycheck[] =
 {
-      17,    17,    63,    92,    59,    60,    61,    59,   116,    50,
-      25,    38,    38,   121,    25,   104,    19,    20,    21,    22,
-      23,    39,    37,    26,    27,    34,    35,    36,   105,    37,
-      85,    86,    93,    37,    61,    61,     3,    54,    54,    30,
-      31,    58,    58,    44,    45,    12,    61,   124,    37,   126,
-      37,    60,   160,    34,    35,    36,   145,    60,    37,    37,
-      77,     0,   103,    60,    60,   173,     4,    84,    48,    37,
-     178,     3,     4,     5,     6,     7,     8,     9,    10,    11,
-      12,    13,    14,    15,    16,    17,    18,    38,     4,   106,
-      60,    19,    20,    21,    22,    23,   157,   152,    26,    27,
-     152,     4,    39,   120,   120,    37,    40,     4,    38,   170,
-     171,    43,    61,    61,    46,    47,    48,    49,   135,   135,
-      52,    53,     3,     4,    28,    29,    30,    31,    32,    33,
-      25,    12,    54,    14,    15,    16,    17,    18,     3,     4,
-      38,    37,   159,   159,    38,   162,    39,    12,     4,    14,
-      15,    16,    17,    18,    44,    55,    37,    45,    14,    15,
-      16,    17,    18,    40,    63,    51,    19,    20,    21,    22,
-      23,    63,    37,    26,    27,    19,    20,    21,    22,    23,
-      51,    37,    26,    27,    60,    38,     3,     4,    67,    68,
-      69,    70,    71,    60,    38,    12,    64,    14,    15,    16,
-      17,    18,     5,     6,     7,     8,     9,    10,    11,    40,
-      13,    34,    35,    36,    92,    38,    34,    35,    36,   154,
-      38,    34,    35,    36,   149,    38,    34,    35,    36,    77,
-      38,   145,    34,    35,    36,   152,    38
+      17,    17,    27,    59,    60,    61,    59,    50,   120,    97,
+      38,    25,    25,   125,    19,    20,    21,    22,    23,     3,
+     108,    26,    27,    37,    34,    35,    36,   109,    12,     0,
+      38,    30,    31,    61,    90,    91,    37,    54,    54,    37,
+      37,    58,    58,    34,    35,    36,   128,    61,   130,    39,
+      60,    37,   164,    61,    37,    60,    34,    35,    36,     4,
+      38,   149,    44,    45,   107,    82,   178,    37,    60,    48,
+      37,   183,    89,    98,    38,     3,     4,     5,     6,     7,
+       8,     9,    10,    11,    12,    13,    14,    15,    16,    17,
+      18,    60,    60,   110,    19,    20,    21,    22,    23,    60,
+     156,    26,    27,   156,    60,    60,     4,   124,   124,    37,
+      34,    35,    36,    38,    38,    43,    60,     4,    46,    47,
+      48,    49,   139,   139,    52,    53,     3,     4,    28,    29,
+      30,    31,    32,    33,    40,    12,   161,    14,    15,    16,
+      17,    18,    39,     3,     4,     4,   163,   163,    38,   166,
+     175,   176,    12,     4,    14,    15,    16,    17,    18,    61,
+      37,    25,    61,    14,    15,    16,    17,    18,    54,    38,
+      38,    19,    20,    21,    22,    23,    39,    37,    26,    27,
+       3,     4,    37,    44,    60,    55,    37,    60,    45,    12,
+      38,    14,    15,    16,    17,    18,     5,     6,     7,     8,
+       9,    10,    11,    40,    13,    19,    20,    21,    22,    23,
+      63,    63,    26,    27,    72,    73,    74,    75,    76,    34,
+      35,    36,    51,    38,    34,    35,    36,    51,    38,    34,
+      35,    36,    60,    38,    40,    97,    69,   153,   158,   149,
+      82,   156
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
@@ -872,19 +876,19 @@ static const yytype_int8 yystos[] =
       73,    74,    76,    77,    78,    79,    83,    86,    87,    88,
       91,    94,    97,    98,    99,   100,   103,   104,   105,   107,
       25,     4,    97,    99,    37,    37,    39,    92,    37,    37,
-      37,    37,     0,    60,    60,     4,    75,    19,    20,    21,
-      22,    23,    26,    27,    34,    35,    36,   101,    28,    29,
-      30,    31,    32,    33,   102,    30,    31,    77,    38,    38,
-      97,    99,    89,    93,    48,    99,   103,   106,   107,   107,
-     107,    69,    76,    25,    37,    61,    37,    98,    98,    98,
-      98,    98,   100,    97,   107,   107,    38,    73,    94,    69,
-      37,    38,    38,    38,    61,    38,    61,    77,    94,    95,
-      96,     4,    75,    97,    92,    60,     4,    40,    99,    92,
-      39,    75,    75,     4,    38,    61,    45,    80,    81,    82,
-      99,    38,    54,    84,    85,    38,    38,    39,    95,    37,
-      44,    81,    60,   106,    55,    84,    69,    99,    92,    97,
-      63,    63,    40,    38,    38,    69,    69,    92,    90,    51,
-      51,    92,    60,    60,    40
+      37,    37,     0,    69,    60,    60,    60,    60,    60,    60,
+       4,    75,    19,    20,    21,    22,    23,    26,    27,    34,
+      35,    36,   101,    28,    29,    30,    31,    32,    33,   102,
+      30,    31,    77,    38,    38,    97,    99,    89,    93,    48,
+      99,   103,   106,   107,   107,   107,    76,    25,    37,    61,
+      37,    98,    98,    98,    98,    98,   100,    97,   107,   107,
+      38,    73,    94,    69,    37,    38,    38,    38,    61,    38,
+      61,    77,    94,    95,    96,     4,    75,    97,    92,    60,
+       4,    40,    99,    92,    39,    75,    75,     4,    38,    61,
+      45,    80,    81,    82,    99,    38,    54,    84,    85,    38,
+      38,    39,    95,    37,    44,    81,    60,    60,   106,    55,
+      84,    69,    99,    92,    97,    63,    63,    40,    38,    38,
+      69,    69,    92,    90,    51,    51,    92,    60,    60,    40
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
@@ -905,11 +909,11 @@ static const yytype_int8 yyr1[] =
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
 static const yytype_int8 yyr2[] =
 {
-       0,     2,     1,     2,     3,     1,     1,     1,     1,     1,
-       1,     1,     1,     2,     3,     4,     4,     6,     4,     6,
+       0,     2,     1,     1,     2,     2,     1,     1,     1,     2,
+       2,     2,     2,     2,     3,     4,     4,     6,     4,     6,
        1,     3,     2,     3,     1,     1,     1,     1,     6,     0,
        3,     0,     2,     5,    12,     0,     2,     6,     1,     1,
-       5,     6,     0,     0,    11,     8,     0,     4,     1,     1,
+       5,     7,     0,     0,    11,     8,     0,     4,     1,     1,
        1,     1,     1,     1,     1,     1,     0,     1,     3,     2,
        1,     3,     3,     3,     3,     3,     2,     2,     1,     3,
        1,     3,     3,     1,     3,     3,     3,     1,     1,     1,
@@ -1610,90 +1614,90 @@ yyreduce:
   switch (yyn)
     {
   case 2:
-#line 73 "parser.y"
+#line 75 "parser.y"
                     {
                             printf("%s", (yyvsp[0].sValue));
                             printf("\nClosing application... Bye...\n");
                             free((yyvsp[0].sValue));
                         }
-#line 1620 "y.tab.c"
+#line 1624 "y.tab.c"
     break;
 
   case 3:
-#line 80 "parser.y"
-                                           {
-                                            int size = strlen((yyvsp[-1].sValue)) + 2;
+#line 82 "parser.y"
+                                 {
+                                            int size = strlen((yyvsp[0].sValue)) + 2;
                                             char * s = malloc(sizeof(char) * size);
-                                            sprintf(s, "%s;", (yyvsp[-1].sValue));
-                                            free((yyvsp[-1].sValue));
-                                            (yyval.sValue) = s;
-                                        }
-#line 1632 "y.tab.c"
-    break;
-
-  case 4:
-#line 87 "parser.y"
-                                        {
-                                            int size = strlen((yyvsp[-2].sValue)) + strlen((yyvsp[0].sValue)) + 3;
-                                            char * s = malloc(sizeof(char) * size);
-                                            sprintf(s, "%s;\n%s", (yyvsp[-2].sValue), (yyvsp[0].sValue));
-                                            free((yyvsp[-2].sValue));
+                                            sprintf(s, "%s;", (yyvsp[0].sValue));
                                             free((yyvsp[0].sValue));
                                             (yyval.sValue) = s;
                                         }
-#line 1645 "y.tab.c"
+#line 1636 "y.tab.c"
+    break;
+
+  case 4:
+#line 89 "parser.y"
+                              {
+                                            int size = strlen((yyvsp[-1].sValue)) + strlen((yyvsp[0].sValue)) + 3;
+                                            char * s = malloc(sizeof(char) * size);
+                                            sprintf(s, "%s;\n%s", (yyvsp[-1].sValue), (yyvsp[0].sValue));
+                                            free((yyvsp[-1].sValue));
+                                            
+                                            (yyval.sValue) = s;
+                                        }
+#line 1649 "y.tab.c"
     break;
 
   case 5:
-#line 97 "parser.y"
-                     {(yyval.sValue) = (yyvsp[0].sValue);}
-#line 1651 "y.tab.c"
+#line 99 "parser.y"
+                               {(yyval.sValue) = (yyvsp[-1].sValue);}
+#line 1655 "y.tab.c"
     break;
 
   case 6:
-#line 98 "parser.y"
-                     {(yyval.sValue) = (yyvsp[0].sValue);}
-#line 1657 "y.tab.c"
+#line 100 "parser.y"
+                               {(yyval.sValue) = (yyvsp[0].sValue);}
+#line 1661 "y.tab.c"
     break;
 
   case 7:
-#line 99 "parser.y"
-                     {(yyval.sValue) = (yyvsp[0].sValue);}
-#line 1663 "y.tab.c"
+#line 101 "parser.y"
+                               {(yyval.sValue) = (yyvsp[0].sValue);}
+#line 1667 "y.tab.c"
     break;
 
   case 8:
-#line 100 "parser.y"
-                     {(yyval.sValue) = (yyvsp[0].sValue);}
-#line 1669 "y.tab.c"
+#line 102 "parser.y"
+                               {(yyval.sValue) = (yyvsp[0].sValue);}
+#line 1673 "y.tab.c"
     break;
 
   case 9:
-#line 101 "parser.y"
-                     {(yyval.sValue) = (yyvsp[0].sValue);}
-#line 1675 "y.tab.c"
+#line 103 "parser.y"
+                               {(yyval.sValue) = (yyvsp[-1].sValue);}
+#line 1679 "y.tab.c"
     break;
 
   case 10:
-#line 102 "parser.y"
-                     {(yyval.sValue) = (yyvsp[0].sValue);}
-#line 1681 "y.tab.c"
+#line 104 "parser.y"
+                               {(yyval.sValue) = (yyvsp[-1].sValue);}
+#line 1685 "y.tab.c"
     break;
 
   case 11:
-#line 103 "parser.y"
-                     {(yyval.sValue) = (yyvsp[0].sValue);}
-#line 1687 "y.tab.c"
+#line 105 "parser.y"
+                               {(yyval.sValue) = (yyvsp[-1].sValue);}
+#line 1691 "y.tab.c"
     break;
 
   case 12:
-#line 104 "parser.y"
-                     {(yyval.sValue) = (yyvsp[0].sValue);}
-#line 1693 "y.tab.c"
+#line 106 "parser.y"
+                               {(yyval.sValue) = (yyvsp[-1].sValue);}
+#line 1697 "y.tab.c"
     break;
 
   case 13:
-#line 107 "parser.y"
+#line 109 "parser.y"
                     {
             char *key, *varName, *type;
             char *idscpy = malloc(strlen((yyvsp[0].sValue)) * sizeof(char));
@@ -1719,11 +1723,11 @@ yyreduce:
             free((yyvsp[0].sValue));
             (yyval.sValue) = s;
         }
-#line 1723 "y.tab.c"
+#line 1727 "y.tab.c"
     break;
 
   case 14:
-#line 135 "parser.y"
+#line 137 "parser.y"
                                           {    
                Tuple *lhsVar = utils_findVar(symbolTable, (yyvsp[-2].sValue), scope);
                if(lhsVar == NULL) {
@@ -1743,11 +1747,11 @@ yyreduce:
 
                (yyval.sValue) = s;
           }
-#line 1747 "y.tab.c"
+#line 1751 "y.tab.c"
     break;
 
   case 15:
-#line 158 "parser.y"
+#line 160 "parser.y"
                                                {
                char *type = utils_strRemoveSpace((yyvsp[-3].sValue));
                
@@ -1767,113 +1771,113 @@ yyreduce:
                (yyval.sValue) = s;
 
           }
-#line 1771 "y.tab.c"
+#line 1775 "y.tab.c"
     break;
 
   case 16:
-#line 179 "parser.y"
+#line 181 "parser.y"
                                                                {
                                                                     int size = 8 + strlen((yyvsp[-1].strValue)->value);
                                                                     char * s = malloc(sizeof(char) * size);
                                                                     sprintf(s, "print(%s)", (yyvsp[-1].strValue)->value);
                                                                     (yyval.sValue) = s; 
                                                                 }
-#line 1782 "y.tab.c"
+#line 1786 "y.tab.c"
     break;
 
   case 17:
-#line 185 "parser.y"
+#line 187 "parser.y"
                                                                              {
                                                                                 int size = 10 + strlen((yyvsp[-3].strValue)->value) + strlen((yyvsp[-1].sValue));
                                                                                 char * s = malloc(sizeof(char) * size);
                                                                                 sprintf(s, "print(%s, %s)", (yyvsp[-3].strValue)->value, (yyvsp[-1].sValue));
                                                                                 (yyval.sValue) = s;  
                                                                             }
-#line 1793 "y.tab.c"
+#line 1797 "y.tab.c"
     break;
 
   case 18:
-#line 191 "parser.y"
+#line 193 "parser.y"
                                                                 {
                                                                     int size = 9 + strlen((yyvsp[-1].strValue)->value);
                                                                     char * s = malloc(sizeof(char) * size);
                                                                     sprintf(s, "printf(%s)", (yyvsp[-1].strValue)->value);
                                                                     (yyval.sValue) = s; 
                                                                 }
-#line 1804 "y.tab.c"
+#line 1808 "y.tab.c"
     break;
 
   case 19:
-#line 197 "parser.y"
+#line 199 "parser.y"
                                                                               {
                                                                                 int size = 11 + strlen((yyvsp[-3].strValue)->value) + strlen((yyvsp[-1].sValue));
                                                                                 char * s = malloc(sizeof(char) * size);
                                                                                 sprintf(s, "printf(%s, %s)", (yyvsp[-3].strValue)->value, (yyvsp[-1].sValue));
                                                                                 (yyval.sValue) = s;  
                                                                             }
-#line 1815 "y.tab.c"
+#line 1819 "y.tab.c"
     break;
 
   case 20:
-#line 205 "parser.y"
+#line 207 "parser.y"
                                     {(yyval.sValue) = (yyvsp[0].sValue);}
-#line 1821 "y.tab.c"
+#line 1825 "y.tab.c"
     break;
 
   case 21:
-#line 206 "parser.y"
+#line 208 "parser.y"
                                    { 
                                         int size = 2 + strlen((yyvsp[-2].sValue)) + strlen((yyvsp[0].sValue));
                                         char * s = malloc(sizeof(char) * size);
                                         sprintf(s, "%s,%s", (yyvsp[-2].sValue), (yyvsp[0].sValue));
                                         (yyval.sValue) = s;
                                     }
-#line 1832 "y.tab.c"
+#line 1836 "y.tab.c"
     break;
 
   case 22:
-#line 214 "parser.y"
+#line 216 "parser.y"
                                          {(yyval.sValue) = (yyvsp[-1].strValue)->value;}
-#line 1838 "y.tab.c"
+#line 1842 "y.tab.c"
     break;
 
   case 23:
-#line 215 "parser.y"
+#line 217 "parser.y"
                                          { 
                                             int size = 2 + strlen((yyvsp[-2].strValue)->value) + strlen((yyvsp[0].sValue));
                                             char * s = malloc(sizeof(char) * size);
                                             sprintf(s, "%s;%s", (yyvsp[-2].strValue)->value, (yyvsp[0].sValue));
                                             (yyval.sValue) = s;
                                         }
-#line 1849 "y.tab.c"
+#line 1853 "y.tab.c"
     break;
 
   case 24:
-#line 223 "parser.y"
+#line 225 "parser.y"
                     { (yyval.strValue) = (yyvsp[0].strValue); }
-#line 1855 "y.tab.c"
+#line 1859 "y.tab.c"
     break;
 
   case 25:
-#line 224 "parser.y"
+#line 226 "parser.y"
                     { (yyval.strValue) = (yyvsp[0].strValue); }
-#line 1861 "y.tab.c"
+#line 1865 "y.tab.c"
     break;
 
   case 26:
-#line 227 "parser.y"
+#line 229 "parser.y"
                             {(yyval.sValue) = (yyvsp[0].sValue);}
-#line 1867 "y.tab.c"
+#line 1871 "y.tab.c"
     break;
 
   case 27:
-#line 228 "parser.y"
+#line 230 "parser.y"
                             {(yyval.sValue) = (yyvsp[0].sValue);}
-#line 1873 "y.tab.c"
+#line 1877 "y.tab.c"
     break;
 
   case 28:
-#line 231 "parser.y"
+#line 233 "parser.y"
                                                                            {
                                                             if(strcmp((yyvsp[0].sValue), "e") != 0) {
                                                                 int size = 7 + strlen((yyvsp[-3].strValue)->value) + strlen((yyvsp[-1].sValue)) + strlen((yyvsp[0].sValue));
@@ -1887,19 +1891,19 @@ yyreduce:
                                                                 (yyval.sValue) = s;
                                                             }
                                                         }
-#line 1891 "y.tab.c"
+#line 1895 "y.tab.c"
     break;
 
   case 29:
-#line 245 "parser.y"
+#line 247 "parser.y"
                 {char * s = malloc(sizeof(char) * 2);
                  sprintf(s, "e");
                  (yyval.sValue) = s;}
-#line 1899 "y.tab.c"
+#line 1903 "y.tab.c"
     break;
 
   case 30:
-#line 248 "parser.y"
+#line 250 "parser.y"
                                          {
                                                 if(strcmp((yyvsp[-2].sValue), "e") != 0) {
                                                     int size = 7 + strlen((yyvsp[-2].sValue)) + strlen((yyvsp[0].sValue));
@@ -1913,19 +1917,19 @@ yyreduce:
                                                     (yyval.sValue) = s;
                                                 }
                                             }
-#line 1917 "y.tab.c"
+#line 1921 "y.tab.c"
     break;
 
   case 31:
-#line 262 "parser.y"
+#line 264 "parser.y"
                    {char * s = malloc(sizeof(char) * 2);
                     sprintf(s, "e");
                     (yyval.sValue) = s;}
-#line 1925 "y.tab.c"
+#line 1929 "y.tab.c"
     break;
 
   case 32:
-#line 265 "parser.y"
+#line 267 "parser.y"
                                             { 
                                                 if(strcmp((yyvsp[0].sValue), "e") != 0) {
                                                     int size = 2 + strlen((yyvsp[-1].sValue)) + strlen((yyvsp[0].sValue));
@@ -1939,11 +1943,11 @@ yyreduce:
                                                     (yyval.sValue) = s;
                                                 }
                                             }
-#line 1943 "y.tab.c"
+#line 1947 "y.tab.c"
     break;
 
   case 33:
-#line 280 "parser.y"
+#line 282 "parser.y"
                                                                          {
                                     int size = 11 + strlen((yyvsp[-2].strValue)->value) + strlen((yyvsp[0].sValue));
                                     char * s = malloc(sizeof(char) * size);
@@ -1951,11 +1955,11 @@ yyreduce:
                                     free((yyvsp[0].sValue));
                                     (yyval.sValue) = s;
                                 }
-#line 1955 "y.tab.c"
+#line 1959 "y.tab.c"
     break;
 
   case 34:
-#line 289 "parser.y"
+#line 291 "parser.y"
                                                                                                                                                     {
                                         int size = 34 + strlen((yyvsp[-9].strValue)->value) + strlen((yyvsp[-6].sValue)) + strlen((yyvsp[-3].sValue));
                                         char * s = malloc(sizeof(char) * size);
@@ -1964,28 +1968,28 @@ yyreduce:
                                         free((yyvsp[-3].sValue));
                                         (yyval.sValue) = s;
                                     }
-#line 1968 "y.tab.c"
+#line 1972 "y.tab.c"
     break;
 
   case 35:
-#line 299 "parser.y"
+#line 301 "parser.y"
                   {}
-#line 1974 "y.tab.c"
+#line 1978 "y.tab.c"
     break;
 
   case 36:
-#line 300 "parser.y"
+#line 302 "parser.y"
                                                { 
                                                     int size = 2 + strlen((yyvsp[-1].sValue)) + strlen((yyvsp[0].sValue));
                                                     char * s = malloc(sizeof(char) * size);
                                                     sprintf(s, "%s %s", (yyvsp[-1].sValue), (yyvsp[0].sValue));
                                                     (yyval.sValue) = s;
                                                 }
-#line 1985 "y.tab.c"
+#line 1989 "y.tab.c"
     break;
 
   case 37:
-#line 308 "parser.y"
+#line 310 "parser.y"
                                                                    {
                                                                         int size = 17 + strlen((yyvsp[-4].strValue)->value) + strlen((yyvsp[-2].sValue));
                                                                         char * s = malloc(sizeof(char) * size);
@@ -1993,179 +1997,181 @@ yyreduce:
                                                                         free((yyvsp[-2].sValue));
                                                                         (yyval.sValue) = s;
                                                                     }
-#line 1997 "y.tab.c"
+#line 2001 "y.tab.c"
     break;
 
   case 38:
-#line 317 "parser.y"
+#line 319 "parser.y"
                             {(yyval.sValue) = (yyvsp[0].sValue);}
-#line 2003 "y.tab.c"
+#line 2007 "y.tab.c"
     break;
 
   case 39:
-#line 318 "parser.y"
+#line 320 "parser.y"
                             {(yyval.sValue) = (yyvsp[0].sValue);}
-#line 2009 "y.tab.c"
+#line 2013 "y.tab.c"
     break;
 
   case 40:
-#line 322 "parser.y"
+#line 324 "parser.y"
                                                                      {
-                    int size = 9 + strlen((yyvsp[-2].strValue)->value) + strlen((yyvsp[0].sValue));
+                    int size = 70 + strlen((yyvsp[-2].strValue)->value) + strlen((yyvsp[0].sValue));
                     char * s = malloc(sizeof(char) * size);
-                    sprintf(s, "while(%s) %s", (yyvsp[-2].strValue)->value, (yyvsp[0].sValue));
+                    sprintf(s, "{\nloopStart%d: if(!(%s)) goto loopEnd%d;\n%s\ngoto loopStart%d;\nloopEnd%d:\n}", loopCount, (yyvsp[-2].strValue)->value, loopCount, (yyvsp[0].sValue), loopCount, loopCount);
+                    loopCount++;
                     free((yyvsp[-2].strValue));
                     free((yyvsp[0].sValue));
                     (yyval.sValue) = s;
 
             }
-#line 2023 "y.tab.c"
+#line 2028 "y.tab.c"
     break;
 
   case 41:
-#line 331 "parser.y"
-                                                                             {
-                int size = 12 + strlen((yyvsp[-4].sValue)) + strlen((yyvsp[-1].strValue)->value);
+#line 334 "parser.y"
+                                                                                    {
+                int size = 60 + strlen((yyvsp[-5].sValue)) + strlen((yyvsp[-2].strValue)->value);
                 char * s = malloc(sizeof(char) * size);
-                sprintf(s, "do %s while(%s)", (yyvsp[-4].sValue), (yyvsp[-1].strValue)->value);
-                free((yyvsp[-4].sValue));
-                free((yyvsp[-1].strValue));
+                sprintf(s, "{\nloopStart%d:\n %s \nif(%s) goto loopStart%d;\n}", loopCount, (yyvsp[-5].sValue), (yyvsp[-2].strValue)->value, loopCount);
+                free((yyvsp[-5].sValue));
+                free((yyvsp[-2].strValue));
                 (yyval.sValue) = s;
             }
-#line 2036 "y.tab.c"
+#line 2041 "y.tab.c"
     break;
 
   case 42:
-#line 341 "parser.y"
+#line 344 "parser.y"
                                     {scope++;}
-#line 2042 "y.tab.c"
+#line 2047 "y.tab.c"
     break;
 
   case 43:
-#line 341 "parser.y"
+#line 344 "parser.y"
                                                                                                                    {scope--;}
-#line 2048 "y.tab.c"
+#line 2053 "y.tab.c"
     break;
 
   case 44:
-#line 341 "parser.y"
+#line 344 "parser.y"
                                                                                                                                     {
-                int size = 9 + strlen((yyvsp[-7].sValue)) + strlen((yyvsp[-5].strValue)->value) + strlen((yyvsp[-3].strValue)->value) + strlen((yyvsp[0].sValue));
+                int size = 72 + strlen((yyvsp[-7].sValue)) + strlen((yyvsp[-5].strValue)->value) + strlen((yyvsp[-3].strValue)->value) + strlen((yyvsp[0].sValue));
                 char * s = malloc(sizeof(char) * size);
-                sprintf(s, "for(%s;%s;%s) %s", (yyvsp[-7].sValue), (yyvsp[-5].strValue)->value, (yyvsp[-3].strValue)->value, (yyvsp[0].sValue));
+                sprintf(s, "{\n%s\nloopStart%d: if(!(%s)) goto loopEnd%d;\n%s\n%s\ngoto loopStart%d;\nloopEnd%d:\n}", (yyvsp[-7].sValue), loopCount, (yyvsp[-5].strValue)->value, loopCount, (yyvsp[0].sValue), (yyvsp[-3].strValue)->value, loopCount, loopCount);
+                loopCount++;
                 free((yyvsp[-7].sValue));
                 free((yyvsp[-5].strValue));
                 free((yyvsp[-3].strValue));
                 free((yyvsp[0].sValue));
                 (yyval.sValue) = s;
             }
-#line 2063 "y.tab.c"
-    break;
-
-  case 46:
-#line 355 "parser.y"
-              {scope++;}
 #line 2069 "y.tab.c"
     break;
 
+  case 46:
+#line 359 "parser.y"
+              {scope++;}
+#line 2075 "y.tab.c"
+    break;
+
   case 47:
-#line 355 "parser.y"
+#line 359 "parser.y"
                                         {
           utils_removeVarScope(symbolTable, varNamesScope[scope]);
-          int size = strlen((yyvsp[-1].sValue)) + 5;
+          int size = strlen((yyvsp[-1].sValue)) + 8;
           char * s = malloc(sizeof(char) * size);
           sprintf(s, "{\n%s\n}", (yyvsp[-1].sValue));
           free((yyvsp[-1].sValue));
           (yyval.sValue) = s;
           scope--;
      }
-#line 2083 "y.tab.c"
-    break;
-
-  case 48:
-#line 366 "parser.y"
-                    {(yyval.sValue) = (yyvsp[0].sValue);}
 #line 2089 "y.tab.c"
     break;
 
-  case 49:
-#line 367 "parser.y"
+  case 48:
+#line 370 "parser.y"
                     {(yyval.sValue) = (yyvsp[0].sValue);}
 #line 2095 "y.tab.c"
     break;
 
-  case 50:
-#line 368 "parser.y"
+  case 49:
+#line 371 "parser.y"
                     {(yyval.sValue) = (yyvsp[0].sValue);}
 #line 2101 "y.tab.c"
     break;
 
-  case 51:
-#line 369 "parser.y"
+  case 50:
+#line 372 "parser.y"
                     {(yyval.sValue) = (yyvsp[0].sValue);}
 #line 2107 "y.tab.c"
     break;
 
-  case 52:
-#line 370 "parser.y"
+  case 51:
+#line 373 "parser.y"
                     {(yyval.sValue) = (yyvsp[0].sValue);}
 #line 2113 "y.tab.c"
     break;
 
-  case 53:
-#line 371 "parser.y"
+  case 52:
+#line 374 "parser.y"
                     {(yyval.sValue) = (yyvsp[0].sValue);}
 #line 2119 "y.tab.c"
     break;
 
-  case 54:
-#line 372 "parser.y"
+  case 53:
+#line 375 "parser.y"
                     {(yyval.sValue) = (yyvsp[0].sValue);}
 #line 2125 "y.tab.c"
     break;
 
-  case 55:
-#line 373 "parser.y"
+  case 54:
+#line 376 "parser.y"
                     {(yyval.sValue) = (yyvsp[0].sValue);}
 #line 2131 "y.tab.c"
     break;
 
-  case 56:
-#line 376 "parser.y"
-                                    {}
+  case 55:
+#line 377 "parser.y"
+                    {(yyval.sValue) = (yyvsp[0].sValue);}
 #line 2137 "y.tab.c"
     break;
 
-  case 57:
-#line 377 "parser.y"
-                                    {(yyval.sValue) = (yyvsp[0].sValue);}
+  case 56:
+#line 380 "parser.y"
+                                    {}
 #line 2143 "y.tab.c"
     break;
 
+  case 57:
+#line 381 "parser.y"
+                                    {(yyval.sValue) = (yyvsp[0].sValue);}
+#line 2149 "y.tab.c"
+    break;
+
   case 58:
-#line 378 "parser.y"
+#line 382 "parser.y"
                                     { 
                                         int size = 2 + strlen((yyvsp[-2].sValue)) + strlen((yyvsp[0].sValue));
                                         char * s = malloc(sizeof(char) * size);
                                         sprintf(s, "%s,%s", (yyvsp[-2].sValue), (yyvsp[0].sValue));
                                         (yyval.sValue) = s;
                                     }
-#line 2154 "y.tab.c"
+#line 2160 "y.tab.c"
     break;
 
   case 59:
-#line 386 "parser.y"
+#line 390 "parser.y"
                             { 
                                 int size = 2 + strlen((yyvsp[-1].sValue)) + strlen((yyvsp[0].sValue));
                                 char * s = malloc(sizeof(char) * size);
                                 sprintf(s, "%s %s", (yyvsp[-1].sValue), (yyvsp[0].sValue));
                                 (yyval.sValue) = s;
                             }
-#line 2165 "y.tab.c"
+#line 2171 "y.tab.c"
     break;
 
   case 61:
-#line 396 "parser.y"
+#line 400 "parser.y"
                                                         { 
                                                             
                                                             if(!utils_isANumberType((yyvsp[-2].strValue)->type) || !utils_isANumberType((yyvsp[0].strValue)->type)) {
@@ -2179,11 +2185,11 @@ yyreduce:
                                                             (yyval.strValue) = utils_createStaticInfo(s, utils_convertType((yyvsp[-2].strValue)->type, (yyvsp[0].strValue)->type));
                                                             free(s);
                                                         }
-#line 2183 "y.tab.c"
+#line 2189 "y.tab.c"
     break;
 
   case 62:
-#line 409 "parser.y"
+#line 413 "parser.y"
                                                                   {
                                                             if(!utils_isANumberType((yyvsp[-2].strValue)->type) || !utils_isANumberType((yyvsp[0].strValue)->type)) {
                                                                 printf("Erro: operacao - so pode ser usada para tipos numericos \n");
@@ -2196,11 +2202,11 @@ yyreduce:
                                                             (yyval.strValue) = utils_createStaticInfo(s, utils_convertType((yyvsp[-2].strValue)->type, (yyvsp[0].strValue)->type));
                                                             free(s);
                                                         }
-#line 2200 "y.tab.c"
+#line 2206 "y.tab.c"
     break;
 
   case 63:
-#line 421 "parser.y"
+#line 425 "parser.y"
                                                                   { 
                                                             if(!utils_isANumberType((yyvsp[-2].strValue)->type) || !utils_isANumberType((yyvsp[0].strValue)->type)) {
                                                                 printf("Erro: operacao / so pode ser usada para tipos numericos \n");
@@ -2213,11 +2219,11 @@ yyreduce:
                                                             (yyval.strValue) = utils_createStaticInfo(s, utils_convertType((yyvsp[-2].strValue)->type, (yyvsp[0].strValue)->type));
                                                             free(s);
                                                         }
-#line 2217 "y.tab.c"
+#line 2223 "y.tab.c"
     break;
 
   case 64:
-#line 433 "parser.y"
+#line 437 "parser.y"
                                                                   { 
                                                             if(!utils_isANumberType((yyvsp[-2].strValue)->type) || !utils_isANumberType((yyvsp[0].strValue)->type)) {
                                                                 printf("Erro: operacao * so pode ser usada para tipos numericos \n");
@@ -2230,11 +2236,11 @@ yyreduce:
                                                             (yyval.strValue) = utils_createStaticInfo(s, utils_convertType((yyvsp[-2].strValue)->type, (yyvsp[0].strValue)->type));
                                                             free(s);
                                                         }
-#line 2234 "y.tab.c"
+#line 2240 "y.tab.c"
     break;
 
   case 65:
-#line 445 "parser.y"
+#line 449 "parser.y"
                                                                   { 
                                                             if(!utils_isANumberType((yyvsp[-2].strValue)->type) || !utils_isANumberType((yyvsp[0].strValue)->type)) {
                                                                 printf("Erro: operacao %s so pode ser usada para tipos numericos \n", "%");
@@ -2247,11 +2253,11 @@ yyreduce:
                                                             (yyval.strValue) = utils_createStaticInfo(s, utils_convertType((yyvsp[-2].strValue)->type, (yyvsp[0].strValue)->type));
                                                             free(s);
                                                         }
-#line 2251 "y.tab.c"
+#line 2257 "y.tab.c"
     break;
 
   case 66:
-#line 457 "parser.y"
+#line 461 "parser.y"
                                                         { 
                                                             int size = 3 + strlen((yyvsp[-1].strValue)->value);
                                                             char * s = malloc(sizeof(char) * size);
@@ -2259,11 +2265,11 @@ yyreduce:
                                                             (yyval.strValue) = utils_createStaticInfo(s, "boolean");
                                                             free(s);
                                                         }
-#line 2263 "y.tab.c"
+#line 2269 "y.tab.c"
     break;
 
   case 67:
-#line 464 "parser.y"
+#line 468 "parser.y"
                                                         { 
                                                             int size = 3 + strlen((yyvsp[-1].strValue)->value);
                                                             char * s = malloc(sizeof(char) * size);
@@ -2271,17 +2277,17 @@ yyreduce:
                                                             (yyval.strValue) = utils_createStaticInfo(s, "boolean");
                                                             free(s);
                                                         }
-#line 2275 "y.tab.c"
-    break;
-
-  case 68:
-#line 473 "parser.y"
-                      {(yyval.strValue) = (yyvsp[0].strValue);}
 #line 2281 "y.tab.c"
     break;
 
+  case 68:
+#line 477 "parser.y"
+                      {(yyval.strValue) = (yyvsp[0].strValue);}
+#line 2287 "y.tab.c"
+    break;
+
   case 69:
-#line 474 "parser.y"
+#line 478 "parser.y"
                                                            { 
                                                             if(!utils_isANumberType((yyvsp[-1].strValue)->type)) {
                                                                 printf("Erro: operacao + so pode ser usada para tipos numericos \n");
@@ -2294,11 +2300,11 @@ yyreduce:
                                                             (yyval.strValue) = utils_createStaticInfo(s, (yyvsp[-1].strValue)->type);
                                                             free(s);
                                                         }
-#line 2298 "y.tab.c"
+#line 2304 "y.tab.c"
     break;
 
   case 70:
-#line 488 "parser.y"
+#line 492 "parser.y"
                                                {
                                                     if(strcmp((yyvsp[0].strValue)->type, "boolean")) {
                                                         printf("Erro: expresao nao boolean < %s > \n", (yyvsp[0].strValue)->value);
@@ -2306,11 +2312,11 @@ yyreduce:
                                                     }
                                                     (yyval.strValue) = (yyvsp[0].strValue);
                                                 }
-#line 2310 "y.tab.c"
+#line 2316 "y.tab.c"
     break;
 
   case 71:
-#line 495 "parser.y"
+#line 499 "parser.y"
                                                {    
                                                     if(strcmp((yyvsp[-1].strValue)->type, "boolean")) {
                                                         printf("Erro: expresao nao boolean < %s > \n", (yyvsp[-1].strValue)->value);
@@ -2322,28 +2328,28 @@ yyreduce:
                                                     sprintf(s, "(%s)", (yyvsp[-1].strValue)->value);
                                                     (yyval.strValue) = utils_createStaticInfo(s, "boolean");
                                                 }
-#line 2326 "y.tab.c"
+#line 2332 "y.tab.c"
     break;
 
   case 72:
-#line 506 "parser.y"
+#line 510 "parser.y"
                                                { 
                                                     int size = 3 + strlen((yyvsp[-2].strValue)->value) + strlen((yyvsp[-1].sValue)) + strlen((yyvsp[0].strValue)->value);
                                                     char * s = malloc(sizeof(char) * size);
                                                     sprintf(s, "%s %s %s", (yyvsp[-2].strValue)->value, (yyvsp[-1].sValue), (yyvsp[0].strValue)->value);
                                                     (yyval.strValue) = utils_createStaticInfo(s, "boolean");
                                                 }
-#line 2337 "y.tab.c"
-    break;
-
-  case 73:
-#line 515 "parser.y"
-                                                {(yyval.strValue) = (yyvsp[0].strValue);}
 #line 2343 "y.tab.c"
     break;
 
+  case 73:
+#line 519 "parser.y"
+                                                {(yyval.strValue) = (yyvsp[0].strValue);}
+#line 2349 "y.tab.c"
+    break;
+
   case 74:
-#line 516 "parser.y"
+#line 520 "parser.y"
                                                 { 
                                                     if(!utils_isANumberType((yyvsp[-2].strValue)->type) || !utils_isANumberType((yyvsp[0].strValue)->type)) {
                                                         printf("Erro na linha %d : operacao %s so pode ser usada para tipos numericos \n", yylval.line, (yyvsp[-1].sValue));
@@ -2356,89 +2362,89 @@ yyreduce:
                                                     (yyval.strValue) = utils_createStaticInfo(s, "boolean");
                                                     free(s);
                                                 }
-#line 2360 "y.tab.c"
-    break;
-
-  case 75:
-#line 528 "parser.y"
-                                                  {(yyvsp[-2].strValue) == (yyvsp[0].strValue);}
 #line 2366 "y.tab.c"
     break;
 
-  case 76:
-#line 529 "parser.y"
-                                                  {(yyvsp[-2].strValue) != (yyvsp[0].strValue);}
+  case 75:
+#line 532 "parser.y"
+                                                  {(yyvsp[-2].strValue) == (yyvsp[0].strValue);}
 #line 2372 "y.tab.c"
     break;
 
-  case 77:
-#line 532 "parser.y"
-                    {(yyval.sValue) = strdup("&&");}
+  case 76:
+#line 533 "parser.y"
+                                                  {(yyvsp[-2].strValue) != (yyvsp[0].strValue);}
 #line 2378 "y.tab.c"
     break;
 
-  case 78:
-#line 533 "parser.y"
-                    {(yyval.sValue) = strdup("||");}
+  case 77:
+#line 536 "parser.y"
+                    {(yyval.sValue) = strdup("&&");}
 #line 2384 "y.tab.c"
     break;
 
-  case 79:
-#line 534 "parser.y"
-                    {(yyval.sValue) = strdup("!") ;}
+  case 78:
+#line 537 "parser.y"
+                    {(yyval.sValue) = strdup("||");}
 #line 2390 "y.tab.c"
     break;
 
-  case 80:
-#line 537 "parser.y"
-                    {(yyval.sValue) = strdup("<=") ;}
+  case 79:
+#line 538 "parser.y"
+                    {(yyval.sValue) = strdup("!") ;}
 #line 2396 "y.tab.c"
     break;
 
-  case 81:
-#line 538 "parser.y"
-                    {(yyval.sValue) = strdup("<")  ;}
+  case 80:
+#line 541 "parser.y"
+                    {(yyval.sValue) = strdup("<=") ;}
 #line 2402 "y.tab.c"
     break;
 
-  case 82:
-#line 539 "parser.y"
-                    {(yyval.sValue) = strdup(">=") ;}
+  case 81:
+#line 542 "parser.y"
+                    {(yyval.sValue) = strdup("<")  ;}
 #line 2408 "y.tab.c"
     break;
 
-  case 83:
-#line 540 "parser.y"
-                    {(yyval.sValue) = strdup(">")  ;}
+  case 82:
+#line 543 "parser.y"
+                    {(yyval.sValue) = strdup(">=") ;}
 #line 2414 "y.tab.c"
     break;
 
-  case 84:
-#line 541 "parser.y"
-                    {(yyval.sValue) = strdup("==") ;}
+  case 83:
+#line 544 "parser.y"
+                    {(yyval.sValue) = strdup(">")  ;}
 #line 2420 "y.tab.c"
     break;
 
-  case 85:
-#line 542 "parser.y"
-                    {(yyval.sValue) = strdup("!=") ;}
+  case 84:
+#line 545 "parser.y"
+                    {(yyval.sValue) = strdup("==") ;}
 #line 2426 "y.tab.c"
     break;
 
-  case 86:
-#line 545 "parser.y"
-                        {(yyval.strValue) = (yyvsp[0].strValue);}
+  case 85:
+#line 546 "parser.y"
+                    {(yyval.sValue) = strdup("!=") ;}
 #line 2432 "y.tab.c"
     break;
 
-  case 87:
-#line 546 "parser.y"
+  case 86:
+#line 549 "parser.y"
                         {(yyval.strValue) = (yyvsp[0].strValue);}
 #line 2438 "y.tab.c"
     break;
 
+  case 87:
+#line 550 "parser.y"
+                        {(yyval.strValue) = (yyvsp[0].strValue);}
+#line 2444 "y.tab.c"
+    break;
+
   case 88:
-#line 547 "parser.y"
+#line 551 "parser.y"
                         {
                             Tuple *lhsVar = utils_findVar(symbolTable, (yyvsp[0].sValue), scope);
                             if(lhsVar == NULL) {
@@ -2449,90 +2455,90 @@ yyreduce:
                             StaticInfo *aux = utils_createStaticInfo((yyvsp[0].sValue), lhsVar->type); 
                             (yyval.strValue) = aux;
                         }
-#line 2453 "y.tab.c"
+#line 2459 "y.tab.c"
     break;
 
   case 89:
-#line 562 "parser.y"
+#line 566 "parser.y"
                                  { 
                                     char * s = malloc(sizeof(int));
                                     sprintf(s, "%d", (yyvsp[0].iValue));
                                     (yyval.strValue) = utils_createStaticInfo(s, "int");
                                     free(s); 
                                 }
-#line 2464 "y.tab.c"
+#line 2470 "y.tab.c"
     break;
 
   case 90:
-#line 568 "parser.y"
+#line 572 "parser.y"
                                  { 
                                     char * s = malloc(sizeof(float));
                                     sprintf(s, "%f", (yyvsp[0].fValue));
                                     (yyval.strValue) = utils_createStaticInfo(s, "float");
                                     free(s); 
                                 }
-#line 2475 "y.tab.c"
+#line 2481 "y.tab.c"
     break;
 
   case 91:
-#line 574 "parser.y"
+#line 578 "parser.y"
                                  { 
                                     char * s = malloc(sizeof(double));
                                     sprintf(s, "%f", (yyvsp[0].dValue));
                                     (yyval.strValue) = utils_createStaticInfo(s, "double");
                                     free(s); 
                                 }
-#line 2486 "y.tab.c"
+#line 2492 "y.tab.c"
     break;
 
   case 92:
-#line 581 "parser.y"
+#line 585 "parser.y"
                         { 
                             char * s = malloc(sizeof(int));
                             sprintf(s, "%d", (yyvsp[0].bValue));
                             (yyval.strValue) = utils_createStaticInfo(s, "boolean");
                             free(s);
                         }
-#line 2497 "y.tab.c"
+#line 2503 "y.tab.c"
     break;
 
   case 93:
-#line 587 "parser.y"
+#line 591 "parser.y"
                         {   
                             char * s = malloc(sizeof(int));
                             sprintf(s, "%d", (yyvsp[0].bValue));
                             (yyval.strValue) = utils_createStaticInfo(s, "boolean");
                             free(s); 
                         }
-#line 2508 "y.tab.c"
-    break;
-
-  case 94:
-#line 595 "parser.y"
-                                        {(yyval.strValue) = (yyvsp[0].strValue);}
 #line 2514 "y.tab.c"
     break;
 
-  case 95:
-#line 596 "parser.y"
+  case 94:
+#line 599 "parser.y"
                                         {(yyval.strValue) = (yyvsp[0].strValue);}
 #line 2520 "y.tab.c"
     break;
 
-  case 96:
-#line 598 "parser.y"
-                                        { (yyval.strValue) = utils_createStaticInfo((yyvsp[0].sValue), "char"); }
+  case 95:
+#line 600 "parser.y"
+                                        {(yyval.strValue) = (yyvsp[0].strValue);}
 #line 2526 "y.tab.c"
     break;
 
-  case 97:
-#line 599 "parser.y"
-                                        { (yyval.strValue) = utils_createStaticInfo((yyvsp[0].sValue), "string"); }
+  case 96:
+#line 602 "parser.y"
+                                        { (yyval.strValue) = utils_createStaticInfo((yyvsp[0].sValue), "char"); }
 #line 2532 "y.tab.c"
     break;
 
+  case 97:
+#line 603 "parser.y"
+                                        { (yyval.strValue) = utils_createStaticInfo((yyvsp[0].sValue), "string"); }
+#line 2538 "y.tab.c"
+    break;
 
-#line 2536 "y.tab.c"
+
+#line 2542 "y.tab.c"
 
       default: break;
     }
@@ -2764,7 +2770,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 602 "parser.y"
+#line 606 "parser.y"
 
 
 void yyerror (char *msg) {
