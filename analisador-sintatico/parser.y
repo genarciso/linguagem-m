@@ -52,7 +52,7 @@ HashTable *symbolTable;
 
 %type <sValue> stm stm_list expres_list op_log op_comp if_struct else_struct elseif_list elseif_struct switch_struct case_switch case_list_switch for_struct while_struct loop_stm cond_stm type par_list par_term fun_struct print_stm 
 %type <sValue> id_list decl assingment initialization block
-%type <strValue> term term_num log_term literal_term literal_string expr comp_expr log_expr arit_expr
+%type <strValue> term term_num log_term literal_term literal_string expr comp_expr log_expr arit_expr arit_expr_base
 
 %left AND_OP OR_OP
 %left GE_OP SE_OP EQ_OP NE_OP G_OP S_OP
@@ -94,7 +94,7 @@ stm_list    : stm SEMICOLON                {
                                         }
             ;
 
-stm : decl           {$$ = $1;} // TO DO: FAZER A ESTRUTURA DE DECLARAÇÔES
+stm : decl           {$$ = $1;}
     | cond_stm       {$$ = $1;}
     | loop_stm       {$$ = $1;}
     | fun_struct     {$$ = $1;}
@@ -114,7 +114,7 @@ decl : type id_list {
                 type = utils_strRemoveSpace($1);
                 key = utils_strAppendInt(varName, scope); 
                 Tuple *result = hashTable_find(symbolTable, key);
-                if(result != NULL) {printf("variavel %s ja declarada\n", varName); exit(EXIT_FAILURE);}
+                if(result != NULL) {printf("Erro na linha %d : variavel %s ja declarada\n", yylval.line, varName); exit(EXIT_FAILURE);}
                 utils_addVarSymbolTable(symbolTable, type, varName, key);
                 free(type);
                 list_add(varNamesScope[scope], key);
@@ -135,13 +135,13 @@ assingment :
                IDENTIFIER ASSINGMENT expr {    
                Tuple *lhsVar = utils_findVar(symbolTable, $1, scope);
                if(lhsVar == NULL) {
-                    printf("variavel %s nao foi declarada\n", $1);
+                    printf("Erro na linha %d : variavel %s nao foi declarada\n", yylval.line, $1);
                     exit(EXIT_FAILURE);
                }
                
                if(strcmp(lhsVar->type, $3->type) != 0) {
                     printf("o tipo da variavel %s (%s) ", $1, lhsVar->type); 
-                    printf("e da expressao %s (%s) sao incompativeis\n", $3->value, $3->type); 
+                    printf("e da expressao do tipo %s sao incompativeis\n", $3->type); 
                     exit(EXIT_FAILURE);
                }
               
@@ -159,7 +159,7 @@ initialization :
                char *type = utils_strRemoveSpace($1);
                
                if(strcmp(type, $4->type) != 0) {
-                    printf("tipo da variavel %s incompativel com a expressao %s\n", $2, $4->value);
+                    printf("tipo da variavel %s incompativel com a expressao do tipo %s\n", $2, $4->type);
                     exit(EXIT_FAILURE);
                }
                
@@ -211,8 +211,13 @@ id_list : IDENTIFIER                {$$ = $1;}
                                     }
         ;
 
-expres_list : expr SEMICOLON             {}
-            | expr SEMICOLON expres_list {}
+expres_list : expr SEMICOLON             {$$ = $1->value;}
+            | expr SEMICOLON expres_list { 
+                                            int size = 2 + strlen($1->value) + strlen($3);
+                                            char * s = malloc(sizeof(char) * size);
+                                            sprintf(s, "%s;%s", $1->value, $3);
+                                            $$ = s;
+                                        }
             ;
 
 expr    : log_expr  { $$ = $1; }
@@ -314,11 +319,35 @@ loop_stm: while_struct      {$$ = $1;}
         ; 
 
 
-while_struct: WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS L_KEY stm_list R_KEY   {}
-            | DO_STM L_KEY stm_list R_KEY WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS    {}
+while_struct: WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS block   {
+                    int size = 9 + strlen($3->value) + strlen($5);
+                    char * s = malloc(sizeof(char) * size);
+                    sprintf(s, "while(%s) %s", $3->value, $5);
+                    free($3);
+                    free($5);
+                    $$ = s;
+
+            }
+            | DO_STM block WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS    {
+                int size = 12 + strlen($2) + strlen($5->value);
+                char * s = malloc(sizeof(char) * size);
+                sprintf(s, "do %s while(%s)", $2, $5->value);
+                free($2);
+                free($5);
+                $$ = s;
+            }
             ;
 
-for_struct  : FOR_STM L_PARENTHESIS SEMICOLON log_expr SEMICOLON R_PARENTHESIS L_KEY stm_list R_KEY {} // INCOMPLETO
+for_struct  : FOR_STM L_PARENTHESIS {scope++;} initialization SEMICOLON log_expr SEMICOLON arit_expr R_PARENTHESIS {scope--;} block {
+                int size = 9 + strlen($4) + strlen($6->value) + strlen($8->value) + strlen($11);
+                char * s = malloc(sizeof(char) * size);
+                sprintf(s, "for(%s;%s;%s) %s", $4, $6->value, $8->value, $11);
+                free($4);
+                free($6);
+                free($8);
+                free($11);
+                $$ = s;
+            } 
             ;
 
 fun_struct  : type IDENTIFIER L_PARENTHESIS par_list R_PARENTHESIS L_KEY stm_list R_KEY
@@ -363,32 +392,21 @@ par_term: type IDENTIFIER   {
         ;
 
 
-arit_expr   : term {$$ = $1;}
-            | L_PARENTHESIS arit_expr R_PARENTHESIS     { 
-                                                            if(!utils_isANumberType($2->type)) {
-                                                                printf("Erro: operacao + so pode ser usada para tipos numericos \n");
-                                                                exit(EXIT_FAILURE);
-                                                            }
-
-                                                            int size = 3 + strlen($2->value);
-                                                            char * s = malloc(sizeof(char) * size);
-                                                            sprintf(s, "(%s)", $2->value);
-                                                            $$ = utils_createStaticInfo(s, "boolean");
-                                                            free(s);
-                                                        }
-            | arit_expr PLUS_OP term                    { 
+arit_expr   : arit_expr_base
+            | arit_expr PLUS_OP arit_expr_base          { 
+                                                            
                                                             if(!utils_isANumberType($1->type) || !utils_isANumberType($3->type)) {
                                                                 printf("Erro: operacao + so pode ser usada para tipos numericos \n");
                                                                 exit(EXIT_FAILURE);
                                                             }
-
+                                                            
                                                             int size = 4 + strlen($1->value) + strlen($3->value);
                                                             char * s = malloc(sizeof(char) * size);
                                                             sprintf(s, "%s + %s", $1->value, $3->value);
                                                             $$ = utils_createStaticInfo(s, utils_convertType($1->type, $3->type));
                                                             free(s);
                                                         }
-            | arit_expr SUB_OP term                     {
+            | arit_expr SUB_OP arit_expr_base                     {
                                                             if(!utils_isANumberType($1->type) || !utils_isANumberType($3->type)) {
                                                                 printf("Erro: operacao - so pode ser usada para tipos numericos \n");
                                                                 exit(EXIT_FAILURE);
@@ -400,7 +418,7 @@ arit_expr   : term {$$ = $1;}
                                                             $$ = utils_createStaticInfo(s, utils_convertType($1->type, $3->type));
                                                             free(s);
                                                         }
-            | arit_expr DIV_OP term                     { 
+            | arit_expr DIV_OP arit_expr_base                     { 
                                                             if(!utils_isANumberType($1->type) || !utils_isANumberType($3->type)) {
                                                                 printf("Erro: operacao / so pode ser usada para tipos numericos \n");
                                                                 exit(EXIT_FAILURE);
@@ -412,7 +430,7 @@ arit_expr   : term {$$ = $1;}
                                                             $$ = utils_createStaticInfo(s, utils_convertType($1->type, $3->type));
                                                             free(s);
                                                         }
-            | arit_expr STAR term                       { 
+            | arit_expr STAR arit_expr_base                       { 
                                                             if(!utils_isANumberType($1->type) || !utils_isANumberType($3->type)) {
                                                                 printf("Erro: operacao * so pode ser usada para tipos numericos \n");
                                                                 exit(EXIT_FAILURE);
@@ -424,7 +442,7 @@ arit_expr   : term {$$ = $1;}
                                                             $$ = utils_createStaticInfo(s, utils_convertType($1->type, $3->type));
                                                             free(s);
                                                         }
-            | arit_expr MOD_OP term                     { 
+            | arit_expr MOD_OP arit_expr_base                     { 
                                                             if(!utils_isANumberType($1->type) || !utils_isANumberType($3->type)) {
                                                                 printf("Erro: operacao %s so pode ser usada para tipos numericos \n", "%");
                                                                 exit(EXIT_FAILURE);
@@ -452,7 +470,28 @@ arit_expr   : term {$$ = $1;}
                                                         }
             ;
 
-log_expr: comp_expr                            {$$ = $1;}
+arit_expr_base : term {$$ = $1;}
+               | L_PARENTHESIS arit_expr R_PARENTHESIS     { 
+                                                            if(!utils_isANumberType($2->type)) {
+                                                                printf("Erro: operacao + so pode ser usada para tipos numericos \n");
+                                                                exit(EXIT_FAILURE);
+                                                            }
+
+                                                            int size = 3 + strlen($2->value);
+                                                            char * s = malloc(sizeof(char) * size);
+                                                            sprintf(s, "(%s)", $2->value);
+                                                            $$ = utils_createStaticInfo(s, $2->type);
+                                                            free(s);
+                                                        }
+                    ;
+
+log_expr: comp_expr                            {
+                                                    if(strcmp($1->type, "boolean")) {
+                                                        printf("Erro: expresao nao boolean < %s > \n", $1->value);
+                                                        exit(EXIT_FAILURE);
+                                                    }
+                                                    $$ = $1;
+                                                }
         | L_PARENTHESIS log_expr R_PARENTHESIS {    
                                                     if(strcmp($2->type, "boolean")) {
                                                         printf("Erro: expresao nao boolean < %s > \n", $2->value);
@@ -473,10 +512,10 @@ log_expr: comp_expr                            {$$ = $1;}
 
         ;
 
-comp_expr : arit_expr                                  {$$ = $1;}
+comp_expr : arit_expr                           {$$ = $1;}
           | comp_expr op_comp arit_expr         { 
                                                     if(!utils_isANumberType($1->type) || !utils_isANumberType($3->type)) {
-                                                        printf("Erro: operacao %s so pode ser usada para tipos numericos \n", $2);
+                                                        printf("Erro na linha %d : operacao %s so pode ser usada para tipos numericos \n", yylval.line, $2);
                                                         exit(EXIT_FAILURE);
                                                     }
 
@@ -508,14 +547,17 @@ term    : term_num      {$$ = $1;}
         | IDENTIFIER    {
                             Tuple *lhsVar = utils_findVar(symbolTable, $1, scope);
                             if(lhsVar == NULL) {
-                                    printf("variavel %s nao foi declarada\n", $1);
+                                    printf("Erro na linha %d :variavel %s nao foi declarada\n", yylval.line, $1);
                                     exit(EXIT_FAILURE);
                             }
  
                             StaticInfo *aux = utils_createStaticInfo($1, lhsVar->type); 
                             $$ = aux;
                         }
+
         ;
+
+
 
 term_num : LITERAL_INT           { 
                                     char * s = malloc(sizeof(int));
