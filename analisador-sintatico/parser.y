@@ -17,9 +17,9 @@ extern char * yytext;
 int scope = 0;
 unsigned int loopCount = 0;
 unsigned int ifCount = 0;
+unsigned int endAllIf = 0;
 List **varNamesScope;
 HashTable *symbolTable;
-int endAllIf = 0;
 //typedef enum { false = 0, true = !false } bool;
 
 %}
@@ -52,7 +52,7 @@ int endAllIf = 0;
 %token MALLOC_OP FREE_OP CALLOC_OP
 
 %type <sValue> stm stm_list expres_list op_log op_comp if_struct else_struct elseif_list elseif_struct switch_struct case_switch case_list_switch for_struct while_struct loop_stm cond_stm type par_list par_term fun_struct print_stm 
-%type <sValue> id_list decl assingment initialization block
+%type <sValue> id_list decl assingment initialization block decls decls_list
 %type <strValue> term term_num log_term literal_term literal_string expr comp_expr log_expr arit_expr arit_expr_base for_struct_stm
 
 %left AND_OP OR_OP
@@ -71,7 +71,7 @@ program : stm_list EOL  {
         ; 
 */
 
-program : stm_list  {
+program : decls_list    {
                             printf("%s", $1);
                             printf("\ncomplete..\n");
                             
@@ -81,12 +81,24 @@ program : stm_list  {
                                 printf("Erro! Impossivel abrir o arquivo!\n");
                                 exit(1);
                             }
-                            fprintf(p,"#include <stdlib.h>\n#include <stdio.h>\n\nint main() {\n%s\n}", $1);
+                            fprintf(p,"#include <stdlib.h>\n#include <stdio.h>\n\n%s\n\n", $1);
 	                        fclose(p);
 
                             free($1);
                         }
         ;
+
+decls_list : decls {$$ = $1;}
+           | decls decls_list{
+                                int size = strlen($1) + strlen($2) + 3;
+                                char * s = malloc(sizeof(char) * size);
+                                sprintf(s, "%s\n%s\n", $1, $2);
+                                free($1);
+                                free($2);
+                                
+                                $$ = s;
+                             }
+            ;
 
 stm_list    : stm                {
                                             int size = strlen($1) + 2;
@@ -107,13 +119,37 @@ stm_list    : stm                {
 
 stm : decl           SEMICOLON {$$ = $1;}
     | cond_stm                 {$$ = $1;}
-    | loop_stm                 {$$ = $1;}
-    | fun_struct               {$$ = $1;}
+    | loop_stm                 {$$ = $1;} 
     | print_stm      SEMICOLON {$$ = $1;}
     | expres_list    SEMICOLON {$$ = $1;}
     | assingment     SEMICOLON {$$ = $1;}
     | initialization SEMICOLON {$$ = $1;}
     ;
+
+decls :
+        decl            SEMICOLON       {
+                                            int size = strlen($1) + 2;
+                                            char * s = malloc(sizeof(char) * size);
+                                            sprintf(s, "%s;", $1);
+                                            free($1);
+                                            $$ = s;
+                                        }
+      | assingment      SEMICOLON       {
+                                            int size = strlen($1) + 2;
+                                            char * s = malloc(sizeof(char) * size);
+                                            sprintf(s, "%s;", $1);
+                                            free($1);
+                                            $$ = s;
+                                        }
+      | initialization  SEMICOLON       {
+                                            int size = strlen($1) + 2;
+                                            char * s = malloc(sizeof(char) * size);
+                                            sprintf(s, "%s;", $1);
+                                            free($1);
+                                            $$ = s;
+                                        }
+      | fun_struct                      {$$ = $1;}
+      ;
 
 decl : type id_list {
             char *key, *varName, *type;
@@ -373,7 +409,14 @@ for_struct  : FOR_STM L_PARENTHESIS {scope++;} initialization SEMICOLON log_expr
 for_struct_stm : arit_expr {$$ = $1;}
                | assingment {$$ = utils_createStaticInfo($1, "null"); }
 
-fun_struct  : type IDENTIFIER L_PARENTHESIS par_list R_PARENTHESIS L_KEY stm_list R_KEY
+fun_struct  : type IDENTIFIER L_PARENTHESIS par_list R_PARENTHESIS block { 
+                                        printf("asd\n");
+                                        int size = 5 + strlen($1) + strlen($4) + strlen($6);
+                                        char * s = malloc(sizeof(char) * size);
+                                        sprintf(s, "%s %s(%s) %s", $1, $2, $4, $6);
+                                        $$ = s;
+                                    }
+;
 
 block : L_KEY {scope++;} stm_list R_KEY {
           utils_removeVarScope(symbolTable, varNamesScope[scope]);
@@ -397,7 +440,7 @@ type: VOID_TYPE     {$$ = $1;}
     ;
 
 par_list:                           {}
-        | par_term                  {$$ = $1;}
+        | par_term                  {printf("asd\n"); $$ = $1;}
         | par_term COMMA par_list   { 
                                         int size = 2 + strlen($1) + strlen($3);
                                         char * s = malloc(sizeof(char) * size);

@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-int main() {
-int x = 1;
-int y = 0;
+int x = 1;;
+int y = 0;;
+int main(int x) {
 
 {
 int i = 0;;
@@ -35,3 +35,12 @@ loopEnd0:;
 }
 ;
 }
+double s;
+float t(int d) {
+printf("asd");
+}
+
+
+
+
+
