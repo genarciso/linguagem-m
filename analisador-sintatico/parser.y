@@ -19,7 +19,7 @@ unsigned int loopCount = 0;
 unsigned int ifCount = 0;
 List **varNamesScope;
 HashTable *symbolTable;
-
+int endAllIf = 0;
 //typedef enum { false = 0, true = !false } bool;
 
 %}
@@ -99,7 +99,7 @@ stm_list    : stm                {
             | stm stm_list    {
                                             int size = strlen($1) + strlen($2) + 3;
                                             char * s = malloc(sizeof(char) * size);
-                                            sprintf(s, "%s;\n%s", $1, $2);
+                                            sprintf(s, "%s\n%s", $1, $2);
                                             free($1);
                                             
                                             $$ = s;
@@ -180,9 +180,9 @@ initialization :
                free(type);
                list_add(varNamesScope[scope], key);
 
-               int size = strlen($1) + strlen($2) + strlen($4->value) + 4;
+               int size = strlen($1) + strlen($2) + strlen($4->value) + 5;
                char * s = malloc(sizeof(char) * size);
-               sprintf(s, "%s %s = %s", $1, $2,$4->value);
+               sprintf(s, "%s %s = %s;", $1, $2,$4->value);
                $$ = s;
 
           }
@@ -242,14 +242,17 @@ cond_stm: if_struct         {$$ = $1;}
 
 if_struct   : IF_STM L_PARENTHESIS log_expr R_PARENTHESIS block else_struct{
                                                             if(strcmp($6, "e") != 0) {
-                                                                int size = 7 + strlen($3->value) + strlen($5) + strlen($6);
+                                                                int size = 70 + strlen($3->value) + strlen($5) + strlen($6);
                                                                 char * s = malloc(sizeof(char) * size);
-                                                                sprintf(s, "if(%s) %s %s", $3->value, $5, $6);
+                                                                sprintf(s, "\n{\nif(!(%s)) goto endIf%d;\n%s\ngoto endAllIf%d;\n endIf%d:;\n%s\nendAllIf%d:;\n}\n", $3->value, ifCount, $5, endAllIf, ifCount, $6, endAllIf);
+                                                                ifCount++;
+                                                                endAllIf++;
                                                                 $$ = s;
                                                             }else {
-                                                                int size = 7 + strlen($3->value) + strlen($5);
+                                                                int size = 60 + strlen($3->value) + strlen($5);
                                                                 char * s = malloc(sizeof(char) * size);
-                                                                sprintf(s, "if(%s) %s", $3->value, $5);
+                                                                sprintf(s, "\n{\nif(!(%s)) goto endIf%d;\n%s\n endIf%d:;\n}\n", $3->value, ifCount, $5, ifCount);
+                                                                ifCount++;
                                                                 $$ = s;
                                                             }
                                                         }
@@ -259,14 +262,16 @@ else_struct :   {char * s = malloc(sizeof(char) * 2);
                  $$ = s;}
             | elseif_list ELSE_STM block {
                                                 if(strcmp($1, "e") != 0) {
-                                                    int size = 7 + strlen($1) + strlen($3);
+                                                    int size = 32 + strlen($1) + strlen($3);
                                                     char * s = malloc(sizeof(char) * size);
-                                                    sprintf(s, "%s\nelse %s", $1, $3);
+                                                    sprintf(s, "%s\nnextIf%d: if(0) goto endIf%d;\n%s\nendIf%d:;\n\n", $1, ifCount, ifCount, $3, ifCount);
+                                                    ifCount++;
                                                     $$ = s;
                                                 }else {
-                                                    int size = 7 + strlen($3);
+                                                    int size = 32 + strlen($3);
                                                     char * s = malloc(sizeof(char) * size);
-                                                    sprintf(s, "\nelse %s", $3);
+                                                    sprintf(s, "\nif(0) goto endIf%d;\n%s\nendIf%d:;\n\n", ifCount, $3, ifCount);
+                                                    ifCount++;
                                                     $$ = s;
                                                 }
                                             }
@@ -276,25 +281,27 @@ elseif_list     :  {char * s = malloc(sizeof(char) * 2);
                     $$ = s;}
                 | elseif_struct elseif_list { 
                                                 if(strcmp($2, "e") != 0) {
-                                                    int size = 2 + strlen($1) + strlen($2);
+                                                    int size = 4 + strlen($1) + strlen($2);
                                                     char * s = malloc(sizeof(char) * size);
-                                                    sprintf(s, "%s %s", $1, $2);
+                                                    sprintf(s, "%s\n%s\n", $1, $2);
                                                     $$ = s;
                                                 }else {
-                                                    int size = 1 + strlen($1);
+                                                    int size = 2 + strlen($1);
                                                     char * s = malloc(sizeof(char) * size);
-                                                    sprintf(s, "%s", $1);
+                                                    sprintf(s, "%s\n", $1);
                                                     $$ = s;
                                                 }
                                             }
                 ;
 
 elseif_struct   : ELSE_IF_STM L_PARENTHESIS log_expr R_PARENTHESIS block {
-                                    int size = 11 + strlen($3->value) + strlen($5);
-                                    char * s = malloc(sizeof(char) * size);
-                                    sprintf(s, "\nelseif(%s) %s", $3->value, $5);
-                                    free($5);
-                                    $$ = s;
+                                        int size = 52 + strlen($3->value) + strlen($5);
+                                        char * s = malloc(sizeof(char) * size);
+                                        sprintf(s, "\n{\nif(!(%s)) goto endIf%d;\n%s\ngoto endAllIf%d;\n endIf%d:;\n}\n", $3->value, ifCount, $5, endAllIf, ifCount);
+                                        ifCount++;
+                                        free($5);
+                                        $$ = s;
+                                    
                                 }
                 ;
 
@@ -508,6 +515,7 @@ log_expr: comp_expr                            {
                                                         exit(EXIT_FAILURE);
                                                     }
                                                     $$ = $1;
+
                                                 }
         | L_PARENTHESIS log_expr R_PARENTHESIS {    
                                                     if(strcmp($2->type, "boolean")) {
@@ -519,12 +527,14 @@ log_expr: comp_expr                            {
                                                     char * s = malloc(sizeof(char) * size);
                                                     sprintf(s, "(%s)", $2->value);
                                                     $$ = utils_createStaticInfo(s, "boolean");
+                                                    free(s);
                                                 }
         | log_expr op_log comp_expr            { 
                                                     int size = 3 + strlen($1->value) + strlen($2) + strlen($3->value);
                                                     char * s = malloc(sizeof(char) * size);
                                                     sprintf(s, "%s %s %s", $1->value, $2, $3->value);
                                                     $$ = utils_createStaticInfo(s, "boolean");
+                                                    free(s);
                                                 }
 
         ;

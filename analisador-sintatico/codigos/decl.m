@@ -1,23 +1,22 @@
-for(int i = 0; i < 10; i = i+1) {
-	int g;
-	printf("%d\n", i);
-}
+int x = 1;
+int y = 0;
 
-int j = 0;
-while(j < 2) {
-	int x;
+if(x == y){
+	printf("1\n");
+}else if(x > y) {
 	printf("2\n");
-	for(int i = 5; i < 10; i++) {
-		int g;
-		printf("%d\n", i);
-	}
-	j++;;
-
+}else if(x < 0){
+	printf("3\n");
+}else {
+	printf("4\n");
 }
 
-int i = 0;
-do{
-	int x;
+if(x == y){
+	printf("1\n");
+}else if(x < y) {
+	printf("22\n");
+}else if(x < 0){
+	printf("3\n");
+}else {
 	printf("4\n");
-	i++;;
-}while(i < 3);
+}
