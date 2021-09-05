@@ -3,85 +3,35 @@
 
 int main() {
 int x = 1;
-int y = 2;
+int y = 0;
 
 {
-if(!(x == y)) goto endIf3;
+int i = 0;;
+loopStart0: if(!(i < 10)) goto loopEnd0;
 {
-printf("1\n");
+
+{
+if(!(x == i || y == i)) goto endIf1;
+{
+printf("equal\n");
 }
 goto endAllIf0;
- endIf3:;
+endIf1:;
 
+if(0) goto endIf0;
 {
-if(!(x > y)) goto endIf0;
-{
-printf("2\n");
+printf("not\n");
 }
-goto endAllIf0;
- endIf0:;
-}
-
-
-{
-if(!(x < 0)) goto endIf1;
-{
-printf("3\n");
-}
-goto endAllIf0;
- endIf1:;
-}
-
-
-
-nextIf2: if(0) goto endIf2;
-{
-printf("4\n");
-}
-endIf2:;
+endIf0:;
 
 
 endAllIf0:;
 }
-
-
-{
-if(!(x == y)) goto endIf7;
-{
-printf("1\n");
+;
 }
-goto endAllIf1;
- endIf7:;
-
-{
-if(!(x < y)) goto endIf4;
-{
-printf("22\n");
-}
-goto endAllIf1;
- endIf4:;
-}
-
-
-{
-if(!(x < 0)) goto endIf5;
-{
-printf("3\n");
-}
-goto endAllIf1;
- endIf5:;
-}
-
-
-
-nextIf6: if(0) goto endIf6;
-{
-printf("4\n");
-}
-endIf6:;
-
-
-endAllIf1:;
+i = i + 1;
+goto loopStart0;
+loopEnd0:;
 }
 ;
 }

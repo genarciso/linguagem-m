@@ -31,7 +31,6 @@ int endAllIf = 0;
     char * cValue;  /* char value */
     char * sValue;  /* string value */
     int    bValue;  /* boolean value */
-    int    line;
     struct StaticInfo * strValue;
 };
 
@@ -126,7 +125,7 @@ decl : type id_list {
                 type = utils_strRemoveSpace($1);
                 key = utils_strAppendInt(varName, scope); 
                 Tuple *result = hashTable_find(symbolTable, key);
-                if(result != NULL) {printf("Erro na linha %d : variavel %s ja declarada\n", yylval.line, varName); exit(EXIT_FAILURE);}
+                if(result != NULL) {printf("Erro na linha %d : variavel %s ja declarada\n", yylineno, varName); exit(EXIT_FAILURE);}
                 utils_addVarSymbolTable(symbolTable, type, varName, key);
                 free(type);
                 list_add(varNamesScope[scope], key);
@@ -147,7 +146,7 @@ assingment :
                IDENTIFIER ASSINGMENT expr {    
                Tuple *lhsVar = utils_findVar(symbolTable, $1, scope);
                if(lhsVar == NULL) {
-                    printf("Erro na linha %d : variavel %s nao foi declarada\n", yylval.line, $1);
+                    printf("Erro na linha %d : variavel %s nao foi declarada\n", yylineno, $1);
                     exit(EXIT_FAILURE);
                }
                
@@ -244,7 +243,7 @@ if_struct   : IF_STM L_PARENTHESIS log_expr R_PARENTHESIS block else_struct{
                                                             if(strcmp($6, "e") != 0) {
                                                                 int size = 70 + strlen($3->value) + strlen($5) + strlen($6);
                                                                 char * s = malloc(sizeof(char) * size);
-                                                                sprintf(s, "\n{\nif(!(%s)) goto endIf%d;\n%s\ngoto endAllIf%d;\n endIf%d:;\n%s\nendAllIf%d:;\n}\n", $3->value, ifCount, $5, endAllIf, ifCount, $6, endAllIf);
+                                                                sprintf(s, "\n{\nif(!(%s)) goto endIf%d;\n%s\ngoto endAllIf%d;\nendIf%d:;\n%s\nendAllIf%d:;\n}\n", $3->value, ifCount, $5, endAllIf, ifCount, $6, endAllIf);
                                                                 ifCount++;
                                                                 endAllIf++;
                                                                 $$ = s;
@@ -297,7 +296,7 @@ elseif_list     :  {char * s = malloc(sizeof(char) * 2);
 elseif_struct   : ELSE_IF_STM L_PARENTHESIS log_expr R_PARENTHESIS block {
                                         int size = 52 + strlen($3->value) + strlen($5);
                                         char * s = malloc(sizeof(char) * size);
-                                        sprintf(s, "\n{\nif(!(%s)) goto endIf%d;\n%s\ngoto endAllIf%d;\n endIf%d:;\n}\n", $3->value, ifCount, $5, endAllIf, ifCount);
+                                        sprintf(s, "\n{\nif(!(%s)) goto endIf%d;\n%s\ngoto endAllIf%d;\nendIf%d:;\n}\n", $3->value, ifCount, $5, endAllIf, ifCount);
                                         ifCount++;
                                         free($5);
                                         $$ = s;
@@ -542,7 +541,7 @@ log_expr: comp_expr                            {
 comp_expr : arit_expr                           {$$ = $1;}
           | comp_expr op_comp arit_expr         { 
                                                     if(!utils_isANumberType($1->type) || !utils_isANumberType($3->type)) {
-                                                        printf("Erro na linha %d : operacao %s so pode ser usada para tipos numericos \n", yylval.line, $2);
+                                                        printf("Erro na linha %d : operacao %s so pode ser usada para tipos numericos \n", yylineno, $2);
                                                         exit(EXIT_FAILURE);
                                                     }
 
@@ -574,7 +573,7 @@ term    : term_num      {$$ = $1;}
         | IDENTIFIER    {
                             Tuple *lhsVar = utils_findVar(symbolTable, $1, scope);
                             if(lhsVar == NULL) {
-                                    printf("Erro na linha %d :variavel %s nao foi declarada\n", yylval.line, $1);
+                                    printf("Erro na linha %d :variavel %s nao foi declarada\n", yylineno, $1);
                                     exit(EXIT_FAILURE);
                             }
  
@@ -629,7 +628,7 @@ literal_string  : LITERAL_CHAR          { $$ = utils_createStaticInfo($1, "char"
 %%
 
 void yyerror (char *msg) {
-        fprintf (stderr, "Erro na linha %d: %s em '%s'\n", yylval.line, msg, yytext);
+        fprintf (stderr, "Erro na linha %d: %s em '%s'\n", yylineno, msg, yytext);
 }
 
 int main() {

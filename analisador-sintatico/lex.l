@@ -20,7 +20,7 @@
                         }
 */
 %}
-
+%option yylineno
 D       [0-9]
 L       [a-zA-Z_]
 
@@ -30,7 +30,6 @@ L       [a-zA-Z_]
 "*/"                    {comment = 0;}
 "//"(.)*\n              {}
 \n                      {linha++;
-                          yylval.line = linha;
                         }
 [" " | \t]              {}
 \(                      { if(!comment) return L_PARENTHESIS; }
