@@ -20,7 +20,7 @@ bool linkedList_nodesHaveTheSameKey(Node *node1, Node *node2) {
 
 void linkedList_freeNode(Node *node) {
     free(node->key);
-    //tuple_freeTuple(node->tuple);
+    tuple_freeTuple(node->tuple);
     free(node);
 }
 
