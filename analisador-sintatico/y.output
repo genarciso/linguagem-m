@@ -27,35 +27,35 @@ Gramática
     2 decls_list: decls
     3           | decls decls_list
 
-    4 stm_list: stm
-    5         | stm stm_list
+    4 decls: decl SEMICOLON
+    5      | assingment SEMICOLON
+    6      | initialization SEMICOLON
+    7      | fun_struct
 
-    6 stm: decl SEMICOLON
-    7    | cond_stm
-    8    | loop_stm
-    9    | print_stm SEMICOLON
-   10    | expres_list SEMICOLON
-   11    | assingment SEMICOLON
-   12    | initialization SEMICOLON
+    8 decl: type id_list
 
-   13 decls: decl SEMICOLON
-   14      | assingment SEMICOLON
-   15      | initialization SEMICOLON
-   16      | fun_struct
+    9 assingment: IDENTIFIER ASSINGMENT expr
 
-   17 decl: type id_list
+   10 initialization: type IDENTIFIER ASSINGMENT expr
 
-   18 assingment: IDENTIFIER ASSINGMENT expr
+   11 print_stm: PRINT L_PARENTHESIS literal_string R_PARENTHESIS
+   12          | PRINT L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS
+   13          | PRINTF L_PARENTHESIS literal_string R_PARENTHESIS
+   14          | PRINTF L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS
 
-   19 initialization: type IDENTIFIER ASSINGMENT expr
+   15 id_list: IDENTIFIER
+   16        | IDENTIFIER COMMA id_list
 
-   20 print_stm: PRINT L_PARENTHESIS literal_string R_PARENTHESIS
-   21          | PRINT L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS
-   22          | PRINTF L_PARENTHESIS literal_string R_PARENTHESIS
-   23          | PRINTF L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS
+   17 stm_list: stm
+   18         | stm stm_list
 
-   24 id_list: IDENTIFIER
-   25        | IDENTIFIER COMMA id_list
+   19 stm: decl SEMICOLON
+   20    | cond_stm
+   21    | loop_stm
+   22    | print_stm SEMICOLON
+   23    | expres_list SEMICOLON
+   24    | assingment SEMICOLON
+   25    | initialization SEMICOLON
 
    26 expres_list: expr SEMICOLON
    27            | expr SEMICOLON expres_list
@@ -174,7 +174,7 @@ Terminais, com as regras onde eles aparecem
     $end (0) 0
     error (256)
     LITERAL_STRING <sValue> (258) 103
-    IDENTIFIER <sValue> (259) 18 19 24 25 51 65 94
+    IDENTIFIER <sValue> (259) 9 10 15 16 51 65 94
     INT_TYPE <sValue> (260) 55
     FLOAT_TYPE <sValue> (261) 56
     DOUBLE_TYPE <sValue> (262) 57
@@ -195,7 +195,7 @@ Terminais, com as regras onde eles aparecem
     STAR (277) 70
     MOD_OP (278) 71
     FACT_OP (279)
-    ASSINGMENT (280) 18 19
+    ASSINGMENT (280) 9 10
     INC_OP (281) 72
     DEC_OP (282) 73
     GE_OP (283) 88
@@ -207,8 +207,8 @@ Terminais, com as regras onde eles aparecem
     AND_OP (289) 83
     OR_OP (290) 84
     NOT_OP (291) 85
-    L_PARENTHESIS (292) 20 21 22 23 32 37 38 44 45 48 51 75 77
-    R_PARENTHESIS (293) 20 21 22 23 32 37 38 44 45 48 51 75 77
+    L_PARENTHESIS (292) 11 12 13 14 32 37 38 44 45 48 51 75 77
+    R_PARENTHESIS (293) 11 12 13 14 32 37 38 44 45 48 51 75 77
     L_KEY (294) 38 53
     R_KEY (295) 38 53
     L_BRACKET (296)
@@ -222,16 +222,16 @@ Terminais, com as regras onde eles aparecem
     SWITCH_STM (304) 38
     CONTINUE (305)
     BREAK (306) 38 41
-    PRINT (307) 20 21
-    PRINTF (308) 22 23
+    PRINT (307) 11 12
+    PRINTF (308) 13 14
     CASE (309) 41
     DEFAULT (310) 38
     CONSTANT (311)
     RETURN (312)
     EOL (313)
     ADDRESS (314)
-    SEMICOLON (315) 6 9 10 11 12 13 14 15 26 27 38 41 45 48
-    COMMA (316) 21 23 25 64
+    SEMICOLON (315) 4 5 6 19 22 23 24 25 26 27 38 41 45 48
+    COMMA (316) 12 14 16 64
     DOT (317)
     DOUBLE_DOT (318) 38 41
     MALLOC_OP (319)
@@ -249,39 +249,39 @@ Não terminais com as regras onde eles aparecem
     decls_list <sValue> (69)
         à esquerda: 2 3
         à direita: 1 3
-    stm_list <sValue> (70)
-        à esquerda: 4 5
-        à direita: 5 38 41 53
-    stm <sValue> (71)
-        à esquerda: 6 7 8 9 10 11 12
-        à direita: 4 5
-    decls <sValue> (72)
-        à esquerda: 13 14 15 16
+    decls <sValue> (70)
+        à esquerda: 4 5 6 7
         à direita: 2 3
-    decl <sValue> (73)
-        à esquerda: 17
-        à direita: 6 13
-    assingment <sValue> (74)
-        à esquerda: 18
-        à direita: 11 14 50
-    initialization <sValue> (75)
-        à esquerda: 19
-        à direita: 12 15 48
-    print_stm <sValue> (76)
-        à esquerda: 20 21 22 23
-        à direita: 9
-    id_list <sValue> (77)
-        à esquerda: 24 25
-        à direita: 17 21 23 25
+    decl <sValue> (71)
+        à esquerda: 8
+        à direita: 4 19
+    assingment <sValue> (72)
+        à esquerda: 9
+        à direita: 5 24 50
+    initialization <sValue> (73)
+        à esquerda: 10
+        à direita: 6 25 48
+    print_stm <sValue> (74)
+        à esquerda: 11 12 13 14
+        à direita: 22
+    id_list <sValue> (75)
+        à esquerda: 15 16
+        à direita: 8 12 14 16
+    stm_list <sValue> (76)
+        à esquerda: 17 18
+        à direita: 18 38 41 53
+    stm <sValue> (77)
+        à esquerda: 19 20 21 22 23 24 25
+        à direita: 17 18
     expres_list <sValue> (78)
         à esquerda: 26 27
-        à direita: 10 27
+        à direita: 23 27
     expr <strValue> (79)
         à esquerda: 28 29
-        à direita: 18 19 26 27
+        à direita: 9 10 26 27
     cond_stm <sValue> (80)
         à esquerda: 30 31
-        à direita: 7
+        à direita: 20
     if_struct <sValue> (81)
         à esquerda: 32
         à direita: 30
@@ -305,7 +305,7 @@ Não terminais com as regras onde eles aparecem
         à direita: 40
     loop_stm <sValue> (88)
         à esquerda: 42 43
-        à direita: 8
+        à direita: 21
     while_struct <sValue> (89)
         à esquerda: 44 45
         à direita: 42
@@ -323,7 +323,7 @@ Não terminais com as regras onde eles aparecem
         à direita: 48
     fun_struct <sValue> (94)
         à esquerda: 51
-        à direita: 16
+        à direita: 7
     block <sValue> (95)
         à esquerda: 53
         à direita: 32 34 37 44 45 48 51
@@ -332,7 +332,7 @@ Não terminais com as regras onde eles aparecem
         à direita: 53
     type <sValue> (97)
         à esquerda: 54 55 56 57 58 59 60 61
-        à direita: 17 19 51 65
+        à direita: 8 10 51 65
     par_list <sValue> (98)
         à esquerda: 62 63 64
         à direita: 51 64
@@ -371,7 +371,7 @@ Não terminais com as regras onde eles aparecem
         à direita: 38 41
     literal_string <strValue> (110)
         à esquerda: 102 103
-        à direita: 20 21 22 23 81 82 101
+        à direita: 11 12 13 14 81 82 101
 
 
 Estado 0
@@ -400,7 +400,7 @@ Estado 0
 
 Estado 1
 
-   18 assingment: IDENTIFIER . ASSINGMENT expr
+    9 assingment: IDENTIFIER . ASSINGMENT expr
 
     ASSINGMENT  deslocar, e ir ao estado 18
 
@@ -503,36 +503,36 @@ Estado 12
 
 Estado 13
 
-   13 decls: decl . SEMICOLON
+    4 decls: decl . SEMICOLON
 
     SEMICOLON  deslocar, e ir ao estado 21
 
 
 Estado 14
 
-   14 decls: assingment . SEMICOLON
+    5 decls: assingment . SEMICOLON
 
     SEMICOLON  deslocar, e ir ao estado 22
 
 
 Estado 15
 
-   15 decls: initialization . SEMICOLON
+    6 decls: initialization . SEMICOLON
 
     SEMICOLON  deslocar, e ir ao estado 23
 
 
 Estado 16
 
-   16 decls: fun_struct .
+    7 decls: fun_struct .
 
-    $padrão  reduzir usando a regra 16 (decls)
+    $padrão  reduzir usando a regra 7 (decls)
 
 
 Estado 17
 
-   17 decl: type . id_list
-   19 initialization: type . IDENTIFIER ASSINGMENT expr
+    8 decl: type . id_list
+   10 initialization: type . IDENTIFIER ASSINGMENT expr
    51 fun_struct: type . IDENTIFIER L_PARENTHESIS par_list R_PARENTHESIS block
 
     IDENTIFIER  deslocar, e ir ao estado 24
@@ -542,7 +542,7 @@ Estado 17
 
 Estado 18
 
-   18 assingment: IDENTIFIER ASSINGMENT . expr
+    9 assingment: IDENTIFIER ASSINGMENT . expr
 
     LITERAL_STRING  deslocar, e ir ao estado 26
     IDENTIFIER      deslocar, e ir ao estado 27
@@ -581,44 +581,44 @@ Estado 20
 
 Estado 21
 
-   13 decls: decl SEMICOLON .
+    4 decls: decl SEMICOLON .
 
-    $padrão  reduzir usando a regra 13 (decls)
+    $padrão  reduzir usando a regra 4 (decls)
 
 
 Estado 22
 
-   14 decls: assingment SEMICOLON .
+    5 decls: assingment SEMICOLON .
 
-    $padrão  reduzir usando a regra 14 (decls)
+    $padrão  reduzir usando a regra 5 (decls)
 
 
 Estado 23
 
-   15 decls: initialization SEMICOLON .
+    6 decls: initialization SEMICOLON .
 
-    $padrão  reduzir usando a regra 15 (decls)
+    $padrão  reduzir usando a regra 6 (decls)
 
 
 Estado 24
 
-   19 initialization: type IDENTIFIER . ASSINGMENT expr
-   24 id_list: IDENTIFIER .
-   25        | IDENTIFIER . COMMA id_list
+   10 initialization: type IDENTIFIER . ASSINGMENT expr
+   15 id_list: IDENTIFIER .
+   16        | IDENTIFIER . COMMA id_list
    51 fun_struct: type IDENTIFIER . L_PARENTHESIS par_list R_PARENTHESIS block
 
     ASSINGMENT     deslocar, e ir ao estado 44
     L_PARENTHESIS  deslocar, e ir ao estado 45
     COMMA          deslocar, e ir ao estado 46
 
-    $padrão  reduzir usando a regra 24 (id_list)
+    $padrão  reduzir usando a regra 15 (id_list)
 
 
 Estado 25
 
-   17 decl: type id_list .
+    8 decl: type id_list .
 
-    $padrão  reduzir usando a regra 17 (decl)
+    $padrão  reduzir usando a regra 8 (decl)
 
 
 Estado 26
@@ -704,9 +704,9 @@ Estado 34
 
 Estado 35
 
-   18 assingment: IDENTIFIER ASSINGMENT expr .
+    9 assingment: IDENTIFIER ASSINGMENT expr .
 
-    $padrão  reduzir usando a regra 18 (assingment)
+    $padrão  reduzir usando a regra 9 (assingment)
 
 
 Estado 36
@@ -806,7 +806,7 @@ Estado 43
 
 Estado 44
 
-   19 initialization: type IDENTIFIER ASSINGMENT . expr
+   10 initialization: type IDENTIFIER ASSINGMENT . expr
 
     LITERAL_STRING  deslocar, e ir ao estado 26
     IDENTIFIER      deslocar, e ir ao estado 27
@@ -851,7 +851,7 @@ Estado 45
 
 Estado 46
 
-   25 id_list: IDENTIFIER COMMA . id_list
+   16 id_list: IDENTIFIER COMMA . id_list
 
     IDENTIFIER  deslocar, e ir ao estado 73
 
@@ -1127,9 +1127,9 @@ Estado 68
 
 Estado 69
 
-   19 initialization: type IDENTIFIER ASSINGMENT expr .
+   10 initialization: type IDENTIFIER ASSINGMENT expr .
 
-    $padrão  reduzir usando a regra 19 (initialization)
+    $padrão  reduzir usando a regra 10 (initialization)
 
 
 Estado 70
@@ -1158,19 +1158,19 @@ Estado 72
 
 Estado 73
 
-   24 id_list: IDENTIFIER .
-   25        | IDENTIFIER . COMMA id_list
+   15 id_list: IDENTIFIER .
+   16        | IDENTIFIER . COMMA id_list
 
     COMMA  deslocar, e ir ao estado 46
 
-    $padrão  reduzir usando a regra 24 (id_list)
+    $padrão  reduzir usando a regra 15 (id_list)
 
 
 Estado 74
 
-   25 id_list: IDENTIFIER COMMA id_list .
+   16 id_list: IDENTIFIER COMMA id_list .
 
-    $padrão  reduzir usando a regra 25 (id_list)
+    $padrão  reduzir usando a regra 16 (id_list)
 
 
 Estado 75
@@ -1425,12 +1425,12 @@ Estado 95
     PRINT           deslocar, e ir ao estado 102
     PRINTF          deslocar, e ir ao estado 103
 
-    stm_list        ir ao estado 104
-    stm             ir ao estado 105
-    decl            ir ao estado 106
-    assingment      ir ao estado 107
-    initialization  ir ao estado 108
-    print_stm       ir ao estado 109
+    decl            ir ao estado 104
+    assingment      ir ao estado 105
+    initialization  ir ao estado 106
+    print_stm       ir ao estado 107
+    stm_list        ir ao estado 108
+    stm             ir ao estado 109
     expres_list     ir ao estado 110
     expr            ir ao estado 111
     cond_stm        ir ao estado 112
@@ -1452,7 +1452,7 @@ Estado 95
 
 Estado 96
 
-   18 assingment: IDENTIFIER . ASSINGMENT expr
+    9 assingment: IDENTIFIER . ASSINGMENT expr
    94 term: IDENTIFIER .
 
     ASSINGMENT  deslocar, e ir ao estado 18
@@ -1499,31 +1499,59 @@ Estado 101
 
 Estado 102
 
-   20 print_stm: PRINT . L_PARENTHESIS literal_string R_PARENTHESIS
-   21          | PRINT . L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS
+   11 print_stm: PRINT . L_PARENTHESIS literal_string R_PARENTHESIS
+   12          | PRINT . L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS
 
     L_PARENTHESIS  deslocar, e ir ao estado 124
 
 
 Estado 103
 
-   22 print_stm: PRINTF . L_PARENTHESIS literal_string R_PARENTHESIS
-   23          | PRINTF . L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS
+   13 print_stm: PRINTF . L_PARENTHESIS literal_string R_PARENTHESIS
+   14          | PRINTF . L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS
 
     L_PARENTHESIS  deslocar, e ir ao estado 125
 
 
 Estado 104
 
-   53 block: L_KEY $@3 stm_list . R_KEY
+   19 stm: decl . SEMICOLON
 
-    R_KEY  deslocar, e ir ao estado 126
+    SEMICOLON  deslocar, e ir ao estado 126
 
 
 Estado 105
 
-    4 stm_list: stm .
-    5         | stm . stm_list
+   24 stm: assingment . SEMICOLON
+
+    SEMICOLON  deslocar, e ir ao estado 127
+
+
+Estado 106
+
+   25 stm: initialization . SEMICOLON
+
+    SEMICOLON  deslocar, e ir ao estado 128
+
+
+Estado 107
+
+   22 stm: print_stm . SEMICOLON
+
+    SEMICOLON  deslocar, e ir ao estado 129
+
+
+Estado 108
+
+   53 block: L_KEY $@3 stm_list . R_KEY
+
+    R_KEY  deslocar, e ir ao estado 130
+
+
+Estado 109
+
+   17 stm_list: stm .
+   18         | stm . stm_list
 
     LITERAL_STRING  deslocar, e ir ao estado 26
     IDENTIFIER      deslocar, e ir ao estado 96
@@ -1550,14 +1578,14 @@ Estado 105
     PRINT           deslocar, e ir ao estado 102
     PRINTF          deslocar, e ir ao estado 103
 
-    $padrão  reduzir usando a regra 4 (stm_list)
+    $padrão  reduzir usando a regra 17 (stm_list)
 
-    stm_list        ir ao estado 127
-    stm             ir ao estado 105
-    decl            ir ao estado 106
-    assingment      ir ao estado 107
-    initialization  ir ao estado 108
-    print_stm       ir ao estado 109
+    decl            ir ao estado 104
+    assingment      ir ao estado 105
+    initialization  ir ao estado 106
+    print_stm       ir ao estado 107
+    stm_list        ir ao estado 131
+    stm             ir ao estado 109
     expres_list     ir ao estado 110
     expr            ir ao estado 111
     cond_stm        ir ao estado 112
@@ -1577,37 +1605,9 @@ Estado 105
     literal_string  ir ao estado 43
 
 
-Estado 106
-
-    6 stm: decl . SEMICOLON
-
-    SEMICOLON  deslocar, e ir ao estado 128
-
-
-Estado 107
-
-   11 stm: assingment . SEMICOLON
-
-    SEMICOLON  deslocar, e ir ao estado 129
-
-
-Estado 108
-
-   12 stm: initialization . SEMICOLON
-
-    SEMICOLON  deslocar, e ir ao estado 130
-
-
-Estado 109
-
-    9 stm: print_stm . SEMICOLON
-
-    SEMICOLON  deslocar, e ir ao estado 131
-
-
 Estado 110
 
-   10 stm: expres_list . SEMICOLON
+   23 stm: expres_list . SEMICOLON
 
     SEMICOLON  deslocar, e ir ao estado 132
 
@@ -1622,9 +1622,9 @@ Estado 111
 
 Estado 112
 
-    7 stm: cond_stm .
+   20 stm: cond_stm .
 
-    $padrão  reduzir usando a regra 7 (stm)
+    $padrão  reduzir usando a regra 20 (stm)
 
 
 Estado 113
@@ -1643,9 +1643,9 @@ Estado 114
 
 Estado 115
 
-    8 stm: loop_stm .
+   21 stm: loop_stm .
 
-    $padrão  reduzir usando a regra 8 (stm)
+    $padrão  reduzir usando a regra 21 (stm)
 
 
 Estado 116
@@ -1664,8 +1664,8 @@ Estado 117
 
 Estado 118
 
-   17 decl: type . id_list
-   19 initialization: type . IDENTIFIER ASSINGMENT expr
+    8 decl: type . id_list
+   10 initialization: type . IDENTIFIER ASSINGMENT expr
 
     IDENTIFIER  deslocar, e ir ao estado 134
 
@@ -1758,8 +1758,8 @@ Estado 123
 
 Estado 124
 
-   20 print_stm: PRINT L_PARENTHESIS . literal_string R_PARENTHESIS
-   21          | PRINT L_PARENTHESIS . literal_string COMMA id_list R_PARENTHESIS
+   11 print_stm: PRINT L_PARENTHESIS . literal_string R_PARENTHESIS
+   12          | PRINT L_PARENTHESIS . literal_string COMMA id_list R_PARENTHESIS
 
     LITERAL_STRING  deslocar, e ir ao estado 26
     LITERAL_CHAR    deslocar, e ir ao estado 28
@@ -1769,8 +1769,8 @@ Estado 124
 
 Estado 125
 
-   22 print_stm: PRINTF L_PARENTHESIS . literal_string R_PARENTHESIS
-   23          | PRINTF L_PARENTHESIS . literal_string COMMA id_list R_PARENTHESIS
+   13 print_stm: PRINTF L_PARENTHESIS . literal_string R_PARENTHESIS
+   14          | PRINTF L_PARENTHESIS . literal_string COMMA id_list R_PARENTHESIS
 
     LITERAL_STRING  deslocar, e ir ao estado 26
     LITERAL_CHAR    deslocar, e ir ao estado 28
@@ -1780,51 +1780,51 @@ Estado 125
 
 Estado 126
 
+   19 stm: decl SEMICOLON .
+
+    $padrão  reduzir usando a regra 19 (stm)
+
+
+Estado 127
+
+   24 stm: assingment SEMICOLON .
+
+    $padrão  reduzir usando a regra 24 (stm)
+
+
+Estado 128
+
+   25 stm: initialization SEMICOLON .
+
+    $padrão  reduzir usando a regra 25 (stm)
+
+
+Estado 129
+
+   22 stm: print_stm SEMICOLON .
+
+    $padrão  reduzir usando a regra 22 (stm)
+
+
+Estado 130
+
    53 block: L_KEY $@3 stm_list R_KEY .
 
     $padrão  reduzir usando a regra 53 (block)
 
 
-Estado 127
-
-    5 stm_list: stm stm_list .
-
-    $padrão  reduzir usando a regra 5 (stm_list)
-
-
-Estado 128
-
-    6 stm: decl SEMICOLON .
-
-    $padrão  reduzir usando a regra 6 (stm)
-
-
-Estado 129
-
-   11 stm: assingment SEMICOLON .
-
-    $padrão  reduzir usando a regra 11 (stm)
-
-
-Estado 130
-
-   12 stm: initialization SEMICOLON .
-
-    $padrão  reduzir usando a regra 12 (stm)
-
-
 Estado 131
 
-    9 stm: print_stm SEMICOLON .
+   18 stm_list: stm stm_list .
 
-    $padrão  reduzir usando a regra 9 (stm)
+    $padrão  reduzir usando a regra 18 (stm_list)
 
 
 Estado 132
 
-   10 stm: expres_list SEMICOLON .
+   23 stm: expres_list SEMICOLON .
 
-    $padrão  reduzir usando a regra 10 (stm)
+    $padrão  reduzir usando a regra 23 (stm)
 
 
 Estado 133
@@ -1858,14 +1858,14 @@ Estado 133
 
 Estado 134
 
-   19 initialization: type IDENTIFIER . ASSINGMENT expr
-   24 id_list: IDENTIFIER .
-   25        | IDENTIFIER . COMMA id_list
+   10 initialization: type IDENTIFIER . ASSINGMENT expr
+   15 id_list: IDENTIFIER .
+   16        | IDENTIFIER . COMMA id_list
 
     ASSINGMENT  deslocar, e ir ao estado 44
     COMMA       deslocar, e ir ao estado 46
 
-    $padrão  reduzir usando a regra 24 (id_list)
+    $padrão  reduzir usando a regra 15 (id_list)
 
 
 Estado 135
@@ -1941,8 +1941,8 @@ Estado 141
 
 Estado 142
 
-   20 print_stm: PRINT L_PARENTHESIS literal_string . R_PARENTHESIS
-   21          | PRINT L_PARENTHESIS literal_string . COMMA id_list R_PARENTHESIS
+   11 print_stm: PRINT L_PARENTHESIS literal_string . R_PARENTHESIS
+   12          | PRINT L_PARENTHESIS literal_string . COMMA id_list R_PARENTHESIS
 
     R_PARENTHESIS  deslocar, e ir ao estado 151
     COMMA          deslocar, e ir ao estado 152
@@ -1950,8 +1950,8 @@ Estado 142
 
 Estado 143
 
-   22 print_stm: PRINTF L_PARENTHESIS literal_string . R_PARENTHESIS
-   23          | PRINTF L_PARENTHESIS literal_string . COMMA id_list R_PARENTHESIS
+   13 print_stm: PRINTF L_PARENTHESIS literal_string . R_PARENTHESIS
+   14          | PRINTF L_PARENTHESIS literal_string . COMMA id_list R_PARENTHESIS
 
     R_PARENTHESIS  deslocar, e ir ao estado 153
     COMMA          deslocar, e ir ao estado 154
@@ -1982,7 +1982,7 @@ Estado 146
 
 Estado 147
 
-   19 initialization: type . IDENTIFIER ASSINGMENT expr
+   10 initialization: type . IDENTIFIER ASSINGMENT expr
 
     IDENTIFIER  deslocar, e ir ao estado 157
 
@@ -2029,14 +2029,14 @@ Estado 150
 
 Estado 151
 
-   20 print_stm: PRINT L_PARENTHESIS literal_string R_PARENTHESIS .
+   11 print_stm: PRINT L_PARENTHESIS literal_string R_PARENTHESIS .
 
-    $padrão  reduzir usando a regra 20 (print_stm)
+    $padrão  reduzir usando a regra 11 (print_stm)
 
 
 Estado 152
 
-   21 print_stm: PRINT L_PARENTHESIS literal_string COMMA . id_list R_PARENTHESIS
+   12 print_stm: PRINT L_PARENTHESIS literal_string COMMA . id_list R_PARENTHESIS
 
     IDENTIFIER  deslocar, e ir ao estado 73
 
@@ -2045,14 +2045,14 @@ Estado 152
 
 Estado 153
 
-   22 print_stm: PRINTF L_PARENTHESIS literal_string R_PARENTHESIS .
+   13 print_stm: PRINTF L_PARENTHESIS literal_string R_PARENTHESIS .
 
-    $padrão  reduzir usando a regra 22 (print_stm)
+    $padrão  reduzir usando a regra 13 (print_stm)
 
 
 Estado 154
 
-   23 print_stm: PRINTF L_PARENTHESIS literal_string COMMA . id_list R_PARENTHESIS
+   14 print_stm: PRINTF L_PARENTHESIS literal_string COMMA . id_list R_PARENTHESIS
 
     IDENTIFIER  deslocar, e ir ao estado 73
 
@@ -2099,7 +2099,7 @@ Estado 156
 
 Estado 157
 
-   19 initialization: type IDENTIFIER . ASSINGMENT expr
+   10 initialization: type IDENTIFIER . ASSINGMENT expr
 
     ASSINGMENT  deslocar, e ir ao estado 44
 
@@ -2138,14 +2138,14 @@ Estado 160
 
 Estado 161
 
-   21 print_stm: PRINT L_PARENTHESIS literal_string COMMA id_list . R_PARENTHESIS
+   12 print_stm: PRINT L_PARENTHESIS literal_string COMMA id_list . R_PARENTHESIS
 
     R_PARENTHESIS  deslocar, e ir ao estado 172
 
 
 Estado 162
 
-   23 print_stm: PRINTF L_PARENTHESIS literal_string COMMA id_list . R_PARENTHESIS
+   14 print_stm: PRINTF L_PARENTHESIS literal_string COMMA id_list . R_PARENTHESIS
 
     R_PARENTHESIS  deslocar, e ir ao estado 173
 
@@ -2244,16 +2244,16 @@ Estado 171
 
 Estado 172
 
-   21 print_stm: PRINT L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS .
+   12 print_stm: PRINT L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS .
 
-    $padrão  reduzir usando a regra 21 (print_stm)
+    $padrão  reduzir usando a regra 12 (print_stm)
 
 
 Estado 173
 
-   23 print_stm: PRINTF L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS .
+   14 print_stm: PRINTF L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS .
 
-    $padrão  reduzir usando a regra 23 (print_stm)
+    $padrão  reduzir usando a regra 14 (print_stm)
 
 
 Estado 174
@@ -2430,12 +2430,12 @@ Estado 187
     PRINT           deslocar, e ir ao estado 102
     PRINTF          deslocar, e ir ao estado 103
 
+    decl            ir ao estado 104
+    assingment      ir ao estado 105
+    initialization  ir ao estado 106
+    print_stm       ir ao estado 107
     stm_list        ir ao estado 191
-    stm             ir ao estado 105
-    decl            ir ao estado 106
-    assingment      ir ao estado 107
-    initialization  ir ao estado 108
-    print_stm       ir ao estado 109
+    stm             ir ao estado 109
     expres_list     ir ao estado 110
     expr            ir ao estado 111
     cond_stm        ir ao estado 112
@@ -2484,12 +2484,12 @@ Estado 188
     PRINT           deslocar, e ir ao estado 102
     PRINTF          deslocar, e ir ao estado 103
 
+    decl            ir ao estado 104
+    assingment      ir ao estado 105
+    initialization  ir ao estado 106
+    print_stm       ir ao estado 107
     stm_list        ir ao estado 192
-    stm             ir ao estado 105
-    decl            ir ao estado 106
-    assingment      ir ao estado 107
-    initialization  ir ao estado 108
-    print_stm       ir ao estado 109
+    stm             ir ao estado 109
     expres_list     ir ao estado 110
     expr            ir ao estado 111
     cond_stm        ir ao estado 112

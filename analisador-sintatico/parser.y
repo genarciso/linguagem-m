@@ -88,8 +88,8 @@ program : decls_list    {
                         }
         ;
 
-decls_list : decls {$$ = $1;}
-           | decls decls_list{
+decls_list : decls            {$$ = $1;}
+           | decls decls_list {
                                 int size = strlen($1) + strlen($2) + 3;
                                 char * s = malloc(sizeof(char) * size);
                                 sprintf(s, "%s\n%s\n", $1, $2);
@@ -97,58 +97,31 @@ decls_list : decls {$$ = $1;}
                                 free($2);
                                 
                                 $$ = s;
-                             }
+                              }
             ;
 
-stm_list    : stm                {
-                                            int size = strlen($1) + 2;
-                                            char * s = malloc(sizeof(char) * size);
-                                            sprintf(s, "%s;", $1);
-                                            free($1);
-                                            $$ = s;
-                                        }
-            | stm stm_list    {
-                                            int size = strlen($1) + strlen($2) + 3;
-                                            char * s = malloc(sizeof(char) * size);
-                                            sprintf(s, "%s\n%s", $1, $2);
-                                            free($1);
-                                            
-                                            $$ = s;
-                                        }
-            ;
-
-stm : decl           SEMICOLON {$$ = $1;}
-    | cond_stm                 {$$ = $1;}
-    | loop_stm                 {$$ = $1;} 
-    | print_stm      SEMICOLON {$$ = $1;}
-    | expres_list    SEMICOLON {$$ = $1;}
-    | assingment     SEMICOLON {$$ = $1;}
-    | initialization SEMICOLON {$$ = $1;}
-    ;
-
-decls :
-        decl            SEMICOLON       {
-                                            int size = strlen($1) + 2;
-                                            char * s = malloc(sizeof(char) * size);
-                                            sprintf(s, "%s;", $1);
-                                            free($1);
-                                            $$ = s;
-                                        }
-      | assingment      SEMICOLON       {
-                                            int size = strlen($1) + 2;
-                                            char * s = malloc(sizeof(char) * size);
-                                            sprintf(s, "%s;", $1);
-                                            free($1);
-                                            $$ = s;
-                                        }
-      | initialization  SEMICOLON       {
-                                            int size = strlen($1) + 2;
-                                            char * s = malloc(sizeof(char) * size);
-                                            sprintf(s, "%s;", $1);
-                                            free($1);
-                                            $$ = s;
-                                        }
-      | fun_struct                      {$$ = $1;}
+decls : decl            SEMICOLON   {
+                                      int size = strlen($1) + 2;
+                                      char * s = malloc(sizeof(char) * size);
+                                      sprintf(s, "%s;", $1);
+                                      free($1);
+                                      $$ = s;
+                                    }
+      | assingment      SEMICOLON   {
+                                      int size = strlen($1) + 2;
+                                      char * s = malloc(sizeof(char) * size);
+                                      sprintf(s, "%s;", $1);
+                                      free($1);
+                                      $$ = s;
+                                    }
+      | initialization  SEMICOLON   {
+                                      int size = strlen($1) + 2;
+                                      char * s = malloc(sizeof(char) * size);
+                                      sprintf(s, "%s;", $1);
+                                      free($1);
+                                      $$ = s;
+                                    }
+      | fun_struct                  {$$ = $1;}
       ;
 
 decl : type id_list {
@@ -178,50 +151,48 @@ decl : type id_list {
         }
        ;
 
-assingment : 
-               IDENTIFIER ASSINGMENT expr {    
-               Tuple *lhsVar = utils_findVar(symbolTable, $1, scope);
-               if(lhsVar == NULL) {
-                    printf("Erro na linha %d : variavel %s nao foi declarada\n", yylineno, $1);
-                    exit(EXIT_FAILURE);
-               }
+assingment :IDENTIFIER ASSINGMENT expr {    
+                          Tuple *lhsVar = utils_findVar(symbolTable, $1, scope);
+                          if(lhsVar == NULL) {
+                            printf("Erro na linha %d : variavel %s nao foi declarada\n", yylineno, $1);
+                            exit(EXIT_FAILURE);
+                          }
                
-               if(strcmp(lhsVar->type, $3->type) != 0) {
-                    printf("o tipo da variavel %s (%s) ", $1, lhsVar->type); 
-                    printf("e da expressao do tipo %s sao incompativeis\n", $3->type); 
-                    exit(EXIT_FAILURE);
-               }
+                          if(strcmp(lhsVar->type, $3->type) != 0) {
+                            printf("o tipo da variavel %s (%s) ", $1, lhsVar->type); 
+                            printf("e da expressao do tipo %s sao incompativeis\n", $3->type); 
+                            exit(EXIT_FAILURE);
+                          }
               
-               int size = strlen($1) + strlen($3->value) + 4;
-               char * s = malloc(sizeof(char) * size);
-               sprintf(s, "%s = %s", $1, $3->value);
+                          int size = strlen($1) + strlen($3->value) + 4;
+                          char * s = malloc(sizeof(char) * size);
+                          sprintf(s, "%s = %s", $1, $3->value);
 
-               $$ = s;
-          }
-          ;
+                          $$ = s;
+            }
+            ;
 
 
-initialization : 
-               type IDENTIFIER ASSINGMENT expr {
-               char *type = utils_strRemoveSpace($1);
+initialization  : type IDENTIFIER ASSINGMENT expr {
+                  char *type = utils_strRemoveSpace($1);
                
-               if(strcmp(type, $4->type) != 0) {
+                  if(strcmp(type, $4->type) != 0) {
                     printf("tipo da variavel %s incompativel com a expressao do tipo %s\n", $2, $4->type);
                     exit(EXIT_FAILURE);
-               }
+                  }
                
-               char *key = utils_strAppendInt($2, scope); 
-               utils_addVarSymbolTable(symbolTable, type, $2, key);
-               free(type);
-               list_add(varNamesScope[scope], key);
+                  char *key = utils_strAppendInt($2, scope); 
+                  utils_addVarSymbolTable(symbolTable, type, $2, key);
+                  free(type);
+                  list_add(varNamesScope[scope], key);
 
-               int size = strlen($1) + strlen($2) + strlen($4->value) + 5;
-               char * s = malloc(sizeof(char) * size);
-               sprintf(s, "%s %s = %s;", $1, $2,$4->value);
-               $$ = s;
+                  int size = strlen($1) + strlen($2) + strlen($4->value) + 5;
+                  char * s = malloc(sizeof(char) * size);
+                  sprintf(s, "%s %s = %s", $1, $2,$4->value);
+                  $$ = s;
 
-          }
-          ;
+                }
+                ;
 
 print_stm   : PRINT L_PARENTHESIS literal_string R_PARENTHESIS {
                                                                     int size = 8 + strlen($3->value);
@@ -410,7 +381,6 @@ for_struct_stm : arit_expr {$$ = $1;}
                | assingment {$$ = utils_createStaticInfo($1, "null"); }
 
 fun_struct  : type IDENTIFIER L_PARENTHESIS par_list R_PARENTHESIS block { 
-                                        printf("asd\n");
                                         int size = 5 + strlen($1) + strlen($4) + strlen($6);
                                         char * s = malloc(sizeof(char) * size);
                                         sprintf(s, "%s %s(%s) %s", $1, $2, $4, $6);
@@ -429,6 +399,32 @@ block : L_KEY {scope++;} stm_list R_KEY {
      }
      ;
 
+stm_list    : stm                {
+                                            int size = strlen($1) + 2;
+                                            char * s = malloc(sizeof(char) * size);
+                                            sprintf(s, "%s;", $1);
+                                            free($1);
+                                            $$ = s;
+                                        }
+            | stm stm_list    {
+                                            int size = strlen($1) + strlen($2) + 3;
+                                            char * s = malloc(sizeof(char) * size);
+                                            sprintf(s, "%s\n%s", $1, $2);
+                                            free($1);
+                                            
+                                            $$ = s;
+                                        }
+            ;
+
+stm : decl           SEMICOLON {$$ = $1;}
+    | cond_stm                 {$$ = $1;}
+    | loop_stm                 {$$ = $1;} 
+    | print_stm      SEMICOLON {$$ = $1;}
+    | expres_list    SEMICOLON {$$ = $1;}
+    | assingment     SEMICOLON {$$ = $1;}
+    | initialization SEMICOLON {$$ = $1;}
+    ;
+
 type: VOID_TYPE     {$$ = $1;}
     | INT_TYPE      {$$ = $1;}
     | FLOAT_TYPE    {$$ = $1;}
@@ -440,7 +436,7 @@ type: VOID_TYPE     {$$ = $1;}
     ;
 
 par_list:                           {}
-        | par_term                  {printf("asd\n"); $$ = $1;}
+        | par_term                  { $$ = $1;}
         | par_term COMMA par_list   { 
                                         int size = 2 + strlen($1) + strlen($3);
                                         char * s = malloc(sizeof(char) * size);
