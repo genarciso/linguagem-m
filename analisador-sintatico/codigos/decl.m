@@ -1,4 +1,4 @@
-double x = 1;
+float xg = 1;
 int y = 0;
 
 float t(int d, int f) {
@@ -10,7 +10,7 @@ double d = 0;
 
 int t2() {
 	double f = 2 ** 3.2 + 10 ** 3;
-	printf("%f\n", f);
+	printf("%f.\n", f);
 }
 
 double s;
@@ -24,8 +24,7 @@ int main(int x) {
 			printf("not\n");
 		}
 	}
-
+	scan(xgs);
 	t2();
 	t(1+1, y);
 }
-
