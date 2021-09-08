@@ -6,16 +6,13 @@ Terminais sem uso na gramática
     CONSTANT
     RETURN
     EOL
-    ADDRESS
     DOT
     MALLOC_OP
     FREE_OP
     CALLOC_OP
 
 
-Estado 36 conflitos: 3 de redução/redução
-Estado 49 conflitos: 1 de deslocamento/redução
-Estado 127 conflitos: 1 de redução/redução
+Estado 42 conflitos: 3 de redução/redução
 
 
 Gramática
@@ -27,98 +24,97 @@ Gramática
     2 decls_list: decls
     3           | decls decls_list
 
-    4 stm_list: stm
-    5         | stm stm_list
+    4 decls: decl SEMICOLON
+    5      | assingment SEMICOLON
+    6      | initialization SEMICOLON
+    7      | fun_struct
 
-    6 stm: decl SEMICOLON
-    7    | cond_stm
-    8    | loop_stm
-    9    | print_stm SEMICOLON
-   10    | scan_stm SEMICOLON
-   11    | expres_list SEMICOLON
-   12    | assingment SEMICOLON
-   13    | initialization SEMICOLON
-   14    | uniry_op SEMICOLON
-   15    | fun_call SEMICOLON
+    8 decl: type id_list
 
-   16 decls: decl SEMICOLON
-   17      | assingment SEMICOLON
-   18      | initialization SEMICOLON
-   19      | fun_struct
+    9 assingment: IDENTIFIER ASSINGMENT expr
 
-   20 decl: type id_list
+   10 initialization: type IDENTIFIER ASSINGMENT expr
 
-   21 assingment: IDENTIFIER ASSINGMENT expr
+   11 print_stm: PRINT L_PARENTHESIS literal_string R_PARENTHESIS
+   12          | PRINT L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS
+   13          | PRINTF L_PARENTHESIS literal_string R_PARENTHESIS
+   14          | PRINTF L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS
+   15          | PRINT L_PARENTHESIS IDENTIFIER R_PARENTHESIS
+   16          | PRINTF L_PARENTHESIS IDENTIFIER R_PARENTHESIS
 
-   22 initialization: type IDENTIFIER ASSINGMENT expr
+   17 scan_stm: SCANF L_PARENTHESIS literal_string COMMA ADDRESS IDENTIFIER R_PARENTHESIS
 
-   23 print_stm: PRINT L_PARENTHESIS literal_string R_PARENTHESIS
-   24          | PRINT L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS
-   25          | PRINTF L_PARENTHESIS literal_string R_PARENTHESIS
-   26          | PRINTF L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS
+   18 id_list: IDENTIFIER
+   19        | IDENTIFIER COMMA id_list
 
-   27 scan_stm: SCAN L_PARENTHESIS IDENTIFIER R_PARENTHESIS
+   20 expres_list: expr SEMICOLON
+   21            | expr SEMICOLON expres_list
 
-   28 id_list: IDENTIFIER
-   29        | IDENTIFIER COMMA id_list
+   22 expr: log_expr
+   23     | arit_expr
 
-   30 expres_list: expr SEMICOLON
-   31            | expr SEMICOLON expres_list
+   24 cond_stm: if_struct
+   25         | switch_struct
 
-   32 expr: log_expr
-   33     | arit_expr
+   26 if_struct: IF_STM L_PARENTHESIS log_expr R_PARENTHESIS L_KEY stm_list R_KEY else_struct
 
-   34 cond_stm: if_struct
-   35         | switch_struct
+   27 else_struct: %empty
+   28            | elseif_list ELSE_STM L_KEY stm_list R_KEY
 
-   36 if_struct: IF_STM L_PARENTHESIS log_expr R_PARENTHESIS block else_struct
+   29 elseif_list: %empty
+   30            | elseif_struct elseif_list
 
-   37 else_struct: %empty
-   38            | elseif_list ELSE_STM block
+   31 elseif_struct: ELSE_IF_STM L_PARENTHESIS log_expr R_PARENTHESIS L_KEY stm_list R_KEY
 
-   39 elseif_list: %empty
-   40            | elseif_struct elseif_list
+   32 switch_struct: SWITCH_STM L_PARENTHESIS literal_term R_PARENTHESIS L_KEY case_list_switch DEFAULT DOUBLE_DOT stm_list BREAK SEMICOLON R_KEY
 
-   41 elseif_struct: ELSE_IF_STM L_PARENTHESIS log_expr R_PARENTHESIS block
+   33 case_list_switch: %empty
+   34                 | case_switch case_list_switch
 
-   42 switch_struct: SWITCH_STM L_PARENTHESIS literal_term R_PARENTHESIS L_KEY case_list_switch DEFAULT DOUBLE_DOT stm_list BREAK SEMICOLON R_KEY
+   35 case_switch: CASE literal_term DOUBLE_DOT stm_list BREAK SEMICOLON
 
-   43 case_list_switch: %empty
-   44                 | case_switch case_list_switch
+   36 loop_stm: while_struct
+   37         | for_struct
 
-   45 case_switch: CASE literal_term DOUBLE_DOT stm_list BREAK SEMICOLON
+   38 while_struct: WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS block
+   39             | DO_STM block WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS SEMICOLON
 
-   46 loop_stm: while_struct
-   47         | for_struct
+   40 $@1: %empty
 
-   48 while_struct: WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS block
-   49             | DO_STM block WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS SEMICOLON
+   41 $@2: %empty
 
-   50 $@1: %empty
+   42 for_struct: FOR_STM L_PARENTHESIS $@1 initialization SEMICOLON log_expr SEMICOLON for_struct_stm R_PARENTHESIS $@2 block
 
-   51 $@2: %empty
+   43 for_struct_stm: uniry_op
+   44               | assingment
 
-   52 for_struct: FOR_STM L_PARENTHESIS $@1 initialization SEMICOLON log_expr SEMICOLON for_struct_stm R_PARENTHESIS $@2 block
+   45 $@3: %empty
 
-   53 for_struct_stm: uniry_op
-   54               | assingment
+   46 fun_call: IDENTIFIER L_PARENTHESIS $@3 param_list_call R_PARENTHESIS
 
-   55 uniry_op: arit_expr INC_OP
-   56         | arit_expr DEC_OP
+   47 $@4: %empty
 
-   57 $@3: %empty
+   48 $@5: %empty
 
-   58 fun_call: IDENTIFIER L_PARENTHESIS $@3 param_list_call R_PARENTHESIS
+   49 fun_struct: type IDENTIFIER L_PARENTHESIS $@4 par_list $@5 R_PARENTHESIS block
 
-   59 $@4: %empty
+   50 $@6: %empty
 
-   60 $@5: %empty
+   51 block: L_KEY $@6 stm_list R_KEY
 
-   61 fun_struct: type IDENTIFIER L_PARENTHESIS $@4 par_list $@5 R_PARENTHESIS block
+   52 stm_list: stm
+   53         | stm stm_list
 
-   62 $@6: %empty
-
-   63 block: L_KEY $@6 stm_list R_KEY
+   54 stm: decl SEMICOLON
+   55    | cond_stm
+   56    | loop_stm
+   57    | print_stm SEMICOLON
+   58    | expres_list SEMICOLON
+   59    | assingment SEMICOLON
+   60    | initialization SEMICOLON
+   61    | uniry_op SEMICOLON
+   62    | fun_call SEMICOLON
+   63    | scan_stm SEMICOLON
 
    64 type: VOID_TYPE
    65     | INT_TYPE
@@ -135,69 +131,72 @@ Gramática
 
    75 par_term: type IDENTIFIER
 
-   76 arit_expr: base
-   77          | arit_expr PLUS_OP base
-   78          | arit_expr SUB_OP base
-   79          | arit_expr DIV_OP base
-   80          | arit_expr STAR base
-   81          | arit_expr MOD_OP base
+   76 param_list_call: %empty
+   77                | expr
+   78                | expr COMMA param_list_call
 
-   82 base: arit_expr_right
+   79 arit_expr: base
+   80          | arit_expr PLUS_OP base
+   81          | arit_expr SUB_OP base
+   82          | arit_expr DIV_OP base
+   83          | arit_expr STAR base
+   84          | arit_expr MOD_OP base
 
-   83 arit_expr_right: arit_expr_base
-   84                | arit_expr_base FACT_OP arit_expr_right
+   85 base: arit_expr_right
 
-   85 arit_expr_base: term
-   86               | L_PARENTHESIS arit_expr R_PARENTHESIS
+   86 arit_expr_right: arit_expr_base
+   87                | arit_expr_base FACT_OP arit_expr_right
 
-   87 log_expr: comp_expr
-   88         | L_PARENTHESIS log_expr R_PARENTHESIS
-   89         | log_expr op_log comp_expr
+   88 arit_expr_base: term
+   89               | L_PARENTHESIS arit_expr R_PARENTHESIS
 
-   90 comp_expr: arit_expr
-   91          | comp_expr op_comp arit_expr
-   92          | literal_string EQ_OP literal_string
-   93          | literal_string NE_OP literal_string
+   90 uniry_op: arit_expr INC_OP
+   91         | arit_expr DEC_OP
 
-   94 op_log: AND_OP
-   95       | OR_OP
-   96       | NOT_OP
+   92 log_expr: comp_expr
+   93         | L_PARENTHESIS log_expr R_PARENTHESIS
+   94         | log_expr op_log comp_expr
 
-   97 op_comp: SE_OP
-   98        | S_OP
-   99        | GE_OP
-  100        | G_OP
-  101        | EQ_OP
-  102        | NE_OP
+   95 comp_expr: term
+   96          | comp_expr op_comp arit_expr
+   97          | literal_string EQ_OP literal_string
+   98          | literal_string NE_OP literal_string
 
-  103 param_list_call: %empty
-  104                | expr
-  105                | expr COMMA param_list_call
+   99 op_log: AND_OP
+  100       | OR_OP
+  101       | NOT_OP
 
-  106 term: term_num
-  107     | log_term
-  108     | IDENTIFIER
+  102 op_comp: SE_OP
+  103        | S_OP
+  104        | GE_OP
+  105        | G_OP
+  106        | EQ_OP
+  107        | NE_OP
 
-  109 term_num: LITERAL_INT
-  110         | LITERAL_FLOAT
-  111         | LITERAL_DOUBLE
+  108 term: term_num
+  109     | log_term
+  110     | IDENTIFIER
 
-  112 log_term: TRUE_VAL
-  113         | FALSE_VAL
+  111 term_num: LITERAL_INT
+  112         | LITERAL_FLOAT
+  113         | LITERAL_DOUBLE
 
-  114 literal_term: term
-  115             | literal_string
+  114 log_term: TRUE_VAL
+  115         | FALSE_VAL
 
-  116 literal_string: LITERAL_CHAR
-  117               | LITERAL_STRING
+  116 literal_term: term
+  117             | literal_string
+
+  118 literal_string: LITERAL_CHAR
+  119               | LITERAL_STRING
 
 
 Terminais, com as regras onde eles aparecem
 
     $end (0) 0
     error (256)
-    LITERAL_STRING <sValue> (258) 117
-    IDENTIFIER <sValue> (259) 21 22 27 28 29 58 61 75 108
+    LITERAL_STRING <sValue> (258) 119
+    IDENTIFIER <sValue> (259) 9 10 15 16 17 18 19 46 49 75 110
     INT_TYPE <sValue> (260) 65
     FLOAT_TYPE <sValue> (261) 66
     DOUBLE_TYPE <sValue> (262) 67
@@ -205,62 +204,62 @@ Terminais, com as regras onde eles aparecem
     BOOLEAN_TYPE <sValue> (264) 70
     MATRIZ_TYPE <sValue> (265) 71
     VOID_TYPE <sValue> (266) 64
-    LITERAL_CHAR <sValue> (267) 116
+    LITERAL_CHAR <sValue> (267) 118
     CHAR_TYPE <sValue> (268) 68
-    SCAN <sValue> (269) 27
-    LITERAL_INT <iValue> (270) 109
-    LITERAL_FLOAT <fValue> (271) 110
-    LITERAL_DOUBLE <dValue> (272) 111
-    TRUE_VAL <bValue> (273) 112
-    FALSE_VAL <bValue> (274) 113
-    PLUS_OP (275) 77
-    SUB_OP (276) 78
-    DIV_OP (277) 79
-    STAR (278) 80
-    MOD_OP (279) 81
-    FACT_OP (280) 84
-    ASSINGMENT (281) 21 22
-    INC_OP (282) 55
-    DEC_OP (283) 56
-    GE_OP (284) 99
-    SE_OP (285) 97
-    EQ_OP (286) 92 101
-    NE_OP (287) 93 102
-    G_OP (288) 100
-    S_OP (289) 98
-    AND_OP (290) 94
-    OR_OP (291) 95
-    NOT_OP (292) 96
-    L_PARENTHESIS (293) 23 24 25 26 27 36 41 42 48 49 52 58 61 86 88
-    R_PARENTHESIS (294) 23 24 25 26 27 36 41 42 48 49 52 58 61 86 88
-    L_KEY (295) 42 63
-    R_KEY (296) 42 63
-    L_BRACKET (297)
-    R_BRACKET (298)
-    IF_STM (299) 36
-    ELSE_STM (300) 38
-    ELSE_IF_STM (301) 41
-    FOR_STM (302) 52
-    DO_STM (303) 49
-    WHILE_STM (304) 48 49
-    SWITCH_STM (305) 42
-    CONTINUE (306)
-    BREAK (307) 42 45
-    PRINT (308) 23 24
-    PRINTF (309) 25 26
-    CASE (310) 45
-    DEFAULT (311) 42
-    CONSTANT (312)
-    RETURN (313)
-    EOL (314)
-    ADDRESS (315)
-    SEMICOLON (316) 6 9 10 11 12 13 14 15 16 17 18 30 31 42 45 49 52
-    COMMA (317) 24 26 29 74 105
-    DOT (318)
-    DOUBLE_DOT (319) 42 45
-    MALLOC_OP (320)
-    FREE_OP (321)
-    CALLOC_OP (322)
+    LITERAL_INT <iValue> (269) 111
+    LITERAL_FLOAT <fValue> (270) 112
+    LITERAL_DOUBLE <dValue> (271) 113
+    TRUE_VAL <bValue> (272) 114
+    FALSE_VAL <bValue> (273) 115
+    PLUS_OP (274) 80
+    SUB_OP (275) 81
+    DIV_OP (276) 82
+    STAR (277) 83
+    MOD_OP (278) 84
+    FACT_OP (279) 87
+    ASSINGMENT (280) 9 10
+    INC_OP (281) 90
+    DEC_OP (282) 91
+    GE_OP (283) 104
+    SE_OP (284) 102
+    EQ_OP (285) 97 106
+    NE_OP (286) 98 107
+    G_OP (287) 105
+    S_OP (288) 103
+    AND_OP (289) 99
+    OR_OP (290) 100
+    NOT_OP (291) 101
+    L_PARENTHESIS (292) 11 12 13 14 15 16 17 26 31 32 38 39 42 46 49 89 93
+    R_PARENTHESIS (293) 11 12 13 14 15 16 17 26 31 32 38 39 42 46 49 89 93
+    L_KEY (294) 26 28 31 32 51
+    R_KEY (295) 26 28 31 32 51
+    L_BRACKET (296)
+    R_BRACKET (297)
+    IF_STM (298) 26
+    ELSE_STM (299) 28
+    ELSE_IF_STM (300) 31
+    FOR_STM (301) 42
+    DO_STM (302) 39
+    WHILE_STM (303) 38 39
+    SWITCH_STM (304) 32
+    CONTINUE (305)
+    BREAK (306) 32 35
+    PRINT (307) 11 12 15
+    PRINTF (308) 13 14 16
+    CASE (309) 35
+    DEFAULT (310) 32
+    CONSTANT (311)
+    RETURN (312)
+    EOL (313)
+    ADDRESS (314) 17
+    SEMICOLON (315) 4 5 6 20 21 32 35 39 42 54 57 58 59 60 61 62 63
+    COMMA (316) 12 14 17 19 74 78
+    DOT (317)
+    DOUBLE_DOT (318) 32 35
+    MALLOC_OP (319)
+    FREE_OP (320)
+    CALLOC_OP (321)
+    SCANF (322) 17
 
 
 Não terminais com as regras onde eles aparecem
@@ -273,156 +272,156 @@ Não terminais com as regras onde eles aparecem
     decls_list <sValue> (70)
         à esquerda: 2 3
         à direita: 1 3
-    stm_list <sValue> (71)
-        à esquerda: 4 5
-        à direita: 5 42 45 63
-    stm <sValue> (72)
-        à esquerda: 6 7 8 9 10 11 12 13 14 15
-        à direita: 4 5
-    decls <sValue> (73)
-        à esquerda: 16 17 18 19
+    decls <sValue> (71)
+        à esquerda: 4 5 6 7
         à direita: 2 3
-    decl <sValue> (74)
-        à esquerda: 20
-        à direita: 6 16
-    assingment <sValue> (75)
-        à esquerda: 21
-        à direita: 12 17 54
-    initialization <sValue> (76)
-        à esquerda: 22
-        à direita: 13 18 52
-    print_stm <sValue> (77)
-        à esquerda: 23 24 25 26
-        à direita: 9
-    scan_stm <sValue> (78)
-        à esquerda: 27
-        à direita: 10
-    id_list <sValue> (79)
-        à esquerda: 28 29
-        à direita: 20 24 26 29
-    expres_list <sValue> (80)
-        à esquerda: 30 31
-        à direita: 11 31
-    expr <strValue> (81)
-        à esquerda: 32 33
-        à direita: 21 22 30 31 104 105
-    cond_stm <sValue> (82)
-        à esquerda: 34 35
-        à direita: 7
-    if_struct <sValue> (83)
-        à esquerda: 36
-        à direita: 34
-    else_struct <sValue> (84)
-        à esquerda: 37 38
-        à direita: 36
-    elseif_list <sValue> (85)
-        à esquerda: 39 40
-        à direita: 38 40
-    elseif_struct <sValue> (86)
-        à esquerda: 41
-        à direita: 40
-    switch_struct <sValue> (87)
-        à esquerda: 42
-        à direita: 35
-    case_list_switch <sValue> (88)
-        à esquerda: 43 44
-        à direita: 42 44
-    case_switch <sValue> (89)
-        à esquerda: 45
-        à direita: 44
-    loop_stm <sValue> (90)
-        à esquerda: 46 47
-        à direita: 8
-    while_struct <sValue> (91)
-        à esquerda: 48 49
-        à direita: 46
-    for_struct <sValue> (92)
-        à esquerda: 52
-        à direita: 47
-    $@1 (93)
-        à esquerda: 50
-        à direita: 52
-    $@2 (94)
-        à esquerda: 51
-        à direita: 52
-    for_struct_stm <strValue> (95)
-        à esquerda: 53 54
-        à direita: 52
-    uniry_op <strValue> (96)
-        à esquerda: 55 56
-        à direita: 14 53
-    fun_call <sValue> (97)
-        à esquerda: 58
-        à direita: 15
-    $@3 (98)
-        à esquerda: 57
-        à direita: 58
-    fun_struct <sValue> (99)
-        à esquerda: 61
-        à direita: 19
-    $@4 (100)
-        à esquerda: 59
-        à direita: 61
-    $@5 (101)
-        à esquerda: 60
-        à direita: 61
-    block <sValue> (102)
-        à esquerda: 63
-        à direita: 36 38 41 48 49 52 61
-    $@6 (103)
-        à esquerda: 62
+    decl <sValue> (72)
+        à esquerda: 8
+        à direita: 4 54
+    assingment <sValue> (73)
+        à esquerda: 9
+        à direita: 5 44 59
+    initialization <sValue> (74)
+        à esquerda: 10
+        à direita: 6 42 60
+    print_stm <sValue> (75)
+        à esquerda: 11 12 13 14 15 16
+        à direita: 57
+    scan_stm <sValue> (76)
+        à esquerda: 17
         à direita: 63
-    type <sValue> (104)
+    id_list <sValue> (77)
+        à esquerda: 18 19
+        à direita: 8 12 14 19
+    expres_list <sValue> (78)
+        à esquerda: 20 21
+        à direita: 21 58
+    expr <strValue> (79)
+        à esquerda: 22 23
+        à direita: 9 10 20 21 77 78
+    cond_stm <sValue> (80)
+        à esquerda: 24 25
+        à direita: 55
+    if_struct <sValue> (81)
+        à esquerda: 26
+        à direita: 24
+    else_struct <sValue> (82)
+        à esquerda: 27 28
+        à direita: 26
+    elseif_list <sValue> (83)
+        à esquerda: 29 30
+        à direita: 28 30
+    elseif_struct <sValue> (84)
+        à esquerda: 31
+        à direita: 30
+    switch_struct <sValue> (85)
+        à esquerda: 32
+        à direita: 25
+    case_list_switch <sValue> (86)
+        à esquerda: 33 34
+        à direita: 32 34
+    case_switch <sValue> (87)
+        à esquerda: 35
+        à direita: 34
+    loop_stm <sValue> (88)
+        à esquerda: 36 37
+        à direita: 56
+    while_struct <sValue> (89)
+        à esquerda: 38 39
+        à direita: 36
+    for_struct <sValue> (90)
+        à esquerda: 42
+        à direita: 37
+    $@1 (91)
+        à esquerda: 40
+        à direita: 42
+    $@2 (92)
+        à esquerda: 41
+        à direita: 42
+    for_struct_stm <strValue> (93)
+        à esquerda: 43 44
+        à direita: 42
+    fun_call <sValue> (94)
+        à esquerda: 46
+        à direita: 62
+    $@3 (95)
+        à esquerda: 45
+        à direita: 46
+    fun_struct <sValue> (96)
+        à esquerda: 49
+        à direita: 7
+    $@4 (97)
+        à esquerda: 47
+        à direita: 49
+    $@5 (98)
+        à esquerda: 48
+        à direita: 49
+    block <sValue> (99)
+        à esquerda: 51
+        à direita: 38 39 42 49
+    $@6 (100)
+        à esquerda: 50
+        à direita: 51
+    stm_list <sValue> (101)
+        à esquerda: 52 53
+        à direita: 26 28 31 32 35 51 53
+    stm <sValue> (102)
+        à esquerda: 54 55 56 57 58 59 60 61 62 63
+        à direita: 52 53
+    type <sValue> (103)
         à esquerda: 64 65 66 67 68 69 70 71
-        à direita: 20 22 61 75
-    par_list <sValue> (105)
+        à direita: 8 10 49 75
+    par_list <sValue> (104)
         à esquerda: 72 73 74
-        à direita: 61 74
-    par_term <sValue> (106)
+        à direita: 49 74
+    par_term <sValue> (105)
         à esquerda: 75
         à direita: 73 74
+    param_list_call <sValue> (106)
+        à esquerda: 76 77 78
+        à direita: 46 78
     arit_expr <strValue> (107)
-        à esquerda: 76 77 78 79 80 81
-        à direita: 33 55 56 77 78 79 80 81 86 90 91
+        à esquerda: 79 80 81 82 83 84
+        à direita: 23 80 81 82 83 84 89 90 91 96
     base <strValue> (108)
-        à esquerda: 82
-        à direita: 76 77 78 79 80 81
+        à esquerda: 85
+        à direita: 79 80 81 82 83 84
     arit_expr_right <strValue> (109)
-        à esquerda: 83 84
-        à direita: 82 84
+        à esquerda: 86 87
+        à direita: 85 87
     arit_expr_base <strValue> (110)
-        à esquerda: 85 86
-        à direita: 83 84
-    log_expr <strValue> (111)
-        à esquerda: 87 88 89
-        à direita: 32 36 41 48 49 52 88 89
-    comp_expr <strValue> (112)
-        à esquerda: 90 91 92 93
-        à direita: 87 89 91
-    op_log <sValue> (113)
-        à esquerda: 94 95 96
-        à direita: 89
-    op_comp <sValue> (114)
-        à esquerda: 97 98 99 100 101 102
-        à direita: 91
-    param_list_call <sValue> (115)
-        à esquerda: 103 104 105
-        à direita: 58 105
+        à esquerda: 88 89
+        à direita: 86 87
+    uniry_op <strValue> (111)
+        à esquerda: 90 91
+        à direita: 43 61
+    log_expr <strValue> (112)
+        à esquerda: 92 93 94
+        à direita: 22 26 31 38 39 42 93 94
+    comp_expr <strValue> (113)
+        à esquerda: 95 96 97 98
+        à direita: 92 94 96
+    op_log <sValue> (114)
+        à esquerda: 99 100 101
+        à direita: 94
+    op_comp <sValue> (115)
+        à esquerda: 102 103 104 105 106 107
+        à direita: 96
     term <strValue> (116)
-        à esquerda: 106 107 108
-        à direita: 85 114
+        à esquerda: 108 109 110
+        à direita: 88 95 116
     term_num <strValue> (117)
-        à esquerda: 109 110 111
-        à direita: 106
+        à esquerda: 111 112 113
+        à direita: 108
     log_term <strValue> (118)
-        à esquerda: 112 113
-        à direita: 107
-    literal_term <strValue> (119)
         à esquerda: 114 115
-        à direita: 42 45
-    literal_string <strValue> (120)
+        à direita: 109
+    literal_term <strValue> (119)
         à esquerda: 116 117
-        à direita: 23 24 25 26 92 93 115
+        à direita: 32 35
+    literal_string <strValue> (120)
+        à esquerda: 118 119
+        à direita: 11 12 13 14 17 97 98 117
 
 
 Estado 0
@@ -451,7 +450,7 @@ Estado 0
 
 Estado 1
 
-   21 assingment: IDENTIFIER . ASSINGMENT expr
+    9 assingment: IDENTIFIER . ASSINGMENT expr
 
     ASSINGMENT  deslocar, e ir ao estado 18
 
@@ -554,37 +553,37 @@ Estado 12
 
 Estado 13
 
-   16 decls: decl . SEMICOLON
+    4 decls: decl . SEMICOLON
 
     SEMICOLON  deslocar, e ir ao estado 21
 
 
 Estado 14
 
-   17 decls: assingment . SEMICOLON
+    5 decls: assingment . SEMICOLON
 
     SEMICOLON  deslocar, e ir ao estado 22
 
 
 Estado 15
 
-   18 decls: initialization . SEMICOLON
+    6 decls: initialization . SEMICOLON
 
     SEMICOLON  deslocar, e ir ao estado 23
 
 
 Estado 16
 
-   19 decls: fun_struct .
+    7 decls: fun_struct .
 
-    $padrão  reduzir usando a regra 19 (decls)
+    $padrão  reduzir usando a regra 7 (decls)
 
 
 Estado 17
 
-   20 decl: type . id_list
-   22 initialization: type . IDENTIFIER ASSINGMENT expr
-   61 fun_struct: type . IDENTIFIER L_PARENTHESIS $@4 par_list $@5 R_PARENTHESIS block
+    8 decl: type . id_list
+   10 initialization: type . IDENTIFIER ASSINGMENT expr
+   49 fun_struct: type . IDENTIFIER L_PARENTHESIS $@4 par_list $@5 R_PARENTHESIS block
 
     IDENTIFIER  deslocar, e ir ao estado 24
 
@@ -593,7 +592,7 @@ Estado 17
 
 Estado 18
 
-   21 assingment: IDENTIFIER ASSINGMENT . expr
+    9 assingment: IDENTIFIER ASSINGMENT . expr
 
     LITERAL_STRING  deslocar, e ir ao estado 26
     IDENTIFIER      deslocar, e ir ao estado 27
@@ -634,106 +633,106 @@ Estado 20
 
 Estado 21
 
-   16 decls: decl SEMICOLON .
+    4 decls: decl SEMICOLON .
 
-    $padrão  reduzir usando a regra 16 (decls)
+    $padrão  reduzir usando a regra 4 (decls)
 
 
 Estado 22
 
-   17 decls: assingment SEMICOLON .
+    5 decls: assingment SEMICOLON .
 
-    $padrão  reduzir usando a regra 17 (decls)
+    $padrão  reduzir usando a regra 5 (decls)
 
 
 Estado 23
 
-   18 decls: initialization SEMICOLON .
+    6 decls: initialization SEMICOLON .
 
-    $padrão  reduzir usando a regra 18 (decls)
+    $padrão  reduzir usando a regra 6 (decls)
 
 
 Estado 24
 
-   22 initialization: type IDENTIFIER . ASSINGMENT expr
-   28 id_list: IDENTIFIER .
-   29        | IDENTIFIER . COMMA id_list
-   61 fun_struct: type IDENTIFIER . L_PARENTHESIS $@4 par_list $@5 R_PARENTHESIS block
+   10 initialization: type IDENTIFIER . ASSINGMENT expr
+   18 id_list: IDENTIFIER .
+   19        | IDENTIFIER . COMMA id_list
+   49 fun_struct: type IDENTIFIER . L_PARENTHESIS $@4 par_list $@5 R_PARENTHESIS block
 
     ASSINGMENT     deslocar, e ir ao estado 46
     L_PARENTHESIS  deslocar, e ir ao estado 47
     COMMA          deslocar, e ir ao estado 48
 
-    $padrão  reduzir usando a regra 28 (id_list)
+    $padrão  reduzir usando a regra 18 (id_list)
 
 
 Estado 25
 
-   20 decl: type id_list .
+    8 decl: type id_list .
 
-    $padrão  reduzir usando a regra 20 (decl)
+    $padrão  reduzir usando a regra 8 (decl)
 
 
 Estado 26
 
-  117 literal_string: LITERAL_STRING .
+  119 literal_string: LITERAL_STRING .
 
-    $padrão  reduzir usando a regra 117 (literal_string)
+    $padrão  reduzir usando a regra 119 (literal_string)
 
 
 Estado 27
 
-  108 term: IDENTIFIER .
+  110 term: IDENTIFIER .
 
-    $padrão  reduzir usando a regra 108 (term)
+    $padrão  reduzir usando a regra 110 (term)
 
 
 Estado 28
 
-  116 literal_string: LITERAL_CHAR .
+  118 literal_string: LITERAL_CHAR .
 
-    $padrão  reduzir usando a regra 116 (literal_string)
+    $padrão  reduzir usando a regra 118 (literal_string)
 
 
 Estado 29
 
-  109 term_num: LITERAL_INT .
-
-    $padrão  reduzir usando a regra 109 (term_num)
-
-
-Estado 30
-
-  110 term_num: LITERAL_FLOAT .
-
-    $padrão  reduzir usando a regra 110 (term_num)
-
-
-Estado 31
-
-  111 term_num: LITERAL_DOUBLE .
+  111 term_num: LITERAL_INT .
 
     $padrão  reduzir usando a regra 111 (term_num)
 
 
+Estado 30
+
+  112 term_num: LITERAL_FLOAT .
+
+    $padrão  reduzir usando a regra 112 (term_num)
+
+
+Estado 31
+
+  113 term_num: LITERAL_DOUBLE .
+
+    $padrão  reduzir usando a regra 113 (term_num)
+
+
 Estado 32
 
-  112 log_term: TRUE_VAL .
+  114 log_term: TRUE_VAL .
 
-    $padrão  reduzir usando a regra 112 (log_term)
+    $padrão  reduzir usando a regra 114 (log_term)
 
 
 Estado 33
 
-  113 log_term: FALSE_VAL .
+  115 log_term: FALSE_VAL .
 
-    $padrão  reduzir usando a regra 113 (log_term)
+    $padrão  reduzir usando a regra 115 (log_term)
 
 
 Estado 34
 
-   86 arit_expr_base: L_PARENTHESIS . arit_expr R_PARENTHESIS
-   88 log_expr: L_PARENTHESIS . log_expr R_PARENTHESIS
+   89 arit_expr_base: L_PARENTHESIS . arit_expr R_PARENTHESIS
+   93 log_expr: L_PARENTHESIS . log_expr R_PARENTHESIS
 
     LITERAL_STRING  deslocar, e ir ao estado 26
     IDENTIFIER      deslocar, e ir ao estado 27
@@ -759,20 +758,19 @@ Estado 34
 
 Estado 35
 
-   21 assingment: IDENTIFIER ASSINGMENT expr .
+    9 assingment: IDENTIFIER ASSINGMENT expr .
 
-    $padrão  reduzir usando a regra 21 (assingment)
+    $padrão  reduzir usando a regra 9 (assingment)
 
 
 Estado 36
 
-   33 expr: arit_expr .
-   77 arit_expr: arit_expr . PLUS_OP base
-   78          | arit_expr . SUB_OP base
-   79          | arit_expr . DIV_OP base
-   80          | arit_expr . STAR base
-   81          | arit_expr . MOD_OP base
-   90 comp_expr: arit_expr .
+   23 expr: arit_expr .
+   80 arit_expr: arit_expr . PLUS_OP base
+   81          | arit_expr . SUB_OP base
+   82          | arit_expr . DIV_OP base
+   83          | arit_expr . STAR base
+   84          | arit_expr . MOD_OP base
 
     PLUS_OP  deslocar, e ir ao estado 51
     SUB_OP   deslocar, e ir ao estado 52
@@ -780,57 +778,51 @@ Estado 36
     STAR     deslocar, e ir ao estado 54
     MOD_OP   deslocar, e ir ao estado 55
 
-    R_PARENTHESIS  reduzir usando a regra 33 (expr)
-    R_PARENTHESIS  [reduzir usando a regra 90 (comp_expr)]
-    SEMICOLON      reduzir usando a regra 33 (expr)
-    SEMICOLON      [reduzir usando a regra 90 (comp_expr)]
-    COMMA          reduzir usando a regra 33 (expr)
-    COMMA          [reduzir usando a regra 90 (comp_expr)]
-    $padrão       reduzir usando a regra 90 (comp_expr)
+    $padrão  reduzir usando a regra 23 (expr)
 
 
 Estado 37
 
-   76 arit_expr: base .
+   79 arit_expr: base .
 
-    $padrão  reduzir usando a regra 76 (arit_expr)
+    $padrão  reduzir usando a regra 79 (arit_expr)
 
 
 Estado 38
 
-   82 base: arit_expr_right .
+   85 base: arit_expr_right .
 
-    $padrão  reduzir usando a regra 82 (base)
+    $padrão  reduzir usando a regra 85 (base)
 
 
 Estado 39
 
-   83 arit_expr_right: arit_expr_base .
-   84                | arit_expr_base . FACT_OP arit_expr_right
+   86 arit_expr_right: arit_expr_base .
+   87                | arit_expr_base . FACT_OP arit_expr_right
 
     FACT_OP  deslocar, e ir ao estado 56
 
-    $padrão  reduzir usando a regra 83 (arit_expr_right)
+    $padrão  reduzir usando a regra 86 (arit_expr_right)
 
 
 Estado 40
 
-   32 expr: log_expr .
-   89 log_expr: log_expr . op_log comp_expr
+   22 expr: log_expr .
+   94 log_expr: log_expr . op_log comp_expr
 
     AND_OP  deslocar, e ir ao estado 57
     OR_OP   deslocar, e ir ao estado 58
     NOT_OP  deslocar, e ir ao estado 59
 
-    $padrão  reduzir usando a regra 32 (expr)
+    $padrão  reduzir usando a regra 22 (expr)
 
     op_log  ir ao estado 60
 
 
 Estado 41
 
-   87 log_expr: comp_expr .
-   91 comp_expr: comp_expr . op_comp arit_expr
+   92 log_expr: comp_expr .
+   96 comp_expr: comp_expr . op_comp arit_expr
 
     GE_OP  deslocar, e ir ao estado 61
     SE_OP  deslocar, e ir ao estado 62
@@ -839,36 +831,52 @@ Estado 41
     G_OP   deslocar, e ir ao estado 65
     S_OP   deslocar, e ir ao estado 66
 
-    $padrão  reduzir usando a regra 87 (log_expr)
+    $padrão  reduzir usando a regra 92 (log_expr)
 
     op_comp  ir ao estado 67
 
 
 Estado 42
 
-   85 arit_expr_base: term .
+   88 arit_expr_base: term .
+   95 comp_expr: term .
 
-    $padrão  reduzir usando a regra 85 (arit_expr_base)
+    GE_OP          reduzir usando a regra 95 (comp_expr)
+    SE_OP          reduzir usando a regra 95 (comp_expr)
+    EQ_OP          reduzir usando a regra 95 (comp_expr)
+    NE_OP          reduzir usando a regra 95 (comp_expr)
+    G_OP           reduzir usando a regra 95 (comp_expr)
+    S_OP           reduzir usando a regra 95 (comp_expr)
+    AND_OP         reduzir usando a regra 95 (comp_expr)
+    OR_OP          reduzir usando a regra 95 (comp_expr)
+    NOT_OP         reduzir usando a regra 95 (comp_expr)
+    R_PARENTHESIS  reduzir usando a regra 88 (arit_expr_base)
+    R_PARENTHESIS  [reduzir usando a regra 95 (comp_expr)]
+    SEMICOLON      reduzir usando a regra 88 (arit_expr_base)
+    SEMICOLON      [reduzir usando a regra 95 (comp_expr)]
+    COMMA          reduzir usando a regra 88 (arit_expr_base)
+    COMMA          [reduzir usando a regra 95 (comp_expr)]
+    $padrão       reduzir usando a regra 88 (arit_expr_base)
 
 
 Estado 43
 
-  106 term: term_num .
+  108 term: term_num .
 
-    $padrão  reduzir usando a regra 106 (term)
+    $padrão  reduzir usando a regra 108 (term)
 
 
 Estado 44
 
-  107 term: log_term .
+  109 term: log_term .
 
-    $padrão  reduzir usando a regra 107 (term)
+    $padrão  reduzir usando a regra 109 (term)
 
 
 Estado 45
 
-   92 comp_expr: literal_string . EQ_OP literal_string
-   93          | literal_string . NE_OP literal_string
+   97 comp_expr: literal_string . EQ_OP literal_string
+   98          | literal_string . NE_OP literal_string
 
     EQ_OP  deslocar, e ir ao estado 68
     NE_OP  deslocar, e ir ao estado 69
@@ -876,7 +884,7 @@ Estado 45
 
 Estado 46
 
-   22 initialization: type IDENTIFIER ASSINGMENT . expr
+   10 initialization: type IDENTIFIER ASSINGMENT . expr
 
     LITERAL_STRING  deslocar, e ir ao estado 26
     IDENTIFIER      deslocar, e ir ao estado 27
@@ -903,16 +911,16 @@ Estado 46
 
 Estado 47
 
-   61 fun_struct: type IDENTIFIER L_PARENTHESIS . $@4 par_list $@5 R_PARENTHESIS block
+   49 fun_struct: type IDENTIFIER L_PARENTHESIS . $@4 par_list $@5 R_PARENTHESIS block
 
-    $padrão  reduzir usando a regra 59 ($@4)
+    $padrão  reduzir usando a regra 47 ($@4)
 
     $@4  ir ao estado 71
 
 
 Estado 48
 
-   29 id_list: IDENTIFIER COMMA . id_list
+   19 id_list: IDENTIFIER COMMA . id_list
 
     IDENTIFIER  deslocar, e ir ao estado 72
 
@@ -921,13 +929,12 @@ Estado 48
 
 Estado 49
 
-   77 arit_expr: arit_expr . PLUS_OP base
-   78          | arit_expr . SUB_OP base
-   79          | arit_expr . DIV_OP base
-   80          | arit_expr . STAR base
-   81          | arit_expr . MOD_OP base
-   86 arit_expr_base: L_PARENTHESIS arit_expr . R_PARENTHESIS
-   90 comp_expr: arit_expr .
+   80 arit_expr: arit_expr . PLUS_OP base
+   81          | arit_expr . SUB_OP base
+   82          | arit_expr . DIV_OP base
+   83          | arit_expr . STAR base
+   84          | arit_expr . MOD_OP base
+   89 arit_expr_base: L_PARENTHESIS arit_expr . R_PARENTHESIS
 
     PLUS_OP        deslocar, e ir ao estado 51
     SUB_OP         deslocar, e ir ao estado 52
@@ -936,14 +943,11 @@ Estado 49
     MOD_OP         deslocar, e ir ao estado 55
     R_PARENTHESIS  deslocar, e ir ao estado 74
 
-    R_PARENTHESIS  [reduzir usando a regra 90 (comp_expr)]
-    $padrão       reduzir usando a regra 90 (comp_expr)
-
 
 Estado 50
 
-   88 log_expr: L_PARENTHESIS log_expr . R_PARENTHESIS
-   89         | log_expr . op_log comp_expr
+   93 log_expr: L_PARENTHESIS log_expr . R_PARENTHESIS
+   94         | log_expr . op_log comp_expr
 
     AND_OP         deslocar, e ir ao estado 57
     OR_OP          deslocar, e ir ao estado 58
@@ -955,7 +959,7 @@ Estado 50
 
 Estado 51
 
-   77 arit_expr: arit_expr PLUS_OP . base
+   80 arit_expr: arit_expr PLUS_OP . base
 
     IDENTIFIER      deslocar, e ir ao estado 27
     LITERAL_INT     deslocar, e ir ao estado 29
@@ -968,34 +972,14 @@ Estado 51
     base             ir ao estado 77
     arit_expr_right  ir ao estado 38
     arit_expr_base   ir ao estado 39
-    term             ir ao estado 42
+    term             ir ao estado 78
     term_num         ir ao estado 43
     log_term         ir ao estado 44
 
 
 Estado 52
 
-   78 arit_expr: arit_expr SUB_OP . base
-
-    IDENTIFIER      deslocar, e ir ao estado 27
-    LITERAL_INT     deslocar, e ir ao estado 29
-    LITERAL_FLOAT   deslocar, e ir ao estado 30
-    LITERAL_DOUBLE  deslocar, e ir ao estado 31
-    TRUE_VAL        deslocar, e ir ao estado 32
-    FALSE_VAL       deslocar, e ir ao estado 33
-    L_PARENTHESIS   deslocar, e ir ao estado 76
-
-    base             ir ao estado 78
-    arit_expr_right  ir ao estado 38
-    arit_expr_base   ir ao estado 39
-    term             ir ao estado 42
-    term_num         ir ao estado 43
-    log_term         ir ao estado 44
-
-
-Estado 53
-
-   79 arit_expr: arit_expr DIV_OP . base
+   81 arit_expr: arit_expr SUB_OP . base
 
     IDENTIFIER      deslocar, e ir ao estado 27
     LITERAL_INT     deslocar, e ir ao estado 29
@@ -1008,14 +992,14 @@ Estado 53
     base             ir ao estado 79
     arit_expr_right  ir ao estado 38
     arit_expr_base   ir ao estado 39
-    term             ir ao estado 42
+    term             ir ao estado 78
     term_num         ir ao estado 43
     log_term         ir ao estado 44
 
 
-Estado 54
+Estado 53
 
-   80 arit_expr: arit_expr STAR . base
+   82 arit_expr: arit_expr DIV_OP . base
 
     IDENTIFIER      deslocar, e ir ao estado 27
     LITERAL_INT     deslocar, e ir ao estado 29
@@ -1028,14 +1012,14 @@ Estado 54
     base             ir ao estado 80
     arit_expr_right  ir ao estado 38
     arit_expr_base   ir ao estado 39
-    term             ir ao estado 42
+    term             ir ao estado 78
     term_num         ir ao estado 43
     log_term         ir ao estado 44
 
 
-Estado 55
+Estado 54
 
-   81 arit_expr: arit_expr MOD_OP . base
+   83 arit_expr: arit_expr STAR . base
 
     IDENTIFIER      deslocar, e ir ao estado 27
     LITERAL_INT     deslocar, e ir ao estado 29
@@ -1048,14 +1032,34 @@ Estado 55
     base             ir ao estado 81
     arit_expr_right  ir ao estado 38
     arit_expr_base   ir ao estado 39
-    term             ir ao estado 42
+    term             ir ao estado 78
+    term_num         ir ao estado 43
+    log_term         ir ao estado 44
+
+
+Estado 55
+
+   84 arit_expr: arit_expr MOD_OP . base
+
+    IDENTIFIER      deslocar, e ir ao estado 27
+    LITERAL_INT     deslocar, e ir ao estado 29
+    LITERAL_FLOAT   deslocar, e ir ao estado 30
+    LITERAL_DOUBLE  deslocar, e ir ao estado 31
+    TRUE_VAL        deslocar, e ir ao estado 32
+    FALSE_VAL       deslocar, e ir ao estado 33
+    L_PARENTHESIS   deslocar, e ir ao estado 76
+
+    base             ir ao estado 82
+    arit_expr_right  ir ao estado 38
+    arit_expr_base   ir ao estado 39
+    term             ir ao estado 78
     term_num         ir ao estado 43
     log_term         ir ao estado 44
 
 
 Estado 56
 
-   84 arit_expr_right: arit_expr_base FACT_OP . arit_expr_right
+   87 arit_expr_right: arit_expr_base FACT_OP . arit_expr_right
 
     IDENTIFIER      deslocar, e ir ao estado 27
     LITERAL_INT     deslocar, e ir ao estado 29
@@ -1065,37 +1069,37 @@ Estado 56
     FALSE_VAL       deslocar, e ir ao estado 33
     L_PARENTHESIS   deslocar, e ir ao estado 76
 
-    arit_expr_right  ir ao estado 82
+    arit_expr_right  ir ao estado 83
     arit_expr_base   ir ao estado 39
-    term             ir ao estado 42
+    term             ir ao estado 78
     term_num         ir ao estado 43
     log_term         ir ao estado 44
 
 
 Estado 57
 
-   94 op_log: AND_OP .
+   99 op_log: AND_OP .
 
-    $padrão  reduzir usando a regra 94 (op_log)
+    $padrão  reduzir usando a regra 99 (op_log)
 
 
 Estado 58
 
-   95 op_log: OR_OP .
+  100 op_log: OR_OP .
 
-    $padrão  reduzir usando a regra 95 (op_log)
+    $padrão  reduzir usando a regra 100 (op_log)
 
 
 Estado 59
 
-   96 op_log: NOT_OP .
+  101 op_log: NOT_OP .
 
-    $padrão  reduzir usando a regra 96 (op_log)
+    $padrão  reduzir usando a regra 101 (op_log)
 
 
 Estado 60
 
-   89 log_expr: log_expr op_log . comp_expr
+   94 log_expr: log_expr op_log . comp_expr
 
     LITERAL_STRING  deslocar, e ir ao estado 26
     IDENTIFIER      deslocar, e ir ao estado 27
@@ -1105,64 +1109,59 @@ Estado 60
     LITERAL_DOUBLE  deslocar, e ir ao estado 31
     TRUE_VAL        deslocar, e ir ao estado 32
     FALSE_VAL       deslocar, e ir ao estado 33
-    L_PARENTHESIS   deslocar, e ir ao estado 76
 
-    arit_expr        ir ao estado 83
-    base             ir ao estado 37
-    arit_expr_right  ir ao estado 38
-    arit_expr_base   ir ao estado 39
-    comp_expr        ir ao estado 84
-    term             ir ao estado 42
-    term_num         ir ao estado 43
-    log_term         ir ao estado 44
-    literal_string   ir ao estado 45
+    comp_expr       ir ao estado 84
+    term            ir ao estado 85
+    term_num        ir ao estado 43
+    log_term        ir ao estado 44
+    literal_string  ir ao estado 45
 
 
 Estado 61
 
-   99 op_comp: GE_OP .
+  104 op_comp: GE_OP .
 
-    $padrão  reduzir usando a regra 99 (op_comp)
+    $padrão  reduzir usando a regra 104 (op_comp)
 
 
 Estado 62
 
-   97 op_comp: SE_OP .
-
-    $padrão  reduzir usando a regra 97 (op_comp)
-
-
-Estado 63
-
-  101 op_comp: EQ_OP .
-
-    $padrão  reduzir usando a regra 101 (op_comp)
-
-
-Estado 64
-
-  102 op_comp: NE_OP .
+  102 op_comp: SE_OP .
 
     $padrão  reduzir usando a regra 102 (op_comp)
 
 
+Estado 63
+
+  106 op_comp: EQ_OP .
+
+    $padrão  reduzir usando a regra 106 (op_comp)
+
+
+Estado 64
+
+  107 op_comp: NE_OP .
+
+    $padrão  reduzir usando a regra 107 (op_comp)
+
+
 Estado 65
 
-  100 op_comp: G_OP .
+  105 op_comp: G_OP .
 
-    $padrão  reduzir usando a regra 100 (op_comp)
+    $padrão  reduzir usando a regra 105 (op_comp)
 
 
 Estado 66
 
-   98 op_comp: S_OP .
+  103 op_comp: S_OP .
 
-    $padrão  reduzir usando a regra 98 (op_comp)
+    $padrão  reduzir usando a regra 103 (op_comp)
 
 
 Estado 67
 
-   91 comp_expr: comp_expr op_comp . arit_expr
+   96 comp_expr: comp_expr op_comp . arit_expr
 
     IDENTIFIER      deslocar, e ir ao estado 27
     LITERAL_INT     deslocar, e ir ao estado 29
@@ -1172,28 +1171,18 @@ Estado 67
     FALSE_VAL       deslocar, e ir ao estado 33
     L_PARENTHESIS   deslocar, e ir ao estado 76
 
-    arit_expr        ir ao estado 85
+    arit_expr        ir ao estado 86
     base             ir ao estado 37
     arit_expr_right  ir ao estado 38
     arit_expr_base   ir ao estado 39
-    term             ir ao estado 42
+    term             ir ao estado 78
     term_num         ir ao estado 43
     log_term         ir ao estado 44
 
 
 Estado 68
 
-   92 comp_expr: literal_string EQ_OP . literal_string
-
-    LITERAL_STRING  deslocar, e ir ao estado 26
-    LITERAL_CHAR    deslocar, e ir ao estado 28
-
-    literal_string  ir ao estado 86
-
-
-Estado 69
-
-   93 comp_expr: literal_string NE_OP . literal_string
+   97 comp_expr: literal_string EQ_OP . literal_string
 
     LITERAL_STRING  deslocar, e ir ao estado 26
     LITERAL_CHAR    deslocar, e ir ao estado 28
@@ -1201,16 +1190,26 @@ Estado 69
     literal_string  ir ao estado 87
 
 
+Estado 69
+
+   98 comp_expr: literal_string NE_OP . literal_string
+
+    LITERAL_STRING  deslocar, e ir ao estado 26
+    LITERAL_CHAR    deslocar, e ir ao estado 28
+
+    literal_string  ir ao estado 88
+
+
 Estado 70
 
-   22 initialization: type IDENTIFIER ASSINGMENT expr .
+   10 initialization: type IDENTIFIER ASSINGMENT expr .
 
-    $padrão  reduzir usando a regra 22 (initialization)
+    $padrão  reduzir usando a regra 10 (initialization)
 
 
 Estado 71
 
-   61 fun_struct: type IDENTIFIER L_PARENTHESIS $@4 . par_list $@5 R_PARENTHESIS block
+   49 fun_struct: type IDENTIFIER L_PARENTHESIS $@4 . par_list $@5 R_PARENTHESIS block
 
     INT_TYPE      deslocar, e ir ao estado 2
     FLOAT_TYPE    deslocar, e ir ao estado 3
@@ -1223,45 +1222,45 @@ Estado 71
 
     $padrão  reduzir usando a regra 72 (par_list)
 
-    type      ir ao estado 88
-    par_list  ir ao estado 89
-    par_term  ir ao estado 90
+    type      ir ao estado 89
+    par_list  ir ao estado 90
+    par_term  ir ao estado 91
 
 
 Estado 72
 
-   28 id_list: IDENTIFIER .
-   29        | IDENTIFIER . COMMA id_list
+   18 id_list: IDENTIFIER .
+   19        | IDENTIFIER . COMMA id_list
 
     COMMA  deslocar, e ir ao estado 48
 
-    $padrão  reduzir usando a regra 28 (id_list)
+    $padrão  reduzir usando a regra 18 (id_list)
 
 
 Estado 73
 
-   29 id_list: IDENTIFIER COMMA id_list .
+   19 id_list: IDENTIFIER COMMA id_list .
 
-    $padrão  reduzir usando a regra 29 (id_list)
+    $padrão  reduzir usando a regra 19 (id_list)
 
 
 Estado 74
 
-   86 arit_expr_base: L_PARENTHESIS arit_expr R_PARENTHESIS .
+   89 arit_expr_base: L_PARENTHESIS arit_expr R_PARENTHESIS .
 
-    $padrão  reduzir usando a regra 86 (arit_expr_base)
+    $padrão  reduzir usando a regra 89 (arit_expr_base)
 
 
 Estado 75
 
-   88 log_expr: L_PARENTHESIS log_expr R_PARENTHESIS .
+   93 log_expr: L_PARENTHESIS log_expr R_PARENTHESIS .
 
-    $padrão  reduzir usando a regra 88 (log_expr)
+    $padrão  reduzir usando a regra 93 (log_expr)
 
 
 Estado 76
 
-   86 arit_expr_base: L_PARENTHESIS . arit_expr R_PARENTHESIS
+   89 arit_expr_base: L_PARENTHESIS . arit_expr R_PARENTHESIS
 
     IDENTIFIER      deslocar, e ir ao estado 27
     LITERAL_INT     deslocar, e ir ao estado 29
@@ -1271,79 +1270,68 @@ Estado 76
     FALSE_VAL       deslocar, e ir ao estado 33
     L_PARENTHESIS   deslocar, e ir ao estado 76
 
-    arit_expr        ir ao estado 91
+    arit_expr        ir ao estado 49
     base             ir ao estado 37
     arit_expr_right  ir ao estado 38
     arit_expr_base   ir ao estado 39
-    term             ir ao estado 42
+    term             ir ao estado 78
     term_num         ir ao estado 43
     log_term         ir ao estado 44
 
 
 Estado 77
 
-   77 arit_expr: arit_expr PLUS_OP base .
-
-    $padrão  reduzir usando a regra 77 (arit_expr)
-
-
-Estado 78
-
-   78 arit_expr: arit_expr SUB_OP base .
-
-    $padrão  reduzir usando a regra 78 (arit_expr)
-
-
-Estado 79
-
-   79 arit_expr: arit_expr DIV_OP base .
-
-    $padrão  reduzir usando a regra 79 (arit_expr)
-
-
-Estado 80
-
-   80 arit_expr: arit_expr STAR base .
+   80 arit_expr: arit_expr PLUS_OP base .
 
     $padrão  reduzir usando a regra 80 (arit_expr)
 
 
-Estado 81
+Estado 78
 
-   81 arit_expr: arit_expr MOD_OP base .
+   88 arit_expr_base: term .
+
+    $padrão  reduzir usando a regra 88 (arit_expr_base)
+
+
+Estado 79
+
+   81 arit_expr: arit_expr SUB_OP base .
 
     $padrão  reduzir usando a regra 81 (arit_expr)
 
 
+Estado 80
+
+   82 arit_expr: arit_expr DIV_OP base .
+
+    $padrão  reduzir usando a regra 82 (arit_expr)
+
+
+Estado 81
+
+   83 arit_expr: arit_expr STAR base .
+
+    $padrão  reduzir usando a regra 83 (arit_expr)
+
+
 Estado 82
 
-   84 arit_expr_right: arit_expr_base FACT_OP arit_expr_right .
+   84 arit_expr: arit_expr MOD_OP base .
 
-    $padrão  reduzir usando a regra 84 (arit_expr_right)
+    $padrão  reduzir usando a regra 84 (arit_expr)
 
 
 Estado 83
 
-   77 arit_expr: arit_expr . PLUS_OP base
-   78          | arit_expr . SUB_OP base
-   79          | arit_expr . DIV_OP base
-   80          | arit_expr . STAR base
-   81          | arit_expr . MOD_OP base
-   90 comp_expr: arit_expr .
+   87 arit_expr_right: arit_expr_base FACT_OP arit_expr_right .
 
-    PLUS_OP  deslocar, e ir ao estado 51
-    SUB_OP   deslocar, e ir ao estado 52
-    DIV_OP   deslocar, e ir ao estado 53
-    STAR     deslocar, e ir ao estado 54
-    MOD_OP   deslocar, e ir ao estado 55
-
-    $padrão  reduzir usando a regra 90 (comp_expr)
+    $padrão  reduzir usando a regra 87 (arit_expr_right)
 
 
 Estado 84
 
-   89 log_expr: log_expr op_log comp_expr .
-   91 comp_expr: comp_expr . op_comp arit_expr
+   94 log_expr: log_expr op_log comp_expr .
+   96 comp_expr: comp_expr . op_comp arit_expr
 
     GE_OP  deslocar, e ir ao estado 61
     SE_OP  deslocar, e ir ao estado 62
@@ -1352,19 +1340,26 @@ Estado 84
     G_OP   deslocar, e ir ao estado 65
     S_OP   deslocar, e ir ao estado 66
 
-    $padrão  reduzir usando a regra 89 (log_expr)
+    $padrão  reduzir usando a regra 94 (log_expr)
 
     op_comp  ir ao estado 67
 
 
 Estado 85
 
-   77 arit_expr: arit_expr . PLUS_OP base
-   78          | arit_expr . SUB_OP base
-   79          | arit_expr . DIV_OP base
-   80          | arit_expr . STAR base
-   81          | arit_expr . MOD_OP base
-   91 comp_expr: comp_expr op_comp arit_expr .
+   95 comp_expr: term .
+
+    $padrão  reduzir usando a regra 95 (comp_expr)
+
+
+Estado 86
+
+   80 arit_expr: arit_expr . PLUS_OP base
+   81          | arit_expr . SUB_OP base
+   82          | arit_expr . DIV_OP base
+   83          | arit_expr . STAR base
+   84          | arit_expr . MOD_OP base
+   96 comp_expr: comp_expr op_comp arit_expr .
 
     PLUS_OP  deslocar, e ir ao estado 51
     SUB_OP   deslocar, e ir ao estado 52
@@ -1372,40 +1367,40 @@ Estado 85
     STAR     deslocar, e ir ao estado 54
     MOD_OP   deslocar, e ir ao estado 55
 
-    $padrão  reduzir usando a regra 91 (comp_expr)
-
-
-Estado 86
-
-   92 comp_expr: literal_string EQ_OP literal_string .
-
-    $padrão  reduzir usando a regra 92 (comp_expr)
+    $padrão  reduzir usando a regra 96 (comp_expr)
 
 
 Estado 87
 
-   93 comp_expr: literal_string NE_OP literal_string .
+   97 comp_expr: literal_string EQ_OP literal_string .
 
-    $padrão  reduzir usando a regra 93 (comp_expr)
+    $padrão  reduzir usando a regra 97 (comp_expr)
 
 
 Estado 88
+
+   98 comp_expr: literal_string NE_OP literal_string .
+
+    $padrão  reduzir usando a regra 98 (comp_expr)
+
+
+Estado 89
 
    75 par_term: type . IDENTIFIER
 
     IDENTIFIER  deslocar, e ir ao estado 92
 
 
-Estado 89
+Estado 90
 
-   61 fun_struct: type IDENTIFIER L_PARENTHESIS $@4 par_list . $@5 R_PARENTHESIS block
+   49 fun_struct: type IDENTIFIER L_PARENTHESIS $@4 par_list . $@5 R_PARENTHESIS block
 
-    $padrão  reduzir usando a regra 60 ($@5)
+    $padrão  reduzir usando a regra 48 ($@5)
 
     $@5  ir ao estado 93
 
 
-Estado 90
+Estado 91
 
    73 par_list: par_term .
    74         | par_term . COMMA par_list
@@ -1413,23 +1408,6 @@ Estado 90
     COMMA  deslocar, e ir ao estado 94
 
     $padrão  reduzir usando a regra 73 (par_list)
-
-
-Estado 91
-
-   77 arit_expr: arit_expr . PLUS_OP base
-   78          | arit_expr . SUB_OP base
-   79          | arit_expr . DIV_OP base
-   80          | arit_expr . STAR base
-   81          | arit_expr . MOD_OP base
-   86 arit_expr_base: L_PARENTHESIS arit_expr . R_PARENTHESIS
-
-    PLUS_OP        deslocar, e ir ao estado 51
-    SUB_OP         deslocar, e ir ao estado 52
-    DIV_OP         deslocar, e ir ao estado 53
-    STAR           deslocar, e ir ao estado 54
-    MOD_OP         deslocar, e ir ao estado 55
-    R_PARENTHESIS  deslocar, e ir ao estado 74
 
 
 Estado 92
@@ -1441,7 +1419,7 @@ Estado 92
 
 Estado 93
 
-   61 fun_struct: type IDENTIFIER L_PARENTHESIS $@4 par_list $@5 . R_PARENTHESIS block
+   49 fun_struct: type IDENTIFIER L_PARENTHESIS $@4 par_list $@5 . R_PARENTHESIS block
 
     R_PARENTHESIS  deslocar, e ir ao estado 95
 
@@ -1461,14 +1439,14 @@ Estado 94
 
     $padrão  reduzir usando a regra 72 (par_list)
 
-    type      ir ao estado 88
+    type      ir ao estado 89
     par_list  ir ao estado 96
-    par_term  ir ao estado 90
+    par_term  ir ao estado 91
 
 
 Estado 95
 
-   61 fun_struct: type IDENTIFIER L_PARENTHESIS $@4 par_list $@5 R_PARENTHESIS . block
+   49 fun_struct: type IDENTIFIER L_PARENTHESIS $@4 par_list $@5 R_PARENTHESIS . block
 
     L_KEY  deslocar, e ir ao estado 97
 
@@ -1484,23 +1462,23 @@ Estado 96
 
 Estado 97
 
-   63 block: L_KEY . $@6 stm_list R_KEY
+   51 block: L_KEY . $@6 stm_list R_KEY
 
-    $padrão  reduzir usando a regra 62 ($@6)
+    $padrão  reduzir usando a regra 50 ($@6)
 
     $@6  ir ao estado 99
 
 
 Estado 98
 
-   61 fun_struct: type IDENTIFIER L_PARENTHESIS $@4 par_list $@5 R_PARENTHESIS block .
+   49 fun_struct: type IDENTIFIER L_PARENTHESIS $@4 par_list $@5 R_PARENTHESIS block .
 
-    $padrão  reduzir usando a regra 61 (fun_struct)
+    $padrão  reduzir usando a regra 49 (fun_struct)
 
 
 Estado 99
 
-   63 block: L_KEY $@6 . stm_list R_KEY
+   51 block: L_KEY $@6 . stm_list R_KEY
 
     LITERAL_STRING  deslocar, e ir ao estado 26
     IDENTIFIER      deslocar, e ir ao estado 100
@@ -1513,43 +1491,43 @@ Estado 99
     VOID_TYPE       deslocar, e ir ao estado 8
     LITERAL_CHAR    deslocar, e ir ao estado 28
     CHAR_TYPE       deslocar, e ir ao estado 9
-    SCAN            deslocar, e ir ao estado 101
     LITERAL_INT     deslocar, e ir ao estado 29
     LITERAL_FLOAT   deslocar, e ir ao estado 30
     LITERAL_DOUBLE  deslocar, e ir ao estado 31
     TRUE_VAL        deslocar, e ir ao estado 32
     FALSE_VAL       deslocar, e ir ao estado 33
     L_PARENTHESIS   deslocar, e ir ao estado 34
-    IF_STM          deslocar, e ir ao estado 102
-    FOR_STM         deslocar, e ir ao estado 103
-    DO_STM          deslocar, e ir ao estado 104
-    WHILE_STM       deslocar, e ir ao estado 105
-    SWITCH_STM      deslocar, e ir ao estado 106
-    PRINT           deslocar, e ir ao estado 107
-    PRINTF          deslocar, e ir ao estado 108
+    IF_STM          deslocar, e ir ao estado 101
+    FOR_STM         deslocar, e ir ao estado 102
+    DO_STM          deslocar, e ir ao estado 103
+    WHILE_STM       deslocar, e ir ao estado 104
+    SWITCH_STM      deslocar, e ir ao estado 105
+    PRINT           deslocar, e ir ao estado 106
+    PRINTF          deslocar, e ir ao estado 107
+    SCANF           deslocar, e ir ao estado 108
 
-    stm_list         ir ao estado 109
-    stm              ir ao estado 110
-    decl             ir ao estado 111
-    assingment       ir ao estado 112
-    initialization   ir ao estado 113
-    print_stm        ir ao estado 114
-    scan_stm         ir ao estado 115
-    expres_list      ir ao estado 116
-    expr             ir ao estado 117
-    cond_stm         ir ao estado 118
-    if_struct        ir ao estado 119
-    switch_struct    ir ao estado 120
-    loop_stm         ir ao estado 121
-    while_struct     ir ao estado 122
-    for_struct       ir ao estado 123
-    uniry_op         ir ao estado 124
-    fun_call         ir ao estado 125
-    type             ir ao estado 126
-    arit_expr        ir ao estado 127
+    decl             ir ao estado 109
+    assingment       ir ao estado 110
+    initialization   ir ao estado 111
+    print_stm        ir ao estado 112
+    scan_stm         ir ao estado 113
+    expres_list      ir ao estado 114
+    expr             ir ao estado 115
+    cond_stm         ir ao estado 116
+    if_struct        ir ao estado 117
+    switch_struct    ir ao estado 118
+    loop_stm         ir ao estado 119
+    while_struct     ir ao estado 120
+    for_struct       ir ao estado 121
+    fun_call         ir ao estado 122
+    stm_list         ir ao estado 123
+    stm              ir ao estado 124
+    type             ir ao estado 125
+    arit_expr        ir ao estado 126
     base             ir ao estado 37
     arit_expr_right  ir ao estado 38
     arit_expr_base   ir ao estado 39
+    uniry_op         ir ao estado 127
     log_expr         ir ao estado 40
     comp_expr        ir ao estado 41
     term             ir ao estado 42
@@ -1560,87 +1538,188 @@ Estado 99
 
 Estado 100
 
-   21 assingment: IDENTIFIER . ASSINGMENT expr
-   58 fun_call: IDENTIFIER . L_PARENTHESIS $@3 param_list_call R_PARENTHESIS
-  108 term: IDENTIFIER .
+    9 assingment: IDENTIFIER . ASSINGMENT expr
+   46 fun_call: IDENTIFIER . L_PARENTHESIS $@3 param_list_call R_PARENTHESIS
+  110 term: IDENTIFIER .
 
     ASSINGMENT     deslocar, e ir ao estado 18
     L_PARENTHESIS  deslocar, e ir ao estado 128
 
-    $padrão  reduzir usando a regra 108 (term)
+    $padrão  reduzir usando a regra 110 (term)
 
 
 Estado 101
 
-   27 scan_stm: SCAN . L_PARENTHESIS IDENTIFIER R_PARENTHESIS
+   26 if_struct: IF_STM . L_PARENTHESIS log_expr R_PARENTHESIS L_KEY stm_list R_KEY else_struct
 
     L_PARENTHESIS  deslocar, e ir ao estado 129
 
 
 Estado 102
 
-   36 if_struct: IF_STM . L_PARENTHESIS log_expr R_PARENTHESIS block else_struct
+   42 for_struct: FOR_STM . L_PARENTHESIS $@1 initialization SEMICOLON log_expr SEMICOLON for_struct_stm R_PARENTHESIS $@2 block
 
     L_PARENTHESIS  deslocar, e ir ao estado 130
 
 
 Estado 103
 
-   52 for_struct: FOR_STM . L_PARENTHESIS $@1 initialization SEMICOLON log_expr SEMICOLON for_struct_stm R_PARENTHESIS $@2 block
+   39 while_struct: DO_STM . block WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS SEMICOLON
 
-    L_PARENTHESIS  deslocar, e ir ao estado 131
+    L_KEY  deslocar, e ir ao estado 97
+
+    block  ir ao estado 131
 
 
 Estado 104
 
-   49 while_struct: DO_STM . block WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS SEMICOLON
+   38 while_struct: WHILE_STM . L_PARENTHESIS log_expr R_PARENTHESIS block
 
-    L_KEY  deslocar, e ir ao estado 97
-
-    block  ir ao estado 132
+    L_PARENTHESIS  deslocar, e ir ao estado 132
 
 
 Estado 105
 
-   48 while_struct: WHILE_STM . L_PARENTHESIS log_expr R_PARENTHESIS block
+   32 switch_struct: SWITCH_STM . L_PARENTHESIS literal_term R_PARENTHESIS L_KEY case_list_switch DEFAULT DOUBLE_DOT stm_list BREAK SEMICOLON R_KEY
 
     L_PARENTHESIS  deslocar, e ir ao estado 133
 
 
 Estado 106
 
-   42 switch_struct: SWITCH_STM . L_PARENTHESIS literal_term R_PARENTHESIS L_KEY case_list_switch DEFAULT DOUBLE_DOT stm_list BREAK SEMICOLON R_KEY
+   11 print_stm: PRINT . L_PARENTHESIS literal_string R_PARENTHESIS
+   12          | PRINT . L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS
+   15          | PRINT . L_PARENTHESIS IDENTIFIER R_PARENTHESIS
 
     L_PARENTHESIS  deslocar, e ir ao estado 134
 
 
 Estado 107
 
-   23 print_stm: PRINT . L_PARENTHESIS literal_string R_PARENTHESIS
-   24          | PRINT . L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS
+   13 print_stm: PRINTF . L_PARENTHESIS literal_string R_PARENTHESIS
+   14          | PRINTF . L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS
+   16          | PRINTF . L_PARENTHESIS IDENTIFIER R_PARENTHESIS
 
     L_PARENTHESIS  deslocar, e ir ao estado 135
 
 
 Estado 108
 
-   25 print_stm: PRINTF . L_PARENTHESIS literal_string R_PARENTHESIS
-   26          | PRINTF . L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS
+   17 scan_stm: SCANF . L_PARENTHESIS literal_string COMMA ADDRESS IDENTIFIER R_PARENTHESIS
 
     L_PARENTHESIS  deslocar, e ir ao estado 136
 
 
 Estado 109
 
-   63 block: L_KEY $@6 stm_list . R_KEY
+   54 stm: decl . SEMICOLON
 
-    R_KEY  deslocar, e ir ao estado 137
+    SEMICOLON  deslocar, e ir ao estado 137
 
 
 Estado 110
 
-    4 stm_list: stm .
-    5         | stm . stm_list
+   59 stm: assingment . SEMICOLON
+
+    SEMICOLON  deslocar, e ir ao estado 138
+
+
+Estado 111
+
+   60 stm: initialization . SEMICOLON
+
+    SEMICOLON  deslocar, e ir ao estado 139
+
+
+Estado 112
+
+   57 stm: print_stm . SEMICOLON
+
+    SEMICOLON  deslocar, e ir ao estado 140
+
+
+Estado 113
+
+   63 stm: scan_stm . SEMICOLON
+
+    SEMICOLON  deslocar, e ir ao estado 141
+
+
+Estado 114
+
+   58 stm: expres_list . SEMICOLON
+
+    SEMICOLON  deslocar, e ir ao estado 142
+
+
+Estado 115
+
+   20 expres_list: expr . SEMICOLON
+   21            | expr . SEMICOLON expres_list
+
+    SEMICOLON  deslocar, e ir ao estado 143
+
+
+Estado 116
+
+   55 stm: cond_stm .
+
+    $padrão  reduzir usando a regra 55 (stm)
+
+
+Estado 117
+
+   24 cond_stm: if_struct .
+
+    $padrão  reduzir usando a regra 24 (cond_stm)
+
+
+Estado 118
+
+   25 cond_stm: switch_struct .
+
+    $padrão  reduzir usando a regra 25 (cond_stm)
+
+
+Estado 119
+
+   56 stm: loop_stm .
+
+    $padrão  reduzir usando a regra 56 (stm)
+
+
+Estado 120
+
+   36 loop_stm: while_struct .
+
+    $padrão  reduzir usando a regra 36 (loop_stm)
+
+
+Estado 121
+
+   37 loop_stm: for_struct .
+
+    $padrão  reduzir usando a regra 37 (loop_stm)
+
+
+Estado 122
+
+   62 stm: fun_call . SEMICOLON
+
+    SEMICOLON  deslocar, e ir ao estado 144
+
+
+Estado 123
+
+   51 block: L_KEY $@6 stm_list . R_KEY
+
+    R_KEY  deslocar, e ir ao estado 145
+
+
+Estado 124
+
+   52 stm_list: stm .
+   53         | stm . stm_list
 
     LITERAL_STRING  deslocar, e ir ao estado 26
     IDENTIFIER      deslocar, e ir ao estado 100
@@ -1653,45 +1732,45 @@ Estado 110
     VOID_TYPE       deslocar, e ir ao estado 8
     LITERAL_CHAR    deslocar, e ir ao estado 28
     CHAR_TYPE       deslocar, e ir ao estado 9
-    SCAN            deslocar, e ir ao estado 101
     LITERAL_INT     deslocar, e ir ao estado 29
     LITERAL_FLOAT   deslocar, e ir ao estado 30
     LITERAL_DOUBLE  deslocar, e ir ao estado 31
     TRUE_VAL        deslocar, e ir ao estado 32
     FALSE_VAL       deslocar, e ir ao estado 33
     L_PARENTHESIS   deslocar, e ir ao estado 34
-    IF_STM          deslocar, e ir ao estado 102
-    FOR_STM         deslocar, e ir ao estado 103
-    DO_STM          deslocar, e ir ao estado 104
-    WHILE_STM       deslocar, e ir ao estado 105
-    SWITCH_STM      deslocar, e ir ao estado 106
-    PRINT           deslocar, e ir ao estado 107
-    PRINTF          deslocar, e ir ao estado 108
+    IF_STM          deslocar, e ir ao estado 101
+    FOR_STM         deslocar, e ir ao estado 102
+    DO_STM          deslocar, e ir ao estado 103
+    WHILE_STM       deslocar, e ir ao estado 104
+    SWITCH_STM      deslocar, e ir ao estado 105
+    PRINT           deslocar, e ir ao estado 106
+    PRINTF          deslocar, e ir ao estado 107
+    SCANF           deslocar, e ir ao estado 108
 
-    $padrão  reduzir usando a regra 4 (stm_list)
+    $padrão  reduzir usando a regra 52 (stm_list)
 
-    stm_list         ir ao estado 138
-    stm              ir ao estado 110
-    decl             ir ao estado 111
-    assingment       ir ao estado 112
-    initialization   ir ao estado 113
-    print_stm        ir ao estado 114
-    scan_stm         ir ao estado 115
-    expres_list      ir ao estado 116
-    expr             ir ao estado 117
-    cond_stm         ir ao estado 118
-    if_struct        ir ao estado 119
-    switch_struct    ir ao estado 120
-    loop_stm         ir ao estado 121
-    while_struct     ir ao estado 122
-    for_struct       ir ao estado 123
-    uniry_op         ir ao estado 124
-    fun_call         ir ao estado 125
-    type             ir ao estado 126
-    arit_expr        ir ao estado 127
+    decl             ir ao estado 109
+    assingment       ir ao estado 110
+    initialization   ir ao estado 111
+    print_stm        ir ao estado 112
+    scan_stm         ir ao estado 113
+    expres_list      ir ao estado 114
+    expr             ir ao estado 115
+    cond_stm         ir ao estado 116
+    if_struct        ir ao estado 117
+    switch_struct    ir ao estado 118
+    loop_stm         ir ao estado 119
+    while_struct     ir ao estado 120
+    for_struct       ir ao estado 121
+    fun_call         ir ao estado 122
+    stm_list         ir ao estado 146
+    stm              ir ao estado 124
+    type             ir ao estado 125
+    arit_expr        ir ao estado 126
     base             ir ao estado 37
     arit_expr_right  ir ao estado 38
     arit_expr_base   ir ao estado 39
+    uniry_op         ir ao estado 127
     log_expr         ir ao estado 40
     comp_expr        ir ao estado 41
     term             ir ao estado 42
@@ -1700,208 +1779,95 @@ Estado 110
     literal_string   ir ao estado 45
 
 
-Estado 111
-
-    6 stm: decl . SEMICOLON
-
-    SEMICOLON  deslocar, e ir ao estado 139
-
-
-Estado 112
-
-   12 stm: assingment . SEMICOLON
-
-    SEMICOLON  deslocar, e ir ao estado 140
-
-
-Estado 113
-
-   13 stm: initialization . SEMICOLON
-
-    SEMICOLON  deslocar, e ir ao estado 141
-
-
-Estado 114
-
-    9 stm: print_stm . SEMICOLON
-
-    SEMICOLON  deslocar, e ir ao estado 142
-
-
-Estado 115
-
-   10 stm: scan_stm . SEMICOLON
-
-    SEMICOLON  deslocar, e ir ao estado 143
-
-
-Estado 116
-
-   11 stm: expres_list . SEMICOLON
-
-    SEMICOLON  deslocar, e ir ao estado 144
-
-
-Estado 117
-
-   30 expres_list: expr . SEMICOLON
-   31            | expr . SEMICOLON expres_list
-
-    SEMICOLON  deslocar, e ir ao estado 145
-
-
-Estado 118
-
-    7 stm: cond_stm .
-
-    $padrão  reduzir usando a regra 7 (stm)
-
-
-Estado 119
-
-   34 cond_stm: if_struct .
-
-    $padrão  reduzir usando a regra 34 (cond_stm)
-
-
-Estado 120
-
-   35 cond_stm: switch_struct .
-
-    $padrão  reduzir usando a regra 35 (cond_stm)
-
-
-Estado 121
-
-    8 stm: loop_stm .
-
-    $padrão  reduzir usando a regra 8 (stm)
-
-
-Estado 122
-
-   46 loop_stm: while_struct .
-
-    $padrão  reduzir usando a regra 46 (loop_stm)
-
-
-Estado 123
-
-   47 loop_stm: for_struct .
-
-    $padrão  reduzir usando a regra 47 (loop_stm)
-
-
-Estado 124
-
-   14 stm: uniry_op . SEMICOLON
-
-    SEMICOLON  deslocar, e ir ao estado 146
-
-
 Estado 125
 
-   15 stm: fun_call . SEMICOLON
+    8 decl: type . id_list
+   10 initialization: type . IDENTIFIER ASSINGMENT expr
 
-    SEMICOLON  deslocar, e ir ao estado 147
-
-
-Estado 126
-
-   20 decl: type . id_list
-   22 initialization: type . IDENTIFIER ASSINGMENT expr
-
-    IDENTIFIER  deslocar, e ir ao estado 148
+    IDENTIFIER  deslocar, e ir ao estado 147
 
     id_list  ir ao estado 25
 
 
-Estado 127
+Estado 126
 
-   33 expr: arit_expr .
-   55 uniry_op: arit_expr . INC_OP
-   56         | arit_expr . DEC_OP
-   77 arit_expr: arit_expr . PLUS_OP base
-   78          | arit_expr . SUB_OP base
-   79          | arit_expr . DIV_OP base
-   80          | arit_expr . STAR base
-   81          | arit_expr . MOD_OP base
-   90 comp_expr: arit_expr .
+   23 expr: arit_expr .
+   80 arit_expr: arit_expr . PLUS_OP base
+   81          | arit_expr . SUB_OP base
+   82          | arit_expr . DIV_OP base
+   83          | arit_expr . STAR base
+   84          | arit_expr . MOD_OP base
+   90 uniry_op: arit_expr . INC_OP
+   91         | arit_expr . DEC_OP
 
     PLUS_OP  deslocar, e ir ao estado 51
     SUB_OP   deslocar, e ir ao estado 52
     DIV_OP   deslocar, e ir ao estado 53
     STAR     deslocar, e ir ao estado 54
     MOD_OP   deslocar, e ir ao estado 55
-    INC_OP   deslocar, e ir ao estado 149
-    DEC_OP   deslocar, e ir ao estado 150
+    INC_OP   deslocar, e ir ao estado 148
+    DEC_OP   deslocar, e ir ao estado 149
 
-    SEMICOLON  reduzir usando a regra 33 (expr)
-    SEMICOLON  [reduzir usando a regra 90 (comp_expr)]
-    $padrão   reduzir usando a regra 90 (comp_expr)
+    $padrão  reduzir usando a regra 23 (expr)
+
+
+Estado 127
+
+   61 stm: uniry_op . SEMICOLON
+
+    SEMICOLON  deslocar, e ir ao estado 150
 
 
 Estado 128
 
-   58 fun_call: IDENTIFIER L_PARENTHESIS . $@3 param_list_call R_PARENTHESIS
+   46 fun_call: IDENTIFIER L_PARENTHESIS . $@3 param_list_call R_PARENTHESIS
 
-    $padrão  reduzir usando a regra 57 ($@3)
+    $padrão  reduzir usando a regra 45 ($@3)
 
     $@3  ir ao estado 151
 
 
 Estado 129
 
-   27 scan_stm: SCAN L_PARENTHESIS . IDENTIFIER R_PARENTHESIS
+   26 if_struct: IF_STM L_PARENTHESIS . log_expr R_PARENTHESIS L_KEY stm_list R_KEY else_struct
 
-    IDENTIFIER  deslocar, e ir ao estado 152
+    LITERAL_STRING  deslocar, e ir ao estado 26
+    IDENTIFIER      deslocar, e ir ao estado 27
+    LITERAL_CHAR    deslocar, e ir ao estado 28
+    LITERAL_INT     deslocar, e ir ao estado 29
+    LITERAL_FLOAT   deslocar, e ir ao estado 30
+    LITERAL_DOUBLE  deslocar, e ir ao estado 31
+    TRUE_VAL        deslocar, e ir ao estado 32
+    FALSE_VAL       deslocar, e ir ao estado 33
+    L_PARENTHESIS   deslocar, e ir ao estado 152
+
+    log_expr        ir ao estado 153
+    comp_expr       ir ao estado 41
+    term            ir ao estado 85
+    term_num        ir ao estado 43
+    log_term        ir ao estado 44
+    literal_string  ir ao estado 45
 
 
 Estado 130
 
-   36 if_struct: IF_STM L_PARENTHESIS . log_expr R_PARENTHESIS block else_struct
+   42 for_struct: FOR_STM L_PARENTHESIS . $@1 initialization SEMICOLON log_expr SEMICOLON for_struct_stm R_PARENTHESIS $@2 block
 
-    LITERAL_STRING  deslocar, e ir ao estado 26
-    IDENTIFIER      deslocar, e ir ao estado 27
-    LITERAL_CHAR    deslocar, e ir ao estado 28
-    LITERAL_INT     deslocar, e ir ao estado 29
-    LITERAL_FLOAT   deslocar, e ir ao estado 30
-    LITERAL_DOUBLE  deslocar, e ir ao estado 31
-    TRUE_VAL        deslocar, e ir ao estado 32
-    FALSE_VAL       deslocar, e ir ao estado 33
-    L_PARENTHESIS   deslocar, e ir ao estado 34
-
-    arit_expr        ir ao estado 83
-    base             ir ao estado 37
-    arit_expr_right  ir ao estado 38
-    arit_expr_base   ir ao estado 39
-    log_expr         ir ao estado 153
-    comp_expr        ir ao estado 41
-    term             ir ao estado 42
-    term_num         ir ao estado 43
-    log_term         ir ao estado 44
-    literal_string   ir ao estado 45
-
-
-Estado 131
-
-   52 for_struct: FOR_STM L_PARENTHESIS . $@1 initialization SEMICOLON log_expr SEMICOLON for_struct_stm R_PARENTHESIS $@2 block
-
-    $padrão  reduzir usando a regra 50 ($@1)
+    $padrão  reduzir usando a regra 40 ($@1)
 
     $@1  ir ao estado 154
 
 
-Estado 132
+Estado 131
 
-   49 while_struct: DO_STM block . WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS SEMICOLON
+   39 while_struct: DO_STM block . WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS SEMICOLON
 
     WHILE_STM  deslocar, e ir ao estado 155
 
 
-Estado 133
+Estado 132
 
-   48 while_struct: WHILE_STM L_PARENTHESIS . log_expr R_PARENTHESIS block
+   38 while_struct: WHILE_STM L_PARENTHESIS . log_expr R_PARENTHESIS block
 
     LITERAL_STRING  deslocar, e ir ao estado 26
     IDENTIFIER      deslocar, e ir ao estado 27
@@ -1911,23 +1877,19 @@ Estado 133
     LITERAL_DOUBLE  deslocar, e ir ao estado 31
     TRUE_VAL        deslocar, e ir ao estado 32
     FALSE_VAL       deslocar, e ir ao estado 33
-    L_PARENTHESIS   deslocar, e ir ao estado 34
+    L_PARENTHESIS   deslocar, e ir ao estado 152
 
-    arit_expr        ir ao estado 83
-    base             ir ao estado 37
-    arit_expr_right  ir ao estado 38
-    arit_expr_base   ir ao estado 39
-    log_expr         ir ao estado 156
-    comp_expr        ir ao estado 41
-    term             ir ao estado 42
-    term_num         ir ao estado 43
-    log_term         ir ao estado 44
-    literal_string   ir ao estado 45
+    log_expr        ir ao estado 156
+    comp_expr       ir ao estado 41
+    term            ir ao estado 85
+    term_num        ir ao estado 43
+    log_term        ir ao estado 44
+    literal_string  ir ao estado 45
 
 
-Estado 134
+Estado 133
 
-   42 switch_struct: SWITCH_STM L_PARENTHESIS . literal_term R_PARENTHESIS L_KEY case_list_switch DEFAULT DOUBLE_DOT stm_list BREAK SEMICOLON R_KEY
+   32 switch_struct: SWITCH_STM L_PARENTHESIS . literal_term R_PARENTHESIS L_KEY case_list_switch DEFAULT DOUBLE_DOT stm_list BREAK SEMICOLON R_KEY
 
     LITERAL_STRING  deslocar, e ir ao estado 26
     IDENTIFIER      deslocar, e ir ao estado 27
@@ -1945,88 +1907,88 @@ Estado 134
     literal_string  ir ao estado 159
 
 
-Estado 135
+Estado 134
 
-   23 print_stm: PRINT L_PARENTHESIS . literal_string R_PARENTHESIS
-   24          | PRINT L_PARENTHESIS . literal_string COMMA id_list R_PARENTHESIS
-
-    LITERAL_STRING  deslocar, e ir ao estado 26
-    LITERAL_CHAR    deslocar, e ir ao estado 28
-
-    literal_string  ir ao estado 160
-
-
-Estado 136
-
-   25 print_stm: PRINTF L_PARENTHESIS . literal_string R_PARENTHESIS
-   26          | PRINTF L_PARENTHESIS . literal_string COMMA id_list R_PARENTHESIS
+   11 print_stm: PRINT L_PARENTHESIS . literal_string R_PARENTHESIS
+   12          | PRINT L_PARENTHESIS . literal_string COMMA id_list R_PARENTHESIS
+   15          | PRINT L_PARENTHESIS . IDENTIFIER R_PARENTHESIS
 
     LITERAL_STRING  deslocar, e ir ao estado 26
+    IDENTIFIER      deslocar, e ir ao estado 160
     LITERAL_CHAR    deslocar, e ir ao estado 28
 
     literal_string  ir ao estado 161
 
 
+Estado 135
+
+   13 print_stm: PRINTF L_PARENTHESIS . literal_string R_PARENTHESIS
+   14          | PRINTF L_PARENTHESIS . literal_string COMMA id_list R_PARENTHESIS
+   16          | PRINTF L_PARENTHESIS . IDENTIFIER R_PARENTHESIS
+
+    LITERAL_STRING  deslocar, e ir ao estado 26
+    IDENTIFIER      deslocar, e ir ao estado 162
+    LITERAL_CHAR    deslocar, e ir ao estado 28
+
+    literal_string  ir ao estado 163
+
+
+Estado 136
+
+   17 scan_stm: SCANF L_PARENTHESIS . literal_string COMMA ADDRESS IDENTIFIER R_PARENTHESIS
+
+    LITERAL_STRING  deslocar, e ir ao estado 26
+    LITERAL_CHAR    deslocar, e ir ao estado 28
+
+    literal_string  ir ao estado 164
+
+
 Estado 137
 
-   63 block: L_KEY $@6 stm_list R_KEY .
+   54 stm: decl SEMICOLON .
 
-    $padrão  reduzir usando a regra 63 (block)
+    $padrão  reduzir usando a regra 54 (stm)
 
 
 Estado 138
 
-    5 stm_list: stm stm_list .
+   59 stm: assingment SEMICOLON .
 
-    $padrão  reduzir usando a regra 5 (stm_list)
+    $padrão  reduzir usando a regra 59 (stm)
 
 
 Estado 139
 
-    6 stm: decl SEMICOLON .
+   60 stm: initialization SEMICOLON .
 
-    $padrão  reduzir usando a regra 6 (stm)
+    $padrão  reduzir usando a regra 60 (stm)
 
 
 Estado 140
 
-   12 stm: assingment SEMICOLON .
+   57 stm: print_stm SEMICOLON .
 
-    $padrão  reduzir usando a regra 12 (stm)
+    $padrão  reduzir usando a regra 57 (stm)
 
 
 Estado 141
 
-   13 stm: initialization SEMICOLON .
+   63 stm: scan_stm SEMICOLON .
 
-    $padrão  reduzir usando a regra 13 (stm)
+    $padrão  reduzir usando a regra 63 (stm)
 
 
 Estado 142
 
-    9 stm: print_stm SEMICOLON .
+   58 stm: expres_list SEMICOLON .
 
-    $padrão  reduzir usando a regra 9 (stm)
+    $padrão  reduzir usando a regra 58 (stm)
 
 
 Estado 143
 
-   10 stm: scan_stm SEMICOLON .
-
-    $padrão  reduzir usando a regra 10 (stm)
-
-
-Estado 144
-
-   11 stm: expres_list SEMICOLON .
-
-    $padrão  reduzir usando a regra 11 (stm)
-
-
-Estado 145
-
-   30 expres_list: expr SEMICOLON .
-   31            | expr SEMICOLON . expres_list
+   20 expres_list: expr SEMICOLON .
+   21            | expr SEMICOLON . expres_list
 
     LITERAL_STRING  deslocar, e ir ao estado 26
     IDENTIFIER      deslocar, e ir ao estado 27
@@ -2038,10 +2000,10 @@ Estado 145
     FALSE_VAL       deslocar, e ir ao estado 33
     L_PARENTHESIS   deslocar, e ir ao estado 34
 
-    $padrão  reduzir usando a regra 30 (expres_list)
+    $padrão  reduzir usando a regra 20 (expres_list)
 
-    expres_list      ir ao estado 162
-    expr             ir ao estado 117
+    expres_list      ir ao estado 165
+    expr             ir ao estado 115
     arit_expr        ir ao estado 36
     base             ir ao estado 37
     arit_expr_right  ir ao estado 38
@@ -2054,49 +2016,63 @@ Estado 145
     literal_string   ir ao estado 45
 
 
+Estado 144
+
+   62 stm: fun_call SEMICOLON .
+
+    $padrão  reduzir usando a regra 62 (stm)
+
+
+Estado 145
+
+   51 block: L_KEY $@6 stm_list R_KEY .
+
+    $padrão  reduzir usando a regra 51 (block)
+
+
 Estado 146
 
-   14 stm: uniry_op SEMICOLON .
+   53 stm_list: stm stm_list .
 
-    $padrão  reduzir usando a regra 14 (stm)
+    $padrão  reduzir usando a regra 53 (stm_list)
 
 
 Estado 147
 
-   15 stm: fun_call SEMICOLON .
-
-    $padrão  reduzir usando a regra 15 (stm)
-
-
-Estado 148
-
-   22 initialization: type IDENTIFIER . ASSINGMENT expr
-   28 id_list: IDENTIFIER .
-   29        | IDENTIFIER . COMMA id_list
+   10 initialization: type IDENTIFIER . ASSINGMENT expr
+   18 id_list: IDENTIFIER .
+   19        | IDENTIFIER . COMMA id_list
 
     ASSINGMENT  deslocar, e ir ao estado 46
     COMMA       deslocar, e ir ao estado 48
 
-    $padrão  reduzir usando a regra 28 (id_list)
+    $padrão  reduzir usando a regra 18 (id_list)
+
+
+Estado 148
+
+   90 uniry_op: arit_expr INC_OP .
+
+    $padrão  reduzir usando a regra 90 (uniry_op)
 
 
 Estado 149
 
-   55 uniry_op: arit_expr INC_OP .
+   91 uniry_op: arit_expr DEC_OP .
 
-    $padrão  reduzir usando a regra 55 (uniry_op)
+    $padrão  reduzir usando a regra 91 (uniry_op)
 
 
 Estado 150
 
-   56 uniry_op: arit_expr DEC_OP .
+   61 stm: uniry_op SEMICOLON .
 
-    $padrão  reduzir usando a regra 56 (uniry_op)
+    $padrão  reduzir usando a regra 61 (stm)
 
 
 Estado 151
 
-   58 fun_call: IDENTIFIER L_PARENTHESIS $@3 . param_list_call R_PARENTHESIS
+   46 fun_call: IDENTIFIER L_PARENTHESIS $@3 . param_list_call R_PARENTHESIS
 
     LITERAL_STRING  deslocar, e ir ao estado 26
     IDENTIFIER      deslocar, e ir ao estado 27
@@ -2108,16 +2084,16 @@ Estado 151
     FALSE_VAL       deslocar, e ir ao estado 33
     L_PARENTHESIS   deslocar, e ir ao estado 34
 
-    $padrão  reduzir usando a regra 103 (param_list_call)
+    $padrão  reduzir usando a regra 76 (param_list_call)
 
-    expr             ir ao estado 163
+    expr             ir ao estado 166
+    param_list_call  ir ao estado 167
     arit_expr        ir ao estado 36
     base             ir ao estado 37
     arit_expr_right  ir ao estado 38
     arit_expr_base   ir ao estado 39
     log_expr         ir ao estado 40
     comp_expr        ir ao estado 41
-    param_list_call  ir ao estado 164
     term             ir ao estado 42
     term_num         ir ao estado 43
     log_term         ir ao estado 44
@@ -2126,27 +2102,42 @@ Estado 151
 
 Estado 152
 
-   27 scan_stm: SCAN L_PARENTHESIS IDENTIFIER . R_PARENTHESIS
+   93 log_expr: L_PARENTHESIS . log_expr R_PARENTHESIS
 
-    R_PARENTHESIS  deslocar, e ir ao estado 165
+    LITERAL_STRING  deslocar, e ir ao estado 26
+    IDENTIFIER      deslocar, e ir ao estado 27
+    LITERAL_CHAR    deslocar, e ir ao estado 28
+    LITERAL_INT     deslocar, e ir ao estado 29
+    LITERAL_FLOAT   deslocar, e ir ao estado 30
+    LITERAL_DOUBLE  deslocar, e ir ao estado 31
+    TRUE_VAL        deslocar, e ir ao estado 32
+    FALSE_VAL       deslocar, e ir ao estado 33
+    L_PARENTHESIS   deslocar, e ir ao estado 152
+
+    log_expr        ir ao estado 50
+    comp_expr       ir ao estado 41
+    term            ir ao estado 85
+    term_num        ir ao estado 43
+    log_term        ir ao estado 44
+    literal_string  ir ao estado 45
 
 
 Estado 153
 
-   36 if_struct: IF_STM L_PARENTHESIS log_expr . R_PARENTHESIS block else_struct
-   89 log_expr: log_expr . op_log comp_expr
+   26 if_struct: IF_STM L_PARENTHESIS log_expr . R_PARENTHESIS L_KEY stm_list R_KEY else_struct
+   94 log_expr: log_expr . op_log comp_expr
 
     AND_OP         deslocar, e ir ao estado 57
     OR_OP          deslocar, e ir ao estado 58
     NOT_OP         deslocar, e ir ao estado 59
-    R_PARENTHESIS  deslocar, e ir ao estado 166
+    R_PARENTHESIS  deslocar, e ir ao estado 168
 
     op_log  ir ao estado 60
 
 
 Estado 154
 
-   52 for_struct: FOR_STM L_PARENTHESIS $@1 . initialization SEMICOLON log_expr SEMICOLON for_struct_stm R_PARENTHESIS $@2 block
+   42 for_struct: FOR_STM L_PARENTHESIS $@1 . initialization SEMICOLON log_expr SEMICOLON for_struct_stm R_PARENTHESIS $@2 block
 
     INT_TYPE      deslocar, e ir ao estado 2
     FLOAT_TYPE    deslocar, e ir ao estado 3
@@ -2157,200 +2148,229 @@ Estado 154
     VOID_TYPE     deslocar, e ir ao estado 8
     CHAR_TYPE     deslocar, e ir ao estado 9
 
-    initialization  ir ao estado 167
-    type            ir ao estado 168
+    initialization  ir ao estado 169
+    type            ir ao estado 170
 
 
 Estado 155
 
-   49 while_struct: DO_STM block WHILE_STM . L_PARENTHESIS log_expr R_PARENTHESIS SEMICOLON
+   39 while_struct: DO_STM block WHILE_STM . L_PARENTHESIS log_expr R_PARENTHESIS SEMICOLON
 
-    L_PARENTHESIS  deslocar, e ir ao estado 169
+    L_PARENTHESIS  deslocar, e ir ao estado 171
 
 
 Estado 156
 
-   48 while_struct: WHILE_STM L_PARENTHESIS log_expr . R_PARENTHESIS block
-   89 log_expr: log_expr . op_log comp_expr
+   38 while_struct: WHILE_STM L_PARENTHESIS log_expr . R_PARENTHESIS block
+   94 log_expr: log_expr . op_log comp_expr
 
     AND_OP         deslocar, e ir ao estado 57
     OR_OP          deslocar, e ir ao estado 58
     NOT_OP         deslocar, e ir ao estado 59
-    R_PARENTHESIS  deslocar, e ir ao estado 170
+    R_PARENTHESIS  deslocar, e ir ao estado 172
 
     op_log  ir ao estado 60
 
 
 Estado 157
 
-  114 literal_term: term .
+  116 literal_term: term .
 
-    $padrão  reduzir usando a regra 114 (literal_term)
+    $padrão  reduzir usando a regra 116 (literal_term)
 
 
 Estado 158
 
-   42 switch_struct: SWITCH_STM L_PARENTHESIS literal_term . R_PARENTHESIS L_KEY case_list_switch DEFAULT DOUBLE_DOT stm_list BREAK SEMICOLON R_KEY
+   32 switch_struct: SWITCH_STM L_PARENTHESIS literal_term . R_PARENTHESIS L_KEY case_list_switch DEFAULT DOUBLE_DOT stm_list BREAK SEMICOLON R_KEY
 
-    R_PARENTHESIS  deslocar, e ir ao estado 171
+    R_PARENTHESIS  deslocar, e ir ao estado 173
 
 
 Estado 159
 
-  115 literal_term: literal_string .
+  117 literal_term: literal_string .
 
-    $padrão  reduzir usando a regra 115 (literal_term)
+    $padrão  reduzir usando a regra 117 (literal_term)
 
 
 Estado 160
 
-   23 print_stm: PRINT L_PARENTHESIS literal_string . R_PARENTHESIS
-   24          | PRINT L_PARENTHESIS literal_string . COMMA id_list R_PARENTHESIS
+   15 print_stm: PRINT L_PARENTHESIS IDENTIFIER . R_PARENTHESIS
 
-    R_PARENTHESIS  deslocar, e ir ao estado 172
-    COMMA          deslocar, e ir ao estado 173
+    R_PARENTHESIS  deslocar, e ir ao estado 174
 
 
 Estado 161
 
-   25 print_stm: PRINTF L_PARENTHESIS literal_string . R_PARENTHESIS
-   26          | PRINTF L_PARENTHESIS literal_string . COMMA id_list R_PARENTHESIS
+   11 print_stm: PRINT L_PARENTHESIS literal_string . R_PARENTHESIS
+   12          | PRINT L_PARENTHESIS literal_string . COMMA id_list R_PARENTHESIS
 
-    R_PARENTHESIS  deslocar, e ir ao estado 174
-    COMMA          deslocar, e ir ao estado 175
+    R_PARENTHESIS  deslocar, e ir ao estado 175
+    COMMA          deslocar, e ir ao estado 176
 
 
 Estado 162
 
-   31 expres_list: expr SEMICOLON expres_list .
-
-    $padrão  reduzir usando a regra 31 (expres_list)
-
-
-Estado 163
-
-  104 param_list_call: expr .
-  105                | expr . COMMA param_list_call
-
-    COMMA  deslocar, e ir ao estado 176
-
-    $padrão  reduzir usando a regra 104 (param_list_call)
-
-
-Estado 164
-
-   58 fun_call: IDENTIFIER L_PARENTHESIS $@3 param_list_call . R_PARENTHESIS
+   16 print_stm: PRINTF L_PARENTHESIS IDENTIFIER . R_PARENTHESIS
 
     R_PARENTHESIS  deslocar, e ir ao estado 177
 
 
+Estado 163
+
+   13 print_stm: PRINTF L_PARENTHESIS literal_string . R_PARENTHESIS
+   14          | PRINTF L_PARENTHESIS literal_string . COMMA id_list R_PARENTHESIS
+
+    R_PARENTHESIS  deslocar, e ir ao estado 178
+    COMMA          deslocar, e ir ao estado 179
+
+
+Estado 164
+
+   17 scan_stm: SCANF L_PARENTHESIS literal_string . COMMA ADDRESS IDENTIFIER R_PARENTHESIS
+
+    COMMA  deslocar, e ir ao estado 180
+
+
 Estado 165
 
-   27 scan_stm: SCAN L_PARENTHESIS IDENTIFIER R_PARENTHESIS .
+   21 expres_list: expr SEMICOLON expres_list .
 
-    $padrão  reduzir usando a regra 27 (scan_stm)
+    $padrão  reduzir usando a regra 21 (expres_list)
 
 
 Estado 166
 
-   36 if_struct: IF_STM L_PARENTHESIS log_expr R_PARENTHESIS . block else_struct
+   77 param_list_call: expr .
+   78                | expr . COMMA param_list_call
 
-    L_KEY  deslocar, e ir ao estado 97
+    COMMA  deslocar, e ir ao estado 181
 
-    block  ir ao estado 178
+    $padrão  reduzir usando a regra 77 (param_list_call)
 
 
 Estado 167
 
-   52 for_struct: FOR_STM L_PARENTHESIS $@1 initialization . SEMICOLON log_expr SEMICOLON for_struct_stm R_PARENTHESIS $@2 block
+   46 fun_call: IDENTIFIER L_PARENTHESIS $@3 param_list_call . R_PARENTHESIS
 
-    SEMICOLON  deslocar, e ir ao estado 179
+    R_PARENTHESIS  deslocar, e ir ao estado 182
 
 
 Estado 168
 
-   22 initialization: type . IDENTIFIER ASSINGMENT expr
-
-    IDENTIFIER  deslocar, e ir ao estado 180
-
-
-Estado 169
-
-   49 while_struct: DO_STM block WHILE_STM L_PARENTHESIS . log_expr R_PARENTHESIS SEMICOLON
-
-    LITERAL_STRING  deslocar, e ir ao estado 26
-    IDENTIFIER      deslocar, e ir ao estado 27
-    LITERAL_CHAR    deslocar, e ir ao estado 28
-    LITERAL_INT     deslocar, e ir ao estado 29
-    LITERAL_FLOAT   deslocar, e ir ao estado 30
-    LITERAL_DOUBLE  deslocar, e ir ao estado 31
-    TRUE_VAL        deslocar, e ir ao estado 32
-    FALSE_VAL       deslocar, e ir ao estado 33
-    L_PARENTHESIS   deslocar, e ir ao estado 34
-
-    arit_expr        ir ao estado 83
-    base             ir ao estado 37
-    arit_expr_right  ir ao estado 38
-    arit_expr_base   ir ao estado 39
-    log_expr         ir ao estado 181
-    comp_expr        ir ao estado 41
-    term             ir ao estado 42
-    term_num         ir ao estado 43
-    log_term         ir ao estado 44
-    literal_string   ir ao estado 45
-
-
-Estado 170
-
-   48 while_struct: WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS . block
-
-    L_KEY  deslocar, e ir ao estado 97
-
-    block  ir ao estado 182
-
-
-Estado 171
-
-   42 switch_struct: SWITCH_STM L_PARENTHESIS literal_term R_PARENTHESIS . L_KEY case_list_switch DEFAULT DOUBLE_DOT stm_list BREAK SEMICOLON R_KEY
+   26 if_struct: IF_STM L_PARENTHESIS log_expr R_PARENTHESIS . L_KEY stm_list R_KEY else_struct
 
     L_KEY  deslocar, e ir ao estado 183
 
 
+Estado 169
+
+   42 for_struct: FOR_STM L_PARENTHESIS $@1 initialization . SEMICOLON log_expr SEMICOLON for_struct_stm R_PARENTHESIS $@2 block
+
+    SEMICOLON  deslocar, e ir ao estado 184
+
+
+Estado 170
+
+   10 initialization: type . IDENTIFIER ASSINGMENT expr
+
+    IDENTIFIER  deslocar, e ir ao estado 185
+
+
+Estado 171
+
+   39 while_struct: DO_STM block WHILE_STM L_PARENTHESIS . log_expr R_PARENTHESIS SEMICOLON
+
+    LITERAL_STRING  deslocar, e ir ao estado 26
+    IDENTIFIER      deslocar, e ir ao estado 27
+    LITERAL_CHAR    deslocar, e ir ao estado 28
+    LITERAL_INT     deslocar, e ir ao estado 29
+    LITERAL_FLOAT   deslocar, e ir ao estado 30
+    LITERAL_DOUBLE  deslocar, e ir ao estado 31
+    TRUE_VAL        deslocar, e ir ao estado 32
+    FALSE_VAL       deslocar, e ir ao estado 33
+    L_PARENTHESIS   deslocar, e ir ao estado 152
+
+    log_expr        ir ao estado 186
+    comp_expr       ir ao estado 41
+    term            ir ao estado 85
+    term_num        ir ao estado 43
+    log_term        ir ao estado 44
+    literal_string  ir ao estado 45
+
+
 Estado 172
 
-   23 print_stm: PRINT L_PARENTHESIS literal_string R_PARENTHESIS .
+   38 while_struct: WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS . block
 
-    $padrão  reduzir usando a regra 23 (print_stm)
+    L_KEY  deslocar, e ir ao estado 97
+
+    block  ir ao estado 187
 
 
 Estado 173
 
-   24 print_stm: PRINT L_PARENTHESIS literal_string COMMA . id_list R_PARENTHESIS
+   32 switch_struct: SWITCH_STM L_PARENTHESIS literal_term R_PARENTHESIS . L_KEY case_list_switch DEFAULT DOUBLE_DOT stm_list BREAK SEMICOLON R_KEY
 
-    IDENTIFIER  deslocar, e ir ao estado 72
-
-    id_list  ir ao estado 184
+    L_KEY  deslocar, e ir ao estado 188
 
 
 Estado 174
 
-   25 print_stm: PRINTF L_PARENTHESIS literal_string R_PARENTHESIS .
+   15 print_stm: PRINT L_PARENTHESIS IDENTIFIER R_PARENTHESIS .
 
-    $padrão  reduzir usando a regra 25 (print_stm)
+    $padrão  reduzir usando a regra 15 (print_stm)
 
 
 Estado 175
 
-   26 print_stm: PRINTF L_PARENTHESIS literal_string COMMA . id_list R_PARENTHESIS
+   11 print_stm: PRINT L_PARENTHESIS literal_string R_PARENTHESIS .
 
-    IDENTIFIER  deslocar, e ir ao estado 72
-
-    id_list  ir ao estado 185
+    $padrão  reduzir usando a regra 11 (print_stm)
 
 
 Estado 176
 
-  105 param_list_call: expr COMMA . param_list_call
+   12 print_stm: PRINT L_PARENTHESIS literal_string COMMA . id_list R_PARENTHESIS
+
+    IDENTIFIER  deslocar, e ir ao estado 72
+
+    id_list  ir ao estado 189
+
+
+Estado 177
+
+   16 print_stm: PRINTF L_PARENTHESIS IDENTIFIER R_PARENTHESIS .
+
+    $padrão  reduzir usando a regra 16 (print_stm)
+
+
+Estado 178
+
+   13 print_stm: PRINTF L_PARENTHESIS literal_string R_PARENTHESIS .
+
+    $padrão  reduzir usando a regra 13 (print_stm)
+
+
+Estado 179
+
+   14 print_stm: PRINTF L_PARENTHESIS literal_string COMMA . id_list R_PARENTHESIS
+
+    IDENTIFIER  deslocar, e ir ao estado 72
+
+    id_list  ir ao estado 190
+
+
+Estado 180
+
+   17 scan_stm: SCANF L_PARENTHESIS literal_string COMMA . ADDRESS IDENTIFIER R_PARENTHESIS
+
+    ADDRESS  deslocar, e ir ao estado 191
+
+
+Estado 181
+
+   78 param_list_call: expr COMMA . param_list_call
 
     LITERAL_STRING  deslocar, e ir ao estado 26
     IDENTIFIER      deslocar, e ir ao estado 27
@@ -2362,46 +2382,92 @@ Estado 176
     FALSE_VAL       deslocar, e ir ao estado 33
     L_PARENTHESIS   deslocar, e ir ao estado 34
 
-    $padrão  reduzir usando a regra 103 (param_list_call)
+    $padrão  reduzir usando a regra 76 (param_list_call)
 
-    expr             ir ao estado 163
+    expr             ir ao estado 166
+    param_list_call  ir ao estado 192
     arit_expr        ir ao estado 36
     base             ir ao estado 37
     arit_expr_right  ir ao estado 38
     arit_expr_base   ir ao estado 39
     log_expr         ir ao estado 40
     comp_expr        ir ao estado 41
-    param_list_call  ir ao estado 186
     term             ir ao estado 42
     term_num         ir ao estado 43
     log_term         ir ao estado 44
     literal_string   ir ao estado 45
 
 
-Estado 177
+Estado 182
 
-   58 fun_call: IDENTIFIER L_PARENTHESIS $@3 param_list_call R_PARENTHESIS .
+   46 fun_call: IDENTIFIER L_PARENTHESIS $@3 param_list_call R_PARENTHESIS .
 
-    $padrão  reduzir usando a regra 58 (fun_call)
-
-
-Estado 178
-
-   36 if_struct: IF_STM L_PARENTHESIS log_expr R_PARENTHESIS block . else_struct
-
-    ELSE_IF_STM  deslocar, e ir ao estado 187
-
-    ELSE_STM  reduzir usando a regra 39 (elseif_list)
-    $padrão  reduzir usando a regra 37 (else_struct)
-
-    else_struct    ir ao estado 188
-    elseif_list    ir ao estado 189
-    elseif_struct  ir ao estado 190
+    $padrão  reduzir usando a regra 46 (fun_call)
 
 
-Estado 179
+Estado 183
 
-   52 for_struct: FOR_STM L_PARENTHESIS $@1 initialization SEMICOLON . log_expr SEMICOLON for_struct_stm R_PARENTHESIS $@2 block
+   26 if_struct: IF_STM L_PARENTHESIS log_expr R_PARENTHESIS L_KEY . stm_list R_KEY else_struct
+
+    LITERAL_STRING  deslocar, e ir ao estado 26
+    IDENTIFIER      deslocar, e ir ao estado 100
+    INT_TYPE        deslocar, e ir ao estado 2
+    FLOAT_TYPE      deslocar, e ir ao estado 3
+    DOUBLE_TYPE     deslocar, e ir ao estado 4
+    STRING_TYPE     deslocar, e ir ao estado 5
+    BOOLEAN_TYPE    deslocar, e ir ao estado 6
+    MATRIZ_TYPE     deslocar, e ir ao estado 7
+    VOID_TYPE       deslocar, e ir ao estado 8
+    LITERAL_CHAR    deslocar, e ir ao estado 28
+    CHAR_TYPE       deslocar, e ir ao estado 9
+    LITERAL_INT     deslocar, e ir ao estado 29
+    LITERAL_FLOAT   deslocar, e ir ao estado 30
+    LITERAL_DOUBLE  deslocar, e ir ao estado 31
+    TRUE_VAL        deslocar, e ir ao estado 32
+    FALSE_VAL       deslocar, e ir ao estado 33
+    L_PARENTHESIS   deslocar, e ir ao estado 34
+    IF_STM          deslocar, e ir ao estado 101
+    FOR_STM         deslocar, e ir ao estado 102
+    DO_STM          deslocar, e ir ao estado 103
+    WHILE_STM       deslocar, e ir ao estado 104
+    SWITCH_STM      deslocar, e ir ao estado 105
+    PRINT           deslocar, e ir ao estado 106
+    PRINTF          deslocar, e ir ao estado 107
+    SCANF           deslocar, e ir ao estado 108
+
+    decl             ir ao estado 109
+    assingment       ir ao estado 110
+    initialization   ir ao estado 111
+    print_stm        ir ao estado 112
+    scan_stm         ir ao estado 113
+    expres_list      ir ao estado 114
+    expr             ir ao estado 115
+    cond_stm         ir ao estado 116
+    if_struct        ir ao estado 117
+    switch_struct    ir ao estado 118
+    loop_stm         ir ao estado 119
+    while_struct     ir ao estado 120
+    for_struct       ir ao estado 121
+    fun_call         ir ao estado 122
+    stm_list         ir ao estado 193
+    stm              ir ao estado 124
+    type             ir ao estado 125
+    arit_expr        ir ao estado 126
+    base             ir ao estado 37
+    arit_expr_right  ir ao estado 38
+    arit_expr_base   ir ao estado 39
+    uniry_op         ir ao estado 127
+    log_expr         ir ao estado 40
+    comp_expr        ir ao estado 41
+    term             ir ao estado 42
+    term_num         ir ao estado 43
+    log_term         ir ao estado 44
+    literal_string   ir ao estado 45
+
+
+Estado 184
+
+   42 for_struct: FOR_STM L_PARENTHESIS $@1 initialization SEMICOLON . log_expr SEMICOLON for_struct_stm R_PARENTHESIS $@2 block
 
     LITERAL_STRING  deslocar, e ir ao estado 26
     IDENTIFIER      deslocar, e ir ao estado 27
@@ -2411,136 +2477,113 @@ Estado 179
     LITERAL_DOUBLE  deslocar, e ir ao estado 31
     TRUE_VAL        deslocar, e ir ao estado 32
     FALSE_VAL       deslocar, e ir ao estado 33
-    L_PARENTHESIS   deslocar, e ir ao estado 34
+    L_PARENTHESIS   deslocar, e ir ao estado 152
 
-    arit_expr        ir ao estado 83
-    base             ir ao estado 37
-    arit_expr_right  ir ao estado 38
-    arit_expr_base   ir ao estado 39
-    log_expr         ir ao estado 191
-    comp_expr        ir ao estado 41
-    term             ir ao estado 42
-    term_num         ir ao estado 43
-    log_term         ir ao estado 44
-    literal_string   ir ao estado 45
-
-
-Estado 180
-
-   22 initialization: type IDENTIFIER . ASSINGMENT expr
-
-    ASSINGMENT  deslocar, e ir ao estado 46
-
-
-Estado 181
-
-   49 while_struct: DO_STM block WHILE_STM L_PARENTHESIS log_expr . R_PARENTHESIS SEMICOLON
-   89 log_expr: log_expr . op_log comp_expr
-
-    AND_OP         deslocar, e ir ao estado 57
-    OR_OP          deslocar, e ir ao estado 58
-    NOT_OP         deslocar, e ir ao estado 59
-    R_PARENTHESIS  deslocar, e ir ao estado 192
-
-    op_log  ir ao estado 60
-
-
-Estado 182
-
-   48 while_struct: WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS block .
-
-    $padrão  reduzir usando a regra 48 (while_struct)
-
-
-Estado 183
-
-   42 switch_struct: SWITCH_STM L_PARENTHESIS literal_term R_PARENTHESIS L_KEY . case_list_switch DEFAULT DOUBLE_DOT stm_list BREAK SEMICOLON R_KEY
-
-    CASE  deslocar, e ir ao estado 193
-
-    $padrão  reduzir usando a regra 43 (case_list_switch)
-
-    case_list_switch  ir ao estado 194
-    case_switch       ir ao estado 195
-
-
-Estado 184
-
-   24 print_stm: PRINT L_PARENTHESIS literal_string COMMA id_list . R_PARENTHESIS
-
-    R_PARENTHESIS  deslocar, e ir ao estado 196
+    log_expr        ir ao estado 194
+    comp_expr       ir ao estado 41
+    term            ir ao estado 85
+    term_num        ir ao estado 43
+    log_term        ir ao estado 44
+    literal_string  ir ao estado 45
 
 
 Estado 185
 
-   26 print_stm: PRINTF L_PARENTHESIS literal_string COMMA id_list . R_PARENTHESIS
+   10 initialization: type IDENTIFIER . ASSINGMENT expr
 
-    R_PARENTHESIS  deslocar, e ir ao estado 197
+    ASSINGMENT  deslocar, e ir ao estado 46
 
 
 Estado 186
 
-  105 param_list_call: expr COMMA param_list_call .
+   39 while_struct: DO_STM block WHILE_STM L_PARENTHESIS log_expr . R_PARENTHESIS SEMICOLON
+   94 log_expr: log_expr . op_log comp_expr
 
-    $padrão  reduzir usando a regra 105 (param_list_call)
-
-
-Estado 187
-
-   41 elseif_struct: ELSE_IF_STM . L_PARENTHESIS log_expr R_PARENTHESIS block
-
-    L_PARENTHESIS  deslocar, e ir ao estado 198
-
-
-Estado 188
-
-   36 if_struct: IF_STM L_PARENTHESIS log_expr R_PARENTHESIS block else_struct .
-
-    $padrão  reduzir usando a regra 36 (if_struct)
-
-
-Estado 189
-
-   38 else_struct: elseif_list . ELSE_STM block
-
-    ELSE_STM  deslocar, e ir ao estado 199
-
-
-Estado 190
-
-   40 elseif_list: elseif_struct . elseif_list
-
-    ELSE_IF_STM  deslocar, e ir ao estado 187
-
-    $padrão  reduzir usando a regra 39 (elseif_list)
-
-    elseif_list    ir ao estado 200
-    elseif_struct  ir ao estado 190
-
-
-Estado 191
-
-   52 for_struct: FOR_STM L_PARENTHESIS $@1 initialization SEMICOLON log_expr . SEMICOLON for_struct_stm R_PARENTHESIS $@2 block
-   89 log_expr: log_expr . op_log comp_expr
-
-    AND_OP     deslocar, e ir ao estado 57
-    OR_OP      deslocar, e ir ao estado 58
-    NOT_OP     deslocar, e ir ao estado 59
-    SEMICOLON  deslocar, e ir ao estado 201
+    AND_OP         deslocar, e ir ao estado 57
+    OR_OP          deslocar, e ir ao estado 58
+    NOT_OP         deslocar, e ir ao estado 59
+    R_PARENTHESIS  deslocar, e ir ao estado 195
 
     op_log  ir ao estado 60
 
 
+Estado 187
+
+   38 while_struct: WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS block .
+
+    $padrão  reduzir usando a regra 38 (while_struct)
+
+
+Estado 188
+
+   32 switch_struct: SWITCH_STM L_PARENTHESIS literal_term R_PARENTHESIS L_KEY . case_list_switch DEFAULT DOUBLE_DOT stm_list BREAK SEMICOLON R_KEY
+
+    CASE  deslocar, e ir ao estado 196
+
+    $padrão  reduzir usando a regra 33 (case_list_switch)
+
+    case_list_switch  ir ao estado 197
+    case_switch       ir ao estado 198
+
+
+Estado 189
+
+   12 print_stm: PRINT L_PARENTHESIS literal_string COMMA id_list . R_PARENTHESIS
+
+    R_PARENTHESIS  deslocar, e ir ao estado 199
+
+
+Estado 190
+
+   14 print_stm: PRINTF L_PARENTHESIS literal_string COMMA id_list . R_PARENTHESIS
+
+    R_PARENTHESIS  deslocar, e ir ao estado 200
+
+
+Estado 191
+
+   17 scan_stm: SCANF L_PARENTHESIS literal_string COMMA ADDRESS . IDENTIFIER R_PARENTHESIS
+
+    IDENTIFIER  deslocar, e ir ao estado 201
+
+
 Estado 192
 
-   49 while_struct: DO_STM block WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS . SEMICOLON
+   78 param_list_call: expr COMMA param_list_call .
 
-    SEMICOLON  deslocar, e ir ao estado 202
+    $padrão  reduzir usando a regra 78 (param_list_call)
 
 
 Estado 193
 
-   45 case_switch: CASE . literal_term DOUBLE_DOT stm_list BREAK SEMICOLON
+   26 if_struct: IF_STM L_PARENTHESIS log_expr R_PARENTHESIS L_KEY stm_list . R_KEY else_struct
+
+    R_KEY  deslocar, e ir ao estado 202
+
+
+Estado 194
+
+   42 for_struct: FOR_STM L_PARENTHESIS $@1 initialization SEMICOLON log_expr . SEMICOLON for_struct_stm R_PARENTHESIS $@2 block
+   94 log_expr: log_expr . op_log comp_expr
+
+    AND_OP     deslocar, e ir ao estado 57
+    OR_OP      deslocar, e ir ao estado 58
+    NOT_OP     deslocar, e ir ao estado 59
+    SEMICOLON  deslocar, e ir ao estado 203
+
+    op_log  ir ao estado 60
+
+
+Estado 195
+
+   39 while_struct: DO_STM block WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS . SEMICOLON
+
+    SEMICOLON  deslocar, e ir ao estado 204
+
+
+Estado 196
+
+   35 case_switch: CASE . literal_term DOUBLE_DOT stm_list BREAK SEMICOLON
 
     LITERAL_STRING  deslocar, e ir ao estado 26
     IDENTIFIER      deslocar, e ir ao estado 27
@@ -2554,46 +2597,329 @@ Estado 193
     term            ir ao estado 157
     term_num        ir ao estado 43
     log_term        ir ao estado 44
-    literal_term    ir ao estado 203
+    literal_term    ir ao estado 205
     literal_string  ir ao estado 159
-
-
-Estado 194
-
-   42 switch_struct: SWITCH_STM L_PARENTHESIS literal_term R_PARENTHESIS L_KEY case_list_switch . DEFAULT DOUBLE_DOT stm_list BREAK SEMICOLON R_KEY
-
-    DEFAULT  deslocar, e ir ao estado 204
-
-
-Estado 195
-
-   44 case_list_switch: case_switch . case_list_switch
-
-    CASE  deslocar, e ir ao estado 193
-
-    $padrão  reduzir usando a regra 43 (case_list_switch)
-
-    case_list_switch  ir ao estado 205
-    case_switch       ir ao estado 195
-
-
-Estado 196
-
-   24 print_stm: PRINT L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS .
-
-    $padrão  reduzir usando a regra 24 (print_stm)
 
 
 Estado 197
 
-   26 print_stm: PRINTF L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS .
+   32 switch_struct: SWITCH_STM L_PARENTHESIS literal_term R_PARENTHESIS L_KEY case_list_switch . DEFAULT DOUBLE_DOT stm_list BREAK SEMICOLON R_KEY
 
-    $padrão  reduzir usando a regra 26 (print_stm)
+    DEFAULT  deslocar, e ir ao estado 206
 
 
 Estado 198
 
-   41 elseif_struct: ELSE_IF_STM L_PARENTHESIS . log_expr R_PARENTHESIS block
+   34 case_list_switch: case_switch . case_list_switch
+
+    CASE  deslocar, e ir ao estado 196
+
+    $padrão  reduzir usando a regra 33 (case_list_switch)
+
+    case_list_switch  ir ao estado 207
+    case_switch       ir ao estado 198
+
+
+Estado 199
+
+   12 print_stm: PRINT L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS .
+
+    $padrão  reduzir usando a regra 12 (print_stm)
+
+
+Estado 200
+
+   14 print_stm: PRINTF L_PARENTHESIS literal_string COMMA id_list R_PARENTHESIS .
+
+    $padrão  reduzir usando a regra 14 (print_stm)
+
+
+Estado 201
+
+   17 scan_stm: SCANF L_PARENTHESIS literal_string COMMA ADDRESS IDENTIFIER . R_PARENTHESIS
+
+    R_PARENTHESIS  deslocar, e ir ao estado 208
+
+
+Estado 202
+
+   26 if_struct: IF_STM L_PARENTHESIS log_expr R_PARENTHESIS L_KEY stm_list R_KEY . else_struct
+
+    ELSE_IF_STM  deslocar, e ir ao estado 209
+
+    ELSE_STM  reduzir usando a regra 29 (elseif_list)
+    $padrão  reduzir usando a regra 27 (else_struct)
+
+    else_struct    ir ao estado 210
+    elseif_list    ir ao estado 211
+    elseif_struct  ir ao estado 212
+
+
+Estado 203
+
+   42 for_struct: FOR_STM L_PARENTHESIS $@1 initialization SEMICOLON log_expr SEMICOLON . for_struct_stm R_PARENTHESIS $@2 block
+
+    IDENTIFIER      deslocar, e ir ao estado 213
+    LITERAL_INT     deslocar, e ir ao estado 29
+    LITERAL_FLOAT   deslocar, e ir ao estado 30
+    LITERAL_DOUBLE  deslocar, e ir ao estado 31
+    TRUE_VAL        deslocar, e ir ao estado 32
+    FALSE_VAL       deslocar, e ir ao estado 33
+    L_PARENTHESIS   deslocar, e ir ao estado 76
+
+    assingment       ir ao estado 214
+    for_struct_stm   ir ao estado 215
+    arit_expr        ir ao estado 216
+    base             ir ao estado 37
+    arit_expr_right  ir ao estado 38
+    arit_expr_base   ir ao estado 39
+    uniry_op         ir ao estado 217
+    term             ir ao estado 78
+    term_num         ir ao estado 43
+    log_term         ir ao estado 44
+
+
+Estado 204
+
+   39 while_struct: DO_STM block WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS SEMICOLON .
+
+    $padrão  reduzir usando a regra 39 (while_struct)
+
+
+Estado 205
+
+   35 case_switch: CASE literal_term . DOUBLE_DOT stm_list BREAK SEMICOLON
+
+    DOUBLE_DOT  deslocar, e ir ao estado 218
+
+
+Estado 206
+
+   32 switch_struct: SWITCH_STM L_PARENTHESIS literal_term R_PARENTHESIS L_KEY case_list_switch DEFAULT . DOUBLE_DOT stm_list BREAK SEMICOLON R_KEY
+
+    DOUBLE_DOT  deslocar, e ir ao estado 219
+
+
+Estado 207
+
+   34 case_list_switch: case_switch case_list_switch .
+
+    $padrão  reduzir usando a regra 34 (case_list_switch)
+
+
+Estado 208
+
+   17 scan_stm: SCANF L_PARENTHESIS literal_string COMMA ADDRESS IDENTIFIER R_PARENTHESIS .
+
+    $padrão  reduzir usando a regra 17 (scan_stm)
+
+
+Estado 209
+
+   31 elseif_struct: ELSE_IF_STM . L_PARENTHESIS log_expr R_PARENTHESIS L_KEY stm_list R_KEY
+
+    L_PARENTHESIS  deslocar, e ir ao estado 220
+
+
+Estado 210
+
+   26 if_struct: IF_STM L_PARENTHESIS log_expr R_PARENTHESIS L_KEY stm_list R_KEY else_struct .
+
+    $padrão  reduzir usando a regra 26 (if_struct)
+
+
+Estado 211
+
+   28 else_struct: elseif_list . ELSE_STM L_KEY stm_list R_KEY
+
+    ELSE_STM  deslocar, e ir ao estado 221
+
+
+Estado 212
+
+   30 elseif_list: elseif_struct . elseif_list
+
+    ELSE_IF_STM  deslocar, e ir ao estado 209
+
+    $padrão  reduzir usando a regra 29 (elseif_list)
+
+    elseif_list    ir ao estado 222
+    elseif_struct  ir ao estado 212
+
+
+Estado 213
+
+    9 assingment: IDENTIFIER . ASSINGMENT expr
+  110 term: IDENTIFIER .
+
+    ASSINGMENT  deslocar, e ir ao estado 18
+
+    $padrão  reduzir usando a regra 110 (term)
+
+
+Estado 214
+
+   44 for_struct_stm: assingment .
+
+    $padrão  reduzir usando a regra 44 (for_struct_stm)
+
+
+Estado 215
+
+   42 for_struct: FOR_STM L_PARENTHESIS $@1 initialization SEMICOLON log_expr SEMICOLON for_struct_stm . R_PARENTHESIS $@2 block
+
+    R_PARENTHESIS  deslocar, e ir ao estado 223
+
+
+Estado 216
+
+   80 arit_expr: arit_expr . PLUS_OP base
+   81          | arit_expr . SUB_OP base
+   82          | arit_expr . DIV_OP base
+   83          | arit_expr . STAR base
+   84          | arit_expr . MOD_OP base
+   90 uniry_op: arit_expr . INC_OP
+   91         | arit_expr . DEC_OP
+
+    PLUS_OP  deslocar, e ir ao estado 51
+    SUB_OP   deslocar, e ir ao estado 52
+    DIV_OP   deslocar, e ir ao estado 53
+    STAR     deslocar, e ir ao estado 54
+    MOD_OP   deslocar, e ir ao estado 55
+    INC_OP   deslocar, e ir ao estado 148
+    DEC_OP   deslocar, e ir ao estado 149
+
+
+Estado 217
+
+   43 for_struct_stm: uniry_op .
+
+    $padrão  reduzir usando a regra 43 (for_struct_stm)
+
+
+Estado 218
+
+   35 case_switch: CASE literal_term DOUBLE_DOT . stm_list BREAK SEMICOLON
+
+    LITERAL_STRING  deslocar, e ir ao estado 26
+    IDENTIFIER      deslocar, e ir ao estado 100
+    INT_TYPE        deslocar, e ir ao estado 2
+    FLOAT_TYPE      deslocar, e ir ao estado 3
+    DOUBLE_TYPE     deslocar, e ir ao estado 4
+    STRING_TYPE     deslocar, e ir ao estado 5
+    BOOLEAN_TYPE    deslocar, e ir ao estado 6
+    MATRIZ_TYPE     deslocar, e ir ao estado 7
+    VOID_TYPE       deslocar, e ir ao estado 8
+    LITERAL_CHAR    deslocar, e ir ao estado 28
+    CHAR_TYPE       deslocar, e ir ao estado 9
+    LITERAL_INT     deslocar, e ir ao estado 29
+    LITERAL_FLOAT   deslocar, e ir ao estado 30
+    LITERAL_DOUBLE  deslocar, e ir ao estado 31
+    TRUE_VAL        deslocar, e ir ao estado 32
+    FALSE_VAL       deslocar, e ir ao estado 33
+    L_PARENTHESIS   deslocar, e ir ao estado 34
+    IF_STM          deslocar, e ir ao estado 101
+    FOR_STM         deslocar, e ir ao estado 102
+    DO_STM          deslocar, e ir ao estado 103
+    WHILE_STM       deslocar, e ir ao estado 104
+    SWITCH_STM      deslocar, e ir ao estado 105
+    PRINT           deslocar, e ir ao estado 106
+    PRINTF          deslocar, e ir ao estado 107
+    SCANF           deslocar, e ir ao estado 108
+
+    decl             ir ao estado 109
+    assingment       ir ao estado 110
+    initialization   ir ao estado 111
+    print_stm        ir ao estado 112
+    scan_stm         ir ao estado 113
+    expres_list      ir ao estado 114
+    expr             ir ao estado 115
+    cond_stm         ir ao estado 116
+    if_struct        ir ao estado 117
+    switch_struct    ir ao estado 118
+    loop_stm         ir ao estado 119
+    while_struct     ir ao estado 120
+    for_struct       ir ao estado 121
+    fun_call         ir ao estado 122
+    stm_list         ir ao estado 224
+    stm              ir ao estado 124
+    type             ir ao estado 125
+    arit_expr        ir ao estado 126
+    base             ir ao estado 37
+    arit_expr_right  ir ao estado 38
+    arit_expr_base   ir ao estado 39
+    uniry_op         ir ao estado 127
+    log_expr         ir ao estado 40
+    comp_expr        ir ao estado 41
+    term             ir ao estado 42
+    term_num         ir ao estado 43
+    log_term         ir ao estado 44
+    literal_string   ir ao estado 45
+
+
+Estado 219
+
+   32 switch_struct: SWITCH_STM L_PARENTHESIS literal_term R_PARENTHESIS L_KEY case_list_switch DEFAULT DOUBLE_DOT . stm_list BREAK SEMICOLON R_KEY
+
+    LITERAL_STRING  deslocar, e ir ao estado 26
+    IDENTIFIER      deslocar, e ir ao estado 100
+    INT_TYPE        deslocar, e ir ao estado 2
+    FLOAT_TYPE      deslocar, e ir ao estado 3
+    DOUBLE_TYPE     deslocar, e ir ao estado 4
+    STRING_TYPE     deslocar, e ir ao estado 5
+    BOOLEAN_TYPE    deslocar, e ir ao estado 6
+    MATRIZ_TYPE     deslocar, e ir ao estado 7
+    VOID_TYPE       deslocar, e ir ao estado 8
+    LITERAL_CHAR    deslocar, e ir ao estado 28
+    CHAR_TYPE       deslocar, e ir ao estado 9
+    LITERAL_INT     deslocar, e ir ao estado 29
+    LITERAL_FLOAT   deslocar, e ir ao estado 30
+    LITERAL_DOUBLE  deslocar, e ir ao estado 31
+    TRUE_VAL        deslocar, e ir ao estado 32
+    FALSE_VAL       deslocar, e ir ao estado 33
+    L_PARENTHESIS   deslocar, e ir ao estado 34
+    IF_STM          deslocar, e ir ao estado 101
+    FOR_STM         deslocar, e ir ao estado 102
+    DO_STM          deslocar, e ir ao estado 103
+    WHILE_STM       deslocar, e ir ao estado 104
+    SWITCH_STM      deslocar, e ir ao estado 105
+    PRINT           deslocar, e ir ao estado 106
+    PRINTF          deslocar, e ir ao estado 107
+    SCANF           deslocar, e ir ao estado 108
+
+    decl             ir ao estado 109
+    assingment       ir ao estado 110
+    initialization   ir ao estado 111
+    print_stm        ir ao estado 112
+    scan_stm         ir ao estado 113
+    expres_list      ir ao estado 114
+    expr             ir ao estado 115
+    cond_stm         ir ao estado 116
+    if_struct        ir ao estado 117
+    switch_struct    ir ao estado 118
+    loop_stm         ir ao estado 119
+    while_struct     ir ao estado 120
+    for_struct       ir ao estado 121
+    fun_call         ir ao estado 122
+    stm_list         ir ao estado 225
+    stm              ir ao estado 124
+    type             ir ao estado 125
+    arit_expr        ir ao estado 126
+    base             ir ao estado 37
+    arit_expr_right  ir ao estado 38
+    arit_expr_base   ir ao estado 39
+    uniry_op         ir ao estado 127
+    log_expr         ir ao estado 40
+    comp_expr        ir ao estado 41
+    term             ir ao estado 42
+    term_num         ir ao estado 43
+    log_term         ir ao estado 44
+    literal_string   ir ao estado 45
+
+
+Estado 220
+
+   31 elseif_struct: ELSE_IF_STM L_PARENTHESIS . log_expr R_PARENTHESIS L_KEY stm_list R_KEY
 
     LITERAL_STRING  deslocar, e ir ao estado 26
     IDENTIFIER      deslocar, e ir ao estado 27
@@ -2603,363 +2929,267 @@ Estado 198
     LITERAL_DOUBLE  deslocar, e ir ao estado 31
     TRUE_VAL        deslocar, e ir ao estado 32
     FALSE_VAL       deslocar, e ir ao estado 33
-    L_PARENTHESIS   deslocar, e ir ao estado 34
-
-    arit_expr        ir ao estado 83
-    base             ir ao estado 37
-    arit_expr_right  ir ao estado 38
-    arit_expr_base   ir ao estado 39
-    log_expr         ir ao estado 206
-    comp_expr        ir ao estado 41
-    term             ir ao estado 42
-    term_num         ir ao estado 43
-    log_term         ir ao estado 44
-    literal_string   ir ao estado 45
-
-
-Estado 199
-
-   38 else_struct: elseif_list ELSE_STM . block
-
-    L_KEY  deslocar, e ir ao estado 97
-
-    block  ir ao estado 207
-
-
-Estado 200
-
-   40 elseif_list: elseif_struct elseif_list .
-
-    $padrão  reduzir usando a regra 40 (elseif_list)
-
-
-Estado 201
-
-   52 for_struct: FOR_STM L_PARENTHESIS $@1 initialization SEMICOLON log_expr SEMICOLON . for_struct_stm R_PARENTHESIS $@2 block
-
-    IDENTIFIER      deslocar, e ir ao estado 208
-    LITERAL_INT     deslocar, e ir ao estado 29
-    LITERAL_FLOAT   deslocar, e ir ao estado 30
-    LITERAL_DOUBLE  deslocar, e ir ao estado 31
-    TRUE_VAL        deslocar, e ir ao estado 32
-    FALSE_VAL       deslocar, e ir ao estado 33
-    L_PARENTHESIS   deslocar, e ir ao estado 76
-
-    assingment       ir ao estado 209
-    for_struct_stm   ir ao estado 210
-    uniry_op         ir ao estado 211
-    arit_expr        ir ao estado 212
-    base             ir ao estado 37
-    arit_expr_right  ir ao estado 38
-    arit_expr_base   ir ao estado 39
-    term             ir ao estado 42
-    term_num         ir ao estado 43
-    log_term         ir ao estado 44
-
-
-Estado 202
-
-   49 while_struct: DO_STM block WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS SEMICOLON .
-
-    $padrão  reduzir usando a regra 49 (while_struct)
-
-
-Estado 203
-
-   45 case_switch: CASE literal_term . DOUBLE_DOT stm_list BREAK SEMICOLON
-
-    DOUBLE_DOT  deslocar, e ir ao estado 213
-
-
-Estado 204
-
-   42 switch_struct: SWITCH_STM L_PARENTHESIS literal_term R_PARENTHESIS L_KEY case_list_switch DEFAULT . DOUBLE_DOT stm_list BREAK SEMICOLON R_KEY
-
-    DOUBLE_DOT  deslocar, e ir ao estado 214
-
-
-Estado 205
-
-   44 case_list_switch: case_switch case_list_switch .
-
-    $padrão  reduzir usando a regra 44 (case_list_switch)
-
-
-Estado 206
-
-   41 elseif_struct: ELSE_IF_STM L_PARENTHESIS log_expr . R_PARENTHESIS block
-   89 log_expr: log_expr . op_log comp_expr
-
-    AND_OP         deslocar, e ir ao estado 57
-    OR_OP          deslocar, e ir ao estado 58
-    NOT_OP         deslocar, e ir ao estado 59
-    R_PARENTHESIS  deslocar, e ir ao estado 215
-
-    op_log  ir ao estado 60
-
-
-Estado 207
-
-   38 else_struct: elseif_list ELSE_STM block .
-
-    $padrão  reduzir usando a regra 38 (else_struct)
-
-
-Estado 208
-
-   21 assingment: IDENTIFIER . ASSINGMENT expr
-  108 term: IDENTIFIER .
-
-    ASSINGMENT  deslocar, e ir ao estado 18
-
-    $padrão  reduzir usando a regra 108 (term)
-
-
-Estado 209
-
-   54 for_struct_stm: assingment .
-
-    $padrão  reduzir usando a regra 54 (for_struct_stm)
-
-
-Estado 210
-
-   52 for_struct: FOR_STM L_PARENTHESIS $@1 initialization SEMICOLON log_expr SEMICOLON for_struct_stm . R_PARENTHESIS $@2 block
-
-    R_PARENTHESIS  deslocar, e ir ao estado 216
-
-
-Estado 211
-
-   53 for_struct_stm: uniry_op .
-
-    $padrão  reduzir usando a regra 53 (for_struct_stm)
-
-
-Estado 212
-
-   55 uniry_op: arit_expr . INC_OP
-   56         | arit_expr . DEC_OP
-   77 arit_expr: arit_expr . PLUS_OP base
-   78          | arit_expr . SUB_OP base
-   79          | arit_expr . DIV_OP base
-   80          | arit_expr . STAR base
-   81          | arit_expr . MOD_OP base
-
-    PLUS_OP  deslocar, e ir ao estado 51
-    SUB_OP   deslocar, e ir ao estado 52
-    DIV_OP   deslocar, e ir ao estado 53
-    STAR     deslocar, e ir ao estado 54
-    MOD_OP   deslocar, e ir ao estado 55
-    INC_OP   deslocar, e ir ao estado 149
-    DEC_OP   deslocar, e ir ao estado 150
-
-
-Estado 213
-
-   45 case_switch: CASE literal_term DOUBLE_DOT . stm_list BREAK SEMICOLON
-
-    LITERAL_STRING  deslocar, e ir ao estado 26
-    IDENTIFIER      deslocar, e ir ao estado 100
-    INT_TYPE        deslocar, e ir ao estado 2
-    FLOAT_TYPE      deslocar, e ir ao estado 3
-    DOUBLE_TYPE     deslocar, e ir ao estado 4
-    STRING_TYPE     deslocar, e ir ao estado 5
-    BOOLEAN_TYPE    deslocar, e ir ao estado 6
-    MATRIZ_TYPE     deslocar, e ir ao estado 7
-    VOID_TYPE       deslocar, e ir ao estado 8
-    LITERAL_CHAR    deslocar, e ir ao estado 28
-    CHAR_TYPE       deslocar, e ir ao estado 9
-    SCAN            deslocar, e ir ao estado 101
-    LITERAL_INT     deslocar, e ir ao estado 29
-    LITERAL_FLOAT   deslocar, e ir ao estado 30
-    LITERAL_DOUBLE  deslocar, e ir ao estado 31
-    TRUE_VAL        deslocar, e ir ao estado 32
-    FALSE_VAL       deslocar, e ir ao estado 33
-    L_PARENTHESIS   deslocar, e ir ao estado 34
-    IF_STM          deslocar, e ir ao estado 102
-    FOR_STM         deslocar, e ir ao estado 103
-    DO_STM          deslocar, e ir ao estado 104
-    WHILE_STM       deslocar, e ir ao estado 105
-    SWITCH_STM      deslocar, e ir ao estado 106
-    PRINT           deslocar, e ir ao estado 107
-    PRINTF          deslocar, e ir ao estado 108
-
-    stm_list         ir ao estado 217
-    stm              ir ao estado 110
-    decl             ir ao estado 111
-    assingment       ir ao estado 112
-    initialization   ir ao estado 113
-    print_stm        ir ao estado 114
-    scan_stm         ir ao estado 115
-    expres_list      ir ao estado 116
-    expr             ir ao estado 117
-    cond_stm         ir ao estado 118
-    if_struct        ir ao estado 119
-    switch_struct    ir ao estado 120
-    loop_stm         ir ao estado 121
-    while_struct     ir ao estado 122
-    for_struct       ir ao estado 123
-    uniry_op         ir ao estado 124
-    fun_call         ir ao estado 125
-    type             ir ao estado 126
-    arit_expr        ir ao estado 127
-    base             ir ao estado 37
-    arit_expr_right  ir ao estado 38
-    arit_expr_base   ir ao estado 39
-    log_expr         ir ao estado 40
-    comp_expr        ir ao estado 41
-    term             ir ao estado 42
-    term_num         ir ao estado 43
-    log_term         ir ao estado 44
-    literal_string   ir ao estado 45
-
-
-Estado 214
-
-   42 switch_struct: SWITCH_STM L_PARENTHESIS literal_term R_PARENTHESIS L_KEY case_list_switch DEFAULT DOUBLE_DOT . stm_list BREAK SEMICOLON R_KEY
-
-    LITERAL_STRING  deslocar, e ir ao estado 26
-    IDENTIFIER      deslocar, e ir ao estado 100
-    INT_TYPE        deslocar, e ir ao estado 2
-    FLOAT_TYPE      deslocar, e ir ao estado 3
-    DOUBLE_TYPE     deslocar, e ir ao estado 4
-    STRING_TYPE     deslocar, e ir ao estado 5
-    BOOLEAN_TYPE    deslocar, e ir ao estado 6
-    MATRIZ_TYPE     deslocar, e ir ao estado 7
-    VOID_TYPE       deslocar, e ir ao estado 8
-    LITERAL_CHAR    deslocar, e ir ao estado 28
-    CHAR_TYPE       deslocar, e ir ao estado 9
-    SCAN            deslocar, e ir ao estado 101
-    LITERAL_INT     deslocar, e ir ao estado 29
-    LITERAL_FLOAT   deslocar, e ir ao estado 30
-    LITERAL_DOUBLE  deslocar, e ir ao estado 31
-    TRUE_VAL        deslocar, e ir ao estado 32
-    FALSE_VAL       deslocar, e ir ao estado 33
-    L_PARENTHESIS   deslocar, e ir ao estado 34
-    IF_STM          deslocar, e ir ao estado 102
-    FOR_STM         deslocar, e ir ao estado 103
-    DO_STM          deslocar, e ir ao estado 104
-    WHILE_STM       deslocar, e ir ao estado 105
-    SWITCH_STM      deslocar, e ir ao estado 106
-    PRINT           deslocar, e ir ao estado 107
-    PRINTF          deslocar, e ir ao estado 108
-
-    stm_list         ir ao estado 218
-    stm              ir ao estado 110
-    decl             ir ao estado 111
-    assingment       ir ao estado 112
-    initialization   ir ao estado 113
-    print_stm        ir ao estado 114
-    scan_stm         ir ao estado 115
-    expres_list      ir ao estado 116
-    expr             ir ao estado 117
-    cond_stm         ir ao estado 118
-    if_struct        ir ao estado 119
-    switch_struct    ir ao estado 120
-    loop_stm         ir ao estado 121
-    while_struct     ir ao estado 122
-    for_struct       ir ao estado 123
-    uniry_op         ir ao estado 124
-    fun_call         ir ao estado 125
-    type             ir ao estado 126
-    arit_expr        ir ao estado 127
-    base             ir ao estado 37
-    arit_expr_right  ir ao estado 38
-    arit_expr_base   ir ao estado 39
-    log_expr         ir ao estado 40
-    comp_expr        ir ao estado 41
-    term             ir ao estado 42
-    term_num         ir ao estado 43
-    log_term         ir ao estado 44
-    literal_string   ir ao estado 45
-
-
-Estado 215
-
-   41 elseif_struct: ELSE_IF_STM L_PARENTHESIS log_expr R_PARENTHESIS . block
-
-    L_KEY  deslocar, e ir ao estado 97
-
-    block  ir ao estado 219
-
-
-Estado 216
-
-   52 for_struct: FOR_STM L_PARENTHESIS $@1 initialization SEMICOLON log_expr SEMICOLON for_struct_stm R_PARENTHESIS . $@2 block
-
-    $padrão  reduzir usando a regra 51 ($@2)
-
-    $@2  ir ao estado 220
-
-
-Estado 217
-
-   45 case_switch: CASE literal_term DOUBLE_DOT stm_list . BREAK SEMICOLON
-
-    BREAK  deslocar, e ir ao estado 221
-
-
-Estado 218
-
-   42 switch_struct: SWITCH_STM L_PARENTHESIS literal_term R_PARENTHESIS L_KEY case_list_switch DEFAULT DOUBLE_DOT stm_list . BREAK SEMICOLON R_KEY
-
-    BREAK  deslocar, e ir ao estado 222
-
-
-Estado 219
-
-   41 elseif_struct: ELSE_IF_STM L_PARENTHESIS log_expr R_PARENTHESIS block .
-
-    $padrão  reduzir usando a regra 41 (elseif_struct)
-
-
-Estado 220
-
-   52 for_struct: FOR_STM L_PARENTHESIS $@1 initialization SEMICOLON log_expr SEMICOLON for_struct_stm R_PARENTHESIS $@2 . block
-
-    L_KEY  deslocar, e ir ao estado 97
-
-    block  ir ao estado 223
+    L_PARENTHESIS   deslocar, e ir ao estado 152
+
+    log_expr        ir ao estado 226
+    comp_expr       ir ao estado 41
+    term            ir ao estado 85
+    term_num        ir ao estado 43
+    log_term        ir ao estado 44
+    literal_string  ir ao estado 45
 
 
 Estado 221
 
-   45 case_switch: CASE literal_term DOUBLE_DOT stm_list BREAK . SEMICOLON
+   28 else_struct: elseif_list ELSE_STM . L_KEY stm_list R_KEY
 
-    SEMICOLON  deslocar, e ir ao estado 224
+    L_KEY  deslocar, e ir ao estado 227
 
 
 Estado 222
 
-   42 switch_struct: SWITCH_STM L_PARENTHESIS literal_term R_PARENTHESIS L_KEY case_list_switch DEFAULT DOUBLE_DOT stm_list BREAK . SEMICOLON R_KEY
+   30 elseif_list: elseif_struct elseif_list .
 
-    SEMICOLON  deslocar, e ir ao estado 225
+    $padrão  reduzir usando a regra 30 (elseif_list)
 
 
 Estado 223
 
-   52 for_struct: FOR_STM L_PARENTHESIS $@1 initialization SEMICOLON log_expr SEMICOLON for_struct_stm R_PARENTHESIS $@2 block .
+   42 for_struct: FOR_STM L_PARENTHESIS $@1 initialization SEMICOLON log_expr SEMICOLON for_struct_stm R_PARENTHESIS . $@2 block
 
-    $padrão  reduzir usando a regra 52 (for_struct)
+    $padrão  reduzir usando a regra 41 ($@2)
+
+    $@2  ir ao estado 228
 
 
 Estado 224
 
-   45 case_switch: CASE literal_term DOUBLE_DOT stm_list BREAK SEMICOLON .
+   35 case_switch: CASE literal_term DOUBLE_DOT stm_list . BREAK SEMICOLON
 
-    $padrão  reduzir usando a regra 45 (case_switch)
+    BREAK  deslocar, e ir ao estado 229
 
 
 Estado 225
 
-   42 switch_struct: SWITCH_STM L_PARENTHESIS literal_term R_PARENTHESIS L_KEY case_list_switch DEFAULT DOUBLE_DOT stm_list BREAK SEMICOLON . R_KEY
+   32 switch_struct: SWITCH_STM L_PARENTHESIS literal_term R_PARENTHESIS L_KEY case_list_switch DEFAULT DOUBLE_DOT stm_list . BREAK SEMICOLON R_KEY
 
-    R_KEY  deslocar, e ir ao estado 226
+    BREAK  deslocar, e ir ao estado 230
 
 
 Estado 226
 
-   42 switch_struct: SWITCH_STM L_PARENTHESIS literal_term R_PARENTHESIS L_KEY case_list_switch DEFAULT DOUBLE_DOT stm_list BREAK SEMICOLON R_KEY .
+   31 elseif_struct: ELSE_IF_STM L_PARENTHESIS log_expr . R_PARENTHESIS L_KEY stm_list R_KEY
+   94 log_expr: log_expr . op_log comp_expr
 
-    $padrão  reduzir usando a regra 42 (switch_struct)
+    AND_OP         deslocar, e ir ao estado 57
+    OR_OP          deslocar, e ir ao estado 58
+    NOT_OP         deslocar, e ir ao estado 59
+    R_PARENTHESIS  deslocar, e ir ao estado 231
+
+    op_log  ir ao estado 60
+
+
+Estado 227
+
+   28 else_struct: elseif_list ELSE_STM L_KEY . stm_list R_KEY
+
+    LITERAL_STRING  deslocar, e ir ao estado 26
+    IDENTIFIER      deslocar, e ir ao estado 100
+    INT_TYPE        deslocar, e ir ao estado 2
+    FLOAT_TYPE      deslocar, e ir ao estado 3
+    DOUBLE_TYPE     deslocar, e ir ao estado 4
+    STRING_TYPE     deslocar, e ir ao estado 5
+    BOOLEAN_TYPE    deslocar, e ir ao estado 6
+    MATRIZ_TYPE     deslocar, e ir ao estado 7
+    VOID_TYPE       deslocar, e ir ao estado 8
+    LITERAL_CHAR    deslocar, e ir ao estado 28
+    CHAR_TYPE       deslocar, e ir ao estado 9
+    LITERAL_INT     deslocar, e ir ao estado 29
+    LITERAL_FLOAT   deslocar, e ir ao estado 30
+    LITERAL_DOUBLE  deslocar, e ir ao estado 31
+    TRUE_VAL        deslocar, e ir ao estado 32
+    FALSE_VAL       deslocar, e ir ao estado 33
+    L_PARENTHESIS   deslocar, e ir ao estado 34
+    IF_STM          deslocar, e ir ao estado 101
+    FOR_STM         deslocar, e ir ao estado 102
+    DO_STM          deslocar, e ir ao estado 103
+    WHILE_STM       deslocar, e ir ao estado 104
+    SWITCH_STM      deslocar, e ir ao estado 105
+    PRINT           deslocar, e ir ao estado 106
+    PRINTF          deslocar, e ir ao estado 107
+    SCANF           deslocar, e ir ao estado 108
+
+    decl             ir ao estado 109
+    assingment       ir ao estado 110
+    initialization   ir ao estado 111
+    print_stm        ir ao estado 112
+    scan_stm         ir ao estado 113
+    expres_list      ir ao estado 114
+    expr             ir ao estado 115
+    cond_stm         ir ao estado 116
+    if_struct        ir ao estado 117
+    switch_struct    ir ao estado 118
+    loop_stm         ir ao estado 119
+    while_struct     ir ao estado 120
+    for_struct       ir ao estado 121
+    fun_call         ir ao estado 122
+    stm_list         ir ao estado 232
+    stm              ir ao estado 124
+    type             ir ao estado 125
+    arit_expr        ir ao estado 126
+    base             ir ao estado 37
+    arit_expr_right  ir ao estado 38
+    arit_expr_base   ir ao estado 39
+    uniry_op         ir ao estado 127
+    log_expr         ir ao estado 40
+    comp_expr        ir ao estado 41
+    term             ir ao estado 42
+    term_num         ir ao estado 43
+    log_term         ir ao estado 44
+    literal_string   ir ao estado 45
+
+
+Estado 228
+
+   42 for_struct: FOR_STM L_PARENTHESIS $@1 initialization SEMICOLON log_expr SEMICOLON for_struct_stm R_PARENTHESIS $@2 . block
+
+    L_KEY  deslocar, e ir ao estado 97
+
+    block  ir ao estado 233
+
+
+Estado 229
+
+   35 case_switch: CASE literal_term DOUBLE_DOT stm_list BREAK . SEMICOLON
+
+    SEMICOLON  deslocar, e ir ao estado 234
+
+
+Estado 230
+
+   32 switch_struct: SWITCH_STM L_PARENTHESIS literal_term R_PARENTHESIS L_KEY case_list_switch DEFAULT DOUBLE_DOT stm_list BREAK . SEMICOLON R_KEY
+
+    SEMICOLON  deslocar, e ir ao estado 235
+
+
+Estado 231
+
+   31 elseif_struct: ELSE_IF_STM L_PARENTHESIS log_expr R_PARENTHESIS . L_KEY stm_list R_KEY
+
+    L_KEY  deslocar, e ir ao estado 236
+
+
+Estado 232
+
+   28 else_struct: elseif_list ELSE_STM L_KEY stm_list . R_KEY
+
+    R_KEY  deslocar, e ir ao estado 237
+
+
+Estado 233
+
+   42 for_struct: FOR_STM L_PARENTHESIS $@1 initialization SEMICOLON log_expr SEMICOLON for_struct_stm R_PARENTHESIS $@2 block .
+
+    $padrão  reduzir usando a regra 42 (for_struct)
+
+
+Estado 234
+
+   35 case_switch: CASE literal_term DOUBLE_DOT stm_list BREAK SEMICOLON .
+
+    $padrão  reduzir usando a regra 35 (case_switch)
+
+
+Estado 235
+
+   32 switch_struct: SWITCH_STM L_PARENTHESIS literal_term R_PARENTHESIS L_KEY case_list_switch DEFAULT DOUBLE_DOT stm_list BREAK SEMICOLON . R_KEY
+
+    R_KEY  deslocar, e ir ao estado 238
+
+
+Estado 236
+
+   31 elseif_struct: ELSE_IF_STM L_PARENTHESIS log_expr R_PARENTHESIS L_KEY . stm_list R_KEY
+
+    LITERAL_STRING  deslocar, e ir ao estado 26
+    IDENTIFIER      deslocar, e ir ao estado 100
+    INT_TYPE        deslocar, e ir ao estado 2
+    FLOAT_TYPE      deslocar, e ir ao estado 3
+    DOUBLE_TYPE     deslocar, e ir ao estado 4
+    STRING_TYPE     deslocar, e ir ao estado 5
+    BOOLEAN_TYPE    deslocar, e ir ao estado 6
+    MATRIZ_TYPE     deslocar, e ir ao estado 7
+    VOID_TYPE       deslocar, e ir ao estado 8
+    LITERAL_CHAR    deslocar, e ir ao estado 28
+    CHAR_TYPE       deslocar, e ir ao estado 9
+    LITERAL_INT     deslocar, e ir ao estado 29
+    LITERAL_FLOAT   deslocar, e ir ao estado 30
+    LITERAL_DOUBLE  deslocar, e ir ao estado 31
+    TRUE_VAL        deslocar, e ir ao estado 32
+    FALSE_VAL       deslocar, e ir ao estado 33
+    L_PARENTHESIS   deslocar, e ir ao estado 34
+    IF_STM          deslocar, e ir ao estado 101
+    FOR_STM         deslocar, e ir ao estado 102
+    DO_STM          deslocar, e ir ao estado 103
+    WHILE_STM       deslocar, e ir ao estado 104
+    SWITCH_STM      deslocar, e ir ao estado 105
+    PRINT           deslocar, e ir ao estado 106
+    PRINTF          deslocar, e ir ao estado 107
+    SCANF           deslocar, e ir ao estado 108
+
+    decl             ir ao estado 109
+    assingment       ir ao estado 110
+    initialization   ir ao estado 111
+    print_stm        ir ao estado 112
+    scan_stm         ir ao estado 113
+    expres_list      ir ao estado 114
+    expr             ir ao estado 115
+    cond_stm         ir ao estado 116
+    if_struct        ir ao estado 117
+    switch_struct    ir ao estado 118
+    loop_stm         ir ao estado 119
+    while_struct     ir ao estado 120
+    for_struct       ir ao estado 121
+    fun_call         ir ao estado 122
+    stm_list         ir ao estado 239
+    stm              ir ao estado 124
+    type             ir ao estado 125
+    arit_expr        ir ao estado 126
+    base             ir ao estado 37
+    arit_expr_right  ir ao estado 38
+    arit_expr_base   ir ao estado 39
+    uniry_op         ir ao estado 127
+    log_expr         ir ao estado 40
+    comp_expr        ir ao estado 41
+    term             ir ao estado 42
+    term_num         ir ao estado 43
+    log_term         ir ao estado 44
+    literal_string   ir ao estado 45
+
+
+Estado 237
+
+   28 else_struct: elseif_list ELSE_STM L_KEY stm_list R_KEY .
+
+    $padrão  reduzir usando a regra 28 (else_struct)
+
+
+Estado 238
+
+   32 switch_struct: SWITCH_STM L_PARENTHESIS literal_term R_PARENTHESIS L_KEY case_list_switch DEFAULT DOUBLE_DOT stm_list BREAK SEMICOLON R_KEY .
+
+    $padrão  reduzir usando a regra 32 (switch_struct)
+
+
+Estado 239
+
+   31 elseif_struct: ELSE_IF_STM L_PARENTHESIS log_expr R_PARENTHESIS L_KEY stm_list . R_KEY
+
+    R_KEY  deslocar, e ir ao estado 240
+
+
+Estado 240
+
+   31 elseif_struct: ELSE_IF_STM L_PARENTHESIS log_expr R_PARENTHESIS L_KEY stm_list R_KEY .
+
+    $padrão  reduzir usando a regra 31 (elseif_struct)

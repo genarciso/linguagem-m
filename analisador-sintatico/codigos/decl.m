@@ -13,6 +13,14 @@ int t2() {
 	printf("%f.\n", f);
 }
 
+void f () {
+	int a = 0;
+	while (a < 10) {
+		printf("%d\n", a);
+		a = a + 1;
+	}
+}
+
 double s;
 
 int main(int x) {
@@ -27,4 +35,9 @@ int main(int x) {
 	scan(xgs);
 	t2();
 	t(1+1, y);
+<<<<<<< HEAD
+	f();
 }
+=======
+}
+>>>>>>> d629653acb0e4779d5e46c167231858173bd4b1f

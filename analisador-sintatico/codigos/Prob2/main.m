@@ -1,7 +1,7 @@
 /*
- * Crie um programa que leia uma quantidade desconhecida de números e informe
- * quantos deles estão nos seguintes intervalos fechados: [0, 25], [26, 50], [51, 75]
- * e [76, 100]. A entrada de dados deve terminar quando for lido um número
+ * Crie um programa que leia uma quantidade desconhecida de numeros e informe
+ * quantos deles estao nos seguintes intervalos fechados: [0, 25], [26, 50], [51, 75]
+ * e [76, 100]. A entrada de dados deve terminar quando for lido um numero
  * negativo.
  */
 
@@ -14,7 +14,7 @@ void main() {
     int inter4 = 0;
 
     while (n >= 0) {
-
+        
         printf("Digite um número: ");
         scanf("%d", &n);
 
@@ -25,7 +25,9 @@ void main() {
         }else if (n >= 51 && n <= 75) {
             inter3 = inter3 + 1;
         }else if (n >= 76 && n <= 100) {
-            inter4 = inter4 + 1;;
+            inter4 = inter4 + 1;
+        } else {
+            printf("Intervalo não encontrado\n");
         }
 
     }
