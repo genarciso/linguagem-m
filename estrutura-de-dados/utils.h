@@ -12,6 +12,7 @@ typedef struct StaticInfo
 {
     char* value;
     char* type;
+    struct List *paramsType; 
 }StaticInfo;
 
 StaticInfo* utils_createStaticInfo(char* value, char* type) {
@@ -149,6 +150,43 @@ char* utils_convertType(char *type1, char *type2) {
         strcpy(aux, "string");
         return aux;
     }
+
+}
+
+char* utils_convertTypeAssigment(char *lhsType, char *rhstype) {
+    char *aux;
+
+    if(strcmp(lhsType, rhstype) == 0 ) {
+        aux = malloc(strlen(lhsType) * sizeof(char));
+        strcpy(aux, lhsType);
+        return aux;
+    }
+
+    if(strcmp(lhsType, "float") == 0  && strcmp(rhstype, "int") == 0) {
+        aux = malloc(6 * sizeof(char));
+        strcpy(aux, "float");
+        return aux;
+    }
+
+    if(strcmp(lhsType, "double") == 0  && strcmp(rhstype, "float") == 0) {
+        aux = malloc(6 * sizeof(char));
+        strcpy(aux, "double");
+        return aux;
+    }
+
+    if(strcmp(lhsType, "double") == 0 && strcmp(rhstype, "int") == 0) {
+        aux = malloc(6 * sizeof(char));
+        strcpy(aux, "double");
+        return aux;
+    }
+
+    if((utils_isANumberType(rhstype) || utils_isANumberType(rhstype)) && strcmp(lhsType, "string") == 0) {
+        aux = malloc(7 * sizeof(char));
+        strcpy(aux, "string");
+        return aux;
+    }
+
+    return rhstype;
 
 }
 
