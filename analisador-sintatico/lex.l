@@ -53,7 +53,8 @@ L       [a-zA-Z_]
 "free"                  { if(!comment) return FREE_OP; }
 "print"                 { if(!comment) return PRINT;}
 "printf"                { if(!comment) return PRINTF;}
-"int"                 { if(!comment) { 
+"scanf"                 { if(!comment) return SCANF;}
+"int"                   { if(!comment) { 
                             yylval.sValue = strdup(yytext);
                             return INT_TYPE; 
                           }

@@ -112,7 +112,8 @@ extern int yydebug;
     DOUBLE_DOT = 318,
     MALLOC_OP = 319,
     FREE_OP = 320,
-    CALLOC_OP = 321
+    CALLOC_OP = 321,
+    SCANF = 322
   };
 #endif
 /* Tokens.  */
@@ -180,12 +181,13 @@ extern int yydebug;
 #define MALLOC_OP 319
 #define FREE_OP 320
 #define CALLOC_OP 321
+#define SCANF 322
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 27 "parser.y"
+#line 29 "parser.y"
 
     int    iValue;  /* integer value */
     float  fValue;  /* float value */
@@ -195,7 +197,7 @@ union YYSTYPE
     int    bValue;  /* boolean value */
     struct StaticInfo * strValue;
 
-#line 199 "y.tab.h"
+#line 201 "y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
