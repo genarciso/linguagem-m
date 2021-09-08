@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <math.h>
 
-double x = 1;
+float xg = 1;
 int y = 0;
 float t(int d,int f) {
 float f1 = pow(2, 3) + pow(10, 3);;
@@ -11,7 +11,7 @@ printf("%f\n", f1);
 double d = 0;
 int t2() {
 double f = pow(2, 3.200000) + pow(10, 3);;
-printf("%f\n", f);
+printf("%f.\n", f);
 }
 double s;
 int main(int x) {
@@ -46,6 +46,7 @@ goto loopStart0;
 loopEnd0:;
 }
 ;
+scanf("%f", &xg);;
 t2();
 t(1 + 1, y);
 }

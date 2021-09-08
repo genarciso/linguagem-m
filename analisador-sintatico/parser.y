@@ -38,7 +38,7 @@ HashTable *symbolTable;
 
 %start program
 
-%token <sValue> LITERAL_STRING IDENTIFIER INT_TYPE FLOAT_TYPE DOUBLE_TYPE STRING_TYPE BOOLEAN_TYPE MATRIZ_TYPE VOID_TYPE LITERAL_CHAR CHAR_TYPE
+%token <sValue> LITERAL_STRING IDENTIFIER INT_TYPE FLOAT_TYPE DOUBLE_TYPE STRING_TYPE BOOLEAN_TYPE MATRIZ_TYPE VOID_TYPE LITERAL_CHAR CHAR_TYPE SCAN
 %token <iValue> LITERAL_INT
 %token <fValue> LITERAL_FLOAT  
 %token <dValue> LITERAL_DOUBLE
@@ -54,7 +54,7 @@ HashTable *symbolTable;
 %token MALLOC_OP FREE_OP CALLOC_OP
 
 %type <sValue> stm stm_list expres_list op_log op_comp if_struct else_struct elseif_list elseif_struct switch_struct case_switch case_list_switch for_struct while_struct loop_stm cond_stm type par_list par_term fun_struct print_stm 
-%type <sValue> id_list decl assingment initialization block decls decls_list param_list_call fun_call
+%type <sValue> id_list decl assingment initialization block decls decls_list param_list_call fun_call scan_stm
 %type <strValue> term term_num log_term literal_term literal_string expr comp_expr log_expr arit_expr arit_expr_base for_struct_stm base uniry_op arit_expr_right 
 
 %left AND_OP OR_OP
@@ -115,6 +115,7 @@ stm : decl           SEMICOLON {$$ = $1;}
     | cond_stm                 {$$ = $1;}
     | loop_stm                 {$$ = $1;} 
     | print_stm      SEMICOLON {$$ = $1;}
+    | scan_stm       SEMICOLON {$$ = $1;}
     | expres_list    SEMICOLON {$$ = $1;}
     | assingment     SEMICOLON {$$ = $1;}
     | initialization SEMICOLON {$$ = $1;}
@@ -254,6 +255,34 @@ print_stm   : PRINT L_PARENTHESIS literal_string R_PARENTHESIS {
                                                                                 $$ = s;  
                                                                             }
             ;
+
+scan_stm   : SCAN L_PARENTHESIS IDENTIFIER R_PARENTHESIS        {
+
+                                                                    Tuple *var = utils_findVar(symbolTable, $3, scope);
+                                                                    if(var == NULL) {
+                                                                            printf("Erro na linha %d : variavel %s nao foi declarada\n", yylineno, $3);
+                                                                            exit(EXIT_FAILURE);
+                                                                    }
+
+                                                                    if(utils_isANumberType(var->type)) {
+                                                                        int size = 8 + strlen(var->name);
+                                                                        char * s = malloc(sizeof(char) * size);
+                                                                        if(strcmp(var->type, "int") == 0) {
+                                                                            sprintf(s, "scanf(\"%si\", &%s);", "%", var->name);
+                                                                        }else if(strcmp(var->type, "float") == 0) {
+                                                                            sprintf(s, "scanf(\"%sf\", &%s);", "%", var->name);
+                                                                        }else {
+                                                                            sprintf(s, "scanf(\"%sle\", &%s);", "%", var->name);
+                                                                            
+                                                                        }
+                                                                         $$ = s;
+                                                                    }else {
+                                                                        printf("Erro na linha %d : tipo da variavel %s nao suportada pelo scan\n", yylineno, var->name);
+                                                                        exit(EXIT_FAILURE);
+                                                                    }
+                                                                    
+                                                                }
+           ;
 
 id_list : IDENTIFIER                {$$ = $1;}
         | IDENTIFIER COMMA id_list { 
@@ -804,7 +833,6 @@ int main() {
     for(int i = 0; i < 10; i++) {
         varNamesScope[i] = list_create(10);
     }
-
 
     return yyparse();
 }
