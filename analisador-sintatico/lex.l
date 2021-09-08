@@ -29,8 +29,7 @@ L       [a-zA-Z_]
 "/*"                    {comment = 1;}
 "*/"                    {comment = 0;}
 "//"(.)*\n              {}
-\n                      {linha++;
-                        }
+\n                      {linha++;}
 [" " | \t]              {}
 \(                      { if(!comment) return L_PARENTHESIS; }
 \)                      { if(!comment) return R_PARENTHESIS; }

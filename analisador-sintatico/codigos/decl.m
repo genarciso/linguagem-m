@@ -17,3 +17,11 @@ float t(int d) {
 	printf("asd");
 }
 
+float f () {
+	int a;
+	while (a < 10) {
+		printf(a);
+		a = a + 1;
+	}
+}
+

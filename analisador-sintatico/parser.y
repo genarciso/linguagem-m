@@ -62,15 +62,6 @@ HashTable *symbolTable;
 %right FACT_OP MOD_OP
 
 %%
-/*
-program : stm_list EOL  {
-                            printf("%s", $1);
-                            printf("\nClosing application... Bye...\n");
-                            free($1);
-                        }
-        ; 
-*/
-
 program : decls_list    {
                             printf("%s", $1);
                             printf("\ncomplete..\n");
@@ -100,14 +91,14 @@ decls_list : decls            {$$ = $1;}
                               }
             ;
 
-decls : decl            SEMICOLON   {
+decls : decl  SEMICOLON             {
                                       int size = strlen($1) + 2;
                                       char * s = malloc(sizeof(char) * size);
                                       sprintf(s, "%s;", $1);
                                       free($1);
                                       $$ = s;
                                     }
-      | assingment      SEMICOLON   {
+      | assingment  SEMICOLON       {
                                       int size = strlen($1) + 2;
                                       char * s = malloc(sizeof(char) * size);
                                       sprintf(s, "%s;", $1);
@@ -149,9 +140,9 @@ decl : type id_list {
             free($2);
             $$ = s;
         }
-       ;
+      ;
 
-assingment :IDENTIFIER ASSINGMENT expr {    
+assingment  : IDENTIFIER ASSINGMENT expr {    
                           Tuple *lhsVar = utils_findVar(symbolTable, $1, scope);
                           if(lhsVar == NULL) {
                             printf("Erro na linha %d : variavel %s nao foi declarada\n", yylineno, $1);
@@ -159,8 +150,8 @@ assingment :IDENTIFIER ASSINGMENT expr {
                           }
                
                           if(strcmp(lhsVar->type, $3->type) != 0) {
-                            printf("o tipo da variavel %s (%s) ", $1, lhsVar->type); 
-                            printf("e da expressao do tipo %s sao incompativeis\n", $3->type); 
+                            printf("O tipo da variavel %s (%s) ", $1, lhsVar->type); 
+                            printf("E da expressao do tipo %s sao incompativeis\n", $3->type); 
                             exit(EXIT_FAILURE);
                           }
               
@@ -218,10 +209,22 @@ print_stm   : PRINT L_PARENTHESIS literal_string R_PARENTHESIS {
                                                                                 sprintf(s, "printf(%s, %s)", $3->value, $5);
                                                                                 $$ = s;  
                                                                             }
+            | PRINT L_PARENTHESIS IDENTIFIER R_PARENTHESIS      {
+                                                                    int size = 8 + strlen($3);
+                                                                    char * s = malloc(sizeof(char) * size);
+                                                                    sprintf(s, "print(%s)", $3);
+                                                                    $$ = s; 
+                                                                }
+            | PRINTF L_PARENTHESIS IDENTIFIER R_PARENTHESIS {
+                                                                    int size = 9 + strlen($3);
+                                                                    char * s = malloc(sizeof(char) * size);
+                                                                    sprintf(s, "printf(%s)", $3);
+                                                                    $$ = s; 
+                                                                }
             ;
 
 id_list : IDENTIFIER                {$$ = $1;}
-        | IDENTIFIER COMMA id_list { 
+        | IDENTIFIER COMMA id_list  { 
                                         int size = 2 + strlen($1) + strlen($3);
                                         char * s = malloc(sizeof(char) * size);
                                         sprintf(s, "%s,%s", $1, $3);
@@ -246,69 +249,38 @@ cond_stm: if_struct         {$$ = $1;}
         | switch_struct     {$$ = $1;}
         ;
 
-if_struct   : IF_STM L_PARENTHESIS log_expr R_PARENTHESIS block else_struct{
-                                                            if(strcmp($6, "e") != 0) {
-                                                                int size = 70 + strlen($3->value) + strlen($5) + strlen($6);
-                                                                char * s = malloc(sizeof(char) * size);
-                                                                sprintf(s, "\n{\nif(!(%s)) goto endIf%d;\n%s\ngoto endAllIf%d;\nendIf%d:;\n%s\nendAllIf%d:;\n}\n", $3->value, ifCount, $5, endAllIf, ifCount, $6, endAllIf);
-                                                                ifCount++;
-                                                                endAllIf++;
-                                                                $$ = s;
-                                                            }else {
-                                                                int size = 60 + strlen($3->value) + strlen($5);
-                                                                char * s = malloc(sizeof(char) * size);
-                                                                sprintf(s, "\n{\nif(!(%s)) goto endIf%d;\n%s\n endIf%d:;\n}\n", $3->value, ifCount, $5, ifCount);
-                                                                ifCount++;
-                                                                $$ = s;
-                                                            }
+if_struct   : IF_STM L_PARENTHESIS log_expr R_PARENTHESIS L_KEY stm_list R_KEY else_struct {
+                                                            int size = 11 + strlen($3->value) + strlen($6) + strlen($8);
+                                                            char * s = malloc(sizeof(char) * size);
+                                                            sprintf(s, "if(%s){\n\t%s\n} %s", $3->value, $6, $8);
+                                                            $$ = s;
                                                         }
             ;
-else_struct :   {char * s = malloc(sizeof(char) * 2);
-                 sprintf(s, "e");
-                 $$ = s;}
-            | elseif_list ELSE_STM block {
-                                                if(strcmp($1, "e") != 0) {
-                                                    int size = 32 + strlen($1) + strlen($3);
-                                                    char * s = malloc(sizeof(char) * size);
-                                                    sprintf(s, "%s\nnextIf%d: if(0) goto endIf%d;\n%s\nendIf%d:;\n\n", $1, ifCount, ifCount, $3, ifCount);
-                                                    ifCount++;
-                                                    $$ = s;
-                                                }else {
-                                                    int size = 32 + strlen($3);
-                                                    char * s = malloc(sizeof(char) * size);
-                                                    sprintf(s, "\nif(0) goto endIf%d;\n%s\nendIf%d:;\n\n", ifCount, $3, ifCount);
-                                                    ifCount++;
-                                                    $$ = s;
-                                                }
+else_struct : {$$="";}  
+            | elseif_list ELSE_STM L_KEY stm_list R_KEY {
+                                                int size = 11 + strlen($1) + strlen($4);
+                                                char * s = malloc(sizeof(char) * size);
+                                                sprintf(s, "%s\nelse{\n\t%s\n}", $1, $4);
+                                                $$ = s;
                                             }
             ;
-elseif_list     :  {char * s = malloc(sizeof(char) * 2);
-                    sprintf(s, "e");
-                    $$ = s;}
+elseif_list     : {$$="";}
                 | elseif_struct elseif_list { 
-                                                if(strcmp($2, "e") != 0) {
-                                                    int size = 4 + strlen($1) + strlen($2);
-                                                    char * s = malloc(sizeof(char) * size);
-                                                    sprintf(s, "%s\n%s\n", $1, $2);
-                                                    $$ = s;
-                                                }else {
-                                                    int size = 2 + strlen($1);
-                                                    char * s = malloc(sizeof(char) * size);
-                                                    sprintf(s, "%s\n", $1);
-                                                    $$ = s;
-                                                }
+                                                int size = 2 + strlen($1) + strlen($2);
+                                                char * s = malloc(sizeof(char) * size);
+                                                sprintf(s, "%s %s", $1, $2);
+                                                $$ = s;
                                             }
                 ;
 
-elseif_struct   : ELSE_IF_STM L_PARENTHESIS log_expr R_PARENTHESIS block {
-                                        int size = 52 + strlen($3->value) + strlen($5);
-                                        char * s = malloc(sizeof(char) * size);
-                                        sprintf(s, "\n{\nif(!(%s)) goto endIf%d;\n%s\ngoto endAllIf%d;\nendIf%d:;\n}\n", $3->value, ifCount, $5, endAllIf, ifCount);
-                                        ifCount++;
-                                        free($5);
-                                        $$ = s;
-                                    
+elseif_struct   : ELSE_IF_STM L_PARENTHESIS log_expr R_PARENTHESIS L_KEY stm_list R_KEY {
+                                    int size = 15 + strlen($3->value) + strlen($6);
+                                    char * s = malloc(sizeof(char) * size);
+                                    sprintf(s, "\nelseif(%s){\n\t%s\n}", $3->value, $6);
+                                    free($6);
+                                    $$ = s;
                                 }
+                
                 ;
 
 switch_struct   : SWITCH_STM L_PARENTHESIS literal_term R_PARENTHESIS L_KEY case_list_switch DEFAULT DOUBLE_DOT stm_list BREAK SEMICOLON R_KEY      {
@@ -347,34 +319,40 @@ loop_stm: while_struct      {$$ = $1;}
 while_struct: WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS block   {
                     int size = 72 + strlen($3->value) + strlen($5);
                     char * s = malloc(sizeof(char) * size);
-                    sprintf(s, "\n{\nloopStart%d: if(!(%s)) goto loopEnd%d;\n%s\ngoto loopStart%d;\nloopEnd%d:;\n}\n", loopCount, $3->value, loopCount, $5, loopCount, loopCount);
+                    sprintf(s, 
+                      "loopStart%d: if(!(%s)) {\n\tgoto loopEnd%d;\n}\n\t%s\n\tgoto loopStart%d;\nloopEnd%d:;\n", 
+                      loopCount, $3->value, loopCount, $5, loopCount, loopCount);
                     loopCount++;
                     free($3);
                     free($5);
                     $$ = s;
 
-            }
+              }
             | DO_STM block WHILE_STM L_PARENTHESIS log_expr R_PARENTHESIS SEMICOLON {
                 int size = 62 + strlen($2) + strlen($5->value);
                 char * s = malloc(sizeof(char) * size);
-                sprintf(s, "\n{\nloopStart%d:\n%s\nif(%s) goto loopStart%d;\n}\n", loopCount, $2, $5->value, loopCount);
+                sprintf(s, 
+                  "loopStart%d: if(!(%s)) {\n\tgoto loopEnd%d;\n}\n\t%s\n\tgoto loopStart%d;\nloopEnd%d:;\n", 
+                  loopCount, $5->value, loopCount, $2, loopCount, loopCount);
                 free($2);
                 free($5);
                 $$ = s;
-            }
+              }
             ;
 
 for_struct  : FOR_STM L_PARENTHESIS {scope++;} initialization SEMICOLON log_expr SEMICOLON for_struct_stm R_PARENTHESIS {scope--;} block {
                 int size = 76 + strlen($4) + strlen($6->value) + strlen($8->value) + strlen($11);
                 char * s = malloc(sizeof(char) * size);
-                sprintf(s, "\n{\n%s;\nloopStart%d: if(!(%s)) goto loopEnd%d;\n%s\n%s;\ngoto loopStart%d;\nloopEnd%d:;\n}\n", $4, loopCount, $6->value, loopCount, $11, $8->value, loopCount, loopCount);
+                sprintf(s, 
+                  "%s;\nloopStart%d:\n\tif(!(%s)) {\n\t\tgoto loopEnd%d;\n\t}\n\t%s\n\t%s;\n\tgoto loopStart%d;\nloopEnd%d:;\n", 
+                  $4, loopCount, $6->value, loopCount, $11, $8->value, loopCount, loopCount);
                 loopCount++;
                 free($4);
                 free($6);
                 free($8);
                 free($11);
                 $$ = s;
-            } 
+              } 
             ;
 
 for_struct_stm : arit_expr {$$ = $1;}
@@ -390,39 +368,68 @@ fun_struct  : type IDENTIFIER L_PARENTHESIS par_list R_PARENTHESIS block {
 
 block : L_KEY {scope++;} stm_list R_KEY {
           utils_removeVarScope(symbolTable, varNamesScope[scope]);
-          int size = strlen($3) + 8;
+          int size = strlen($3) + 9;
           char * s = malloc(sizeof(char) * size);
-          sprintf(s, "{\n%s\n}", $3);
+          sprintf(s, "{\n\t%s\n}", $3);
           free($3);
           $$ = s;
           scope--;
      }
      ;
 
-stm_list    : stm                {
-                                            int size = strlen($1) + 2;
-                                            char * s = malloc(sizeof(char) * size);
-                                            sprintf(s, "%s;", $1);
-                                            free($1);
-                                            $$ = s;
-                                        }
+stm_list    : stm             { $$ = $1;}
             | stm stm_list    {
-                                            int size = strlen($1) + strlen($2) + 3;
-                                            char * s = malloc(sizeof(char) * size);
-                                            sprintf(s, "%s\n%s", $1, $2);
-                                            free($1);
+                                int size = strlen($1) + strlen($2) + 3;
+                                char * s = malloc(sizeof(char) * size);
+                                sprintf(s, "%s\n%s", $1, $2);
+                                free($1);
                                             
-                                            $$ = s;
-                                        }
+                                $$ = s;
+                              }
             ;
 
-stm : decl           SEMICOLON {$$ = $1;}
+stm : decl SEMICOLON             {
+                                  int size = strlen($1) + 2;
+                                  char * s = malloc(sizeof(char) * size);
+                                  sprintf(s, "%s;", $1);
+                                  free($1);
+                              
+                                  $$ = s;
+                                }
     | cond_stm                 {$$ = $1;}
     | loop_stm                 {$$ = $1;} 
-    | print_stm      SEMICOLON {$$ = $1;}
-    | expres_list    SEMICOLON {$$ = $1;}
-    | assingment     SEMICOLON {$$ = $1;}
-    | initialization SEMICOLON {$$ = $1;}
+    | print_stm      SEMICOLON {
+                                  int size = strlen($1) + 2;
+                                  char * s = malloc(sizeof(char) * size);
+                                  sprintf(s, "%s;", $1);
+                                  free($1);
+                              
+                                  $$ = s;
+                                }
+    | expres_list    SEMICOLON {
+                                  int size = strlen($1) + 2;
+                                  char * s = malloc(sizeof(char) * size);
+                                  sprintf(s, "%s;", $1);
+                                  free($1);
+                              
+                                  $$ = s;
+                                }
+    | assingment     SEMICOLON {
+                                  int size = strlen($1) + 2;
+                                  char * s = malloc(sizeof(char) * size);
+                                  sprintf(s, "%s;", $1);
+                                  free($1);
+                              
+                                  $$ = s;
+                                }
+    | initialization SEMICOLON {
+                                  int size = strlen($1) + 2;
+                                  char * s = malloc(sizeof(char) * size);
+                                  sprintf(s, "%s;", $1);
+                                  free($1);
+                              
+                                  $$ = s;
+                                }
     ;
 
 type: VOID_TYPE     {$$ = $1;}
@@ -454,7 +461,21 @@ par_term: type IDENTIFIER   {
         ;
 
 
-arit_expr   : arit_expr_base
+arit_expr   : arit_expr_base                            {$$ = $1;}
+            | arit_expr INC_OP                          { 
+                                                            int size = 3 + strlen($1->value);
+                                                            char * s = malloc(sizeof(char) * size);
+                                                            sprintf(s, "%s++", $1->value);
+                                                            $$ = utils_createStaticInfo(s, "boolean");
+                                                            free(s);
+                                                        }
+            | arit_expr DEC_OP                          { 
+                                                            int size = 3 + strlen($1->value);
+                                                            char * s = malloc(sizeof(char) * size);
+                                                            sprintf(s, "%s--", $1->value);
+                                                            $$ = utils_createStaticInfo(s, "boolean");
+                                                            free(s);
+                                                        }
             | arit_expr PLUS_OP arit_expr_base          { 
                                                             
                                                             if(!utils_isANumberType($1->type) || !utils_isANumberType($3->type)) {
@@ -516,20 +537,6 @@ arit_expr   : arit_expr_base
                                                             $$ = utils_createStaticInfo(s, utils_convertType($1->type, $3->type));
                                                             free(s);
                                                         }
-            | arit_expr INC_OP                          { 
-                                                            int size = 3 + strlen($1->value);
-                                                            char * s = malloc(sizeof(char) * size);
-                                                            sprintf(s, "%s++", $1->value);
-                                                            $$ = utils_createStaticInfo(s, "boolean");
-                                                            free(s);
-                                                        }
-            | arit_expr DEC_OP                          { 
-                                                            int size = 3 + strlen($1->value);
-                                                            char * s = malloc(sizeof(char) * size);
-                                                            sprintf(s, "%s--", $1->value);
-                                                            $$ = utils_createStaticInfo(s, "boolean");
-                                                            free(s);
-                                                        }
             ;
 
 arit_expr_base : term {$$ = $1;}
@@ -577,7 +584,7 @@ log_expr: comp_expr                            {
 
         ;
 
-comp_expr : arit_expr                           {$$ = $1;}
+comp_expr : term                      {$$ = $1;}
           | comp_expr op_comp arit_expr         { 
                                                     if(!utils_isANumberType($1->type) || !utils_isANumberType($3->type)) {
                                                         printf("Erro na linha %d : operacao %s so pode ser usada para tipos numericos \n", yylineno, $2);
