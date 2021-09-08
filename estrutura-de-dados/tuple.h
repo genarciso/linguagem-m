@@ -4,11 +4,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include "./tuple.h"
 
 typedef struct Tuple
 {
     char* name;
     char* type;
+    struct List *paramsType; 
 } Tuple;
 
 Tuple* tuple_create(char *name, char *type) {
