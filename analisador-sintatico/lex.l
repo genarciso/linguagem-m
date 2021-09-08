@@ -1,4 +1,3 @@
-
 %{
 	#include <stdio.h>
   #include <stdlib.h>
@@ -29,7 +28,8 @@ L       [a-zA-Z_]
 "/*"                    {comment = 1;}
 "*/"                    {comment = 0;}
 "//"(.)*\n              {}
-\n                      {linha++;}
+\n                      {linha++;
+                        }
 [" " | \t]              {}
 \(                      { if(!comment) return L_PARENTHESIS; }
 \)                      { if(!comment) return R_PARENTHESIS; }
@@ -54,7 +54,7 @@ L       [a-zA-Z_]
 "print"                 { if(!comment) return PRINT;}
 "printf"                { if(!comment) return PRINTF;}
 "scanf"                 { if(!comment) return SCANF;}
-"int"                   { if(!comment) { 
+"int"                 { if(!comment) { 
                             yylval.sValue = strdup(yytext);
                             return INT_TYPE; 
                           }

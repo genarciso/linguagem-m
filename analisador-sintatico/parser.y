@@ -54,8 +54,8 @@ HashTable *symbolTable;
 %token MALLOC_OP FREE_OP CALLOC_OP SCANF
 
 %type <sValue> stm stm_list expres_list op_log op_comp if_struct else_struct elseif_list elseif_struct switch_struct case_switch case_list_switch for_struct while_struct loop_stm cond_stm type par_list par_term fun_struct print_stm 
-%type <sValue> id_list decl assingment initialization block decls decls_list param_list_call fun_call scanf_stm
-%type <strValue> term term_num log_term literal_term literal_string expr comp_expr log_expr arit_expr arit_expr_base for_struct_stm base uniry_op arit_expr_right
+%type <sValue> id_list decl assingment initialization block decls decls_list param_list_call fun_call scan_stm
+%type <strValue> term term_num log_term literal_term literal_string expr comp_expr log_expr arit_expr arit_expr_base for_struct_stm base uniry_op arit_expr_right 
 
 %left AND_OP OR_OP
 %left GE_OP SE_OP EQ_OP NE_OP G_OP S_OP
@@ -92,8 +92,8 @@ decls_list: decls {$$ = $1;}
                                 
                                 $$ = s;
                              }
-          ;
 
+          ;
 decls:  decl  SEMICOLON             {
                                       int size = strlen($1) + 2;
                                       char * s = malloc(sizeof(char) * size);
@@ -231,9 +231,35 @@ print_stm:  PRINT L_PARENTHESIS literal_string R_PARENTHESIS {
                                                                     $$ = s; 
                                                                 }
             ;
+scan_stm: SCANF L_PARENTHESIS literal_string COMMA ADDRESS IDENTIFIER R_PARENTHESIS {
 
-id_list: IDENTIFIER                 {  $$ = $1;  }
-        | IDENTIFIER COMMA id_list  { 
+                                                                    Tuple *var = utils_findVar(symbolTable, $6, scope);
+                                                                    if(var == NULL) {
+                                                                      printf("Erro na linha %d : variavel %s nao foi declarada\n", yylineno, $6);
+                                                                      exit(EXIT_FAILURE);
+                                                                    }
+                                                                    if(utils_isANumberType(var->type)) {
+                                                                        int size = 7 + strlen(var->name);
+                                                                        char * s = malloc(sizeof(char) * size);
+                                                                        if(strcmp(var->type, "int") == 0) {
+                                                                            sprintf(s, "scanf(\"%si\", &%s)", "%", var->name);
+                                                                        }else if(strcmp(var->type, "float") == 0) {
+                                                                            sprintf(s, "scanf(\"%sf\", &%s)", "%", var->name);
+                                                                        }else {
+                                                                            sprintf(s, "scanf(\"%sle\", &%s)", "%", var->name);
+                                                                            
+                                                                        }
+                                                                         $$ = s;
+                                                                    }else {
+                                                                        printf("Erro na linha %d : tipo da variavel %s nao suportada pelo scan\n", yylineno, var->name);
+                                                                        exit(EXIT_FAILURE);
+                                                                    }
+                                                                    
+                                                                }
+           ;
+
+id_list : IDENTIFIER                {$$ = $1;}
+        | IDENTIFIER COMMA id_list { 
                                         int size = 2 + strlen($1) + strlen($3);
                                         char * s = malloc(sizeof(char) * size);
                                         sprintf(s, "%s,%s", $1, $3);
@@ -448,15 +474,6 @@ block:  L_KEY {scope++;} stm_list R_KEY {
         }
      ;
 
-scanf_stm: SCANF L_PARENTHESIS literal_string COMMA ADDRESS IDENTIFIER R_PARENTHESIS {
-                            int size = strlen($3->value) + strlen($6) + 11;
-                            char * s = malloc(sizeof(char) * size);
-                            sprintf(s, "scanf(%s, &%s)", $3->value, $6);
-                            $$ = s;
-      
-                          }
-
-        ;
 stm_list: stm             { $$ = $1;}
         | stm stm_list    {
                                 int size = strlen($1) + strlen($2) + 3;
@@ -522,7 +539,7 @@ stm:  decl SEMICOLON             {
                                   sprintf(s, "%s;", $1);
                                   $$ = s; 
                                 }
-    | scanf_stm      SEMICOLON  {
+    | scan_stm      SEMICOLON  {
                                   int size = 2 + strlen($1);
                                   char * s = malloc(sizeof(char) * size);
                                   sprintf(s, "%s;", $1);
@@ -837,7 +854,6 @@ int main() {
     for(int i = 0; i < 10; i++) {
         varNamesScope[i] = list_create(10);
     }
-
 
     return yyparse();
 }
