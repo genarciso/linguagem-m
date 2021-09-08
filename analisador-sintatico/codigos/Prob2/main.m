@@ -3,17 +3,15 @@
  * quantos deles estão nos seguintes intervalos fechados: [0, 25], [26, 50], [51, 75]
  * e [76, 100]. A entrada de dados deve terminar quando for lido um número
  * negativo.
- * */
+ */
 
-#include <stdio.h>
-#include <locale.h>
-
-int main() {
-
-    setlocale(LC_ALL, "Portuguese");
+void main() {
 
     int n = 0;
-    int inter1 = 0, inter2 = 0, inter3 = 0, inter4 = 0;
+    int inter1 = 0;
+    int inter2 = 0;
+    int inter3 = 0;
+    int inter4 = 0;
 
     while (n >= 0) {
 
@@ -34,7 +32,5 @@ int main() {
 
     printf("Resultados:\n");
     printf("[0, 25] = %d, [26, 50] = %d, [51, 75] = %d, [76, 100] = %d \n", inter1, inter2, inter3, inter4);
-
-    return 0;
 
 }

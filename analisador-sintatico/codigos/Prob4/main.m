@@ -13,11 +13,6 @@
  * produzidos, indicando numerador e denominador.
  * */
 
-#include <stdio.h>
-#include <locale.h>
-#include <stdbool.h>
-#include <math.h>
-
 struct rational_t {
     int numerador, denominador;
 };
@@ -32,7 +27,7 @@ struct rational_t itemA (int a, int b) {
     return x;
 }
 
-bool itemB (struct rational_t a, struct rational_t b) {
+boolean itemB (struct rational_t a, struct rational_t b) {
 
     if(a.numerador == b.numerador && a.denominador == b.denominador) {
         return true;
@@ -79,9 +74,7 @@ float itemC_div(struct rational_t x, struct rational_t y) {
     return div;
 }
 
-int main() {
-
-    setlocale(LC_ALL, "Portuguese");
+void main() {
 
     struct rational_t x;
     struct rational_t y;
@@ -103,7 +96,7 @@ int main() {
     }
 
     struct rational_t rta = itemA(3,2);
-    bool rtb = itemB(x, y);
+    boolean rtb = itemB(x, y);
     float rtc1 = itemC_sum(x,y);
     float rtc3 = itemC_sub(x,y);
     float rtc4 = itemC_mult(x,y);
@@ -117,7 +110,5 @@ int main() {
     printf("C) Sum %f | Sub %f | Mult %f | Div %f \n", rtc1, rtc3, rtc4, rtc6);
     itemC_negacao(x,y);
     itemC_inv(x,y);
-
-    return 0;
 
 }
