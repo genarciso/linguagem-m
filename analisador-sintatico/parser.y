@@ -104,7 +104,7 @@ stm_list    : stm                {
             | stm stm_list    {
                                             int size = strlen($1) + strlen($2) + 3;
                                             char * s = malloc(sizeof(char) * size);
-                                            sprintf(s, "%s\n%s", $1, $2);
+                                            sprintf(s, "%s;\n%s", $1, $2);
                                             free($1);
                                             
                                             $$ = s;
@@ -136,14 +136,14 @@ decls :
       | assingment      SEMICOLON       {
                                             int size = strlen($1) + 2;
                                             char * s = malloc(sizeof(char) * size);
-                                            sprintf(s, "%s;", $1);
+                                            sprintf(s, "%s", $1);
                                             free($1);
                                             $$ = s;
                                         }
       | initialization  SEMICOLON       {
                                             int size = strlen($1) + 2;
                                             char * s = malloc(sizeof(char) * size);
-                                            sprintf(s, "%s;", $1);
+                                            sprintf(s, "%s", $1);
                                             free($1);
                                             $$ = s;
                                         }
@@ -203,6 +203,12 @@ assingment :
 
 initialization : 
                type IDENTIFIER ASSINGMENT expr {
+
+               Tuple *lhsVar = utils_findVar(symbolTable, $2, scope);
+               if(lhsVar != NULL) {
+                    printf("Erro na linha %d : variavel %s ja foi declarada\n", yylineno, $2);
+                    exit(EXIT_FAILURE);
+               }
                char *type = utils_strRemoveSpace($1);
                $4->type = utils_convertTypeAssigment(type, $4->type);
                if(strcmp(type, $4->type) != 0) {
@@ -439,13 +445,13 @@ fun_call: IDENTIFIER L_PARENTHESIS {funParamsTypes = list_create(5);} param_list
                                             }
                                             int size = 3 + strlen($1) + strlen($4);
                                             char * s = malloc(sizeof(char) * size);
-                                            sprintf(s, "%s(%s);", $1, $4);
+                                            sprintf(s, "%s(%s)", $1, $4);
                                             $$ = s;
                                         }else {
                                             if(result->paramsType != NULL) {printf("Erro na linha %d : faltando parametros\n", yylineno); exit(EXIT_FAILURE);}
                                             int size = 3 + strlen($1);
                                             char * s = malloc(sizeof(char) * size);
-                                            sprintf(s, "%s();", $1);
+                                            sprintf(s, "%s()", $1);
                                             $$ = s;
                                         }
 
